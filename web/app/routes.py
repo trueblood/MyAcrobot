@@ -6,5 +6,6 @@ from app import app
 
 @app.route('/')
 def index():
+    print("in index")
     return render_template('index.html')
 
