@@ -120,10 +120,31 @@ Simulation.doublePendulum = (containerId) => {
 
     const lowerArm = pendulum.bodies[1];
 
-    Body.rotate(lowerArm, -Math.PI * 0.3, {
-        x: lowerArm.position.x - 100,
+    // Body.rotate(lowerArm, Math.PI/2, {
+    //     x: lowerArm.position.x,
+    //     y: lowerArm.position.y
+    // });
+
+    // Body.rotate(lowerArm, Math.PI/2, {
+    //     x: lowerArm.position.x,
+    //     y: lowerArm.position.y
+    // });
+    
+    // // Increase friction
+    // lowerArm.friction = 0.1;
+    // lowerArm.frictionAir = 0.02; // Increase air resistance
+    // lowerArm.restitution = 0.3; // Reduce bounciness
+    
+    Body.rotate(lowerArm, Math.PI/2, {
+        x: lowerArm.position.x,
         y: lowerArm.position.y
     });
+    
+    // Higher values = more damping, we can adjust this for difficulty
+    lowerArm.friction = 0.3;
+    lowerArm.frictionAir = 0.08;
+    lowerArm.restitution = 0.1;
+    
     
     Composite.add(world, pendulum);
 
