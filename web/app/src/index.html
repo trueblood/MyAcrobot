@@ -15,13 +15,14 @@
         <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
         <!-- Core theme CSS (includes Bootstrap)-->
         <!-- <link rel="stylesheet" href="/src/css/styles.css" /> -->
-        <link rel="stylesheet" href="/MyAcrobot/web/app/src/css/layout_styles.css" />
+        <!-- <link rel="stylesheet" href="//web/app/src/css/layout_styles.css" /> -->
+        <link rel="stylesheet" href="/web/app/src/css/layout_styles.css" />
 
 
         <!-- Matter.js library -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.min.js"></script>
         <!-- Your custom JavaScript file -->
-        <script src="/MyAcrobot/web/app/src/js/double_pendulum.js"></script>
+        <script src="/web/app/src/js/double_pendulum.js"></script>
 
     </head>
     <body id="page-top">
@@ -70,10 +71,10 @@
                     <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
                     <div class="divider-custom-line"></div>
                 </div>
+                <div id="yPositionOutput"></div>
 
                 <!-- Container for the pendulum canvas -->
                 <div id="double_pendulum_canvas" style="width: 50%; height: 600px; margin: 0 auto;"></div>
-
                 
                 <script>
                     // Initialize the double pendulum example after the page loads
@@ -85,13 +86,6 @@
                         // pendulumExample.stop() can be called if you want to halt the animation.
                     };
                 </script>
-
-
-
-
-
-
-
         </section>
     <hr/>
 

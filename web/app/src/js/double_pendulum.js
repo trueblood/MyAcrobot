@@ -1,3 +1,15 @@
+// Function to calculate the y-coordinate of the pendulum's endpoint
+function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
+    // Calculate theta1 and theta2 based on the rotation of each link
+    const theta1 = lowerArm.angle;  // Angle of the first link
+    const theta2 = upperArm.angle;  // Angle of the second link
+
+    // Calculate the y position of the endpoint
+    const y = -linkLength1 * Math.cos(theta1) - linkLength2 * Math.cos(theta1 + theta2);
+
+    return y;
+}
+
 var Simulation = Simulation || {};
 
 Simulation.doublePendulum = (containerId) => {
@@ -143,6 +155,20 @@ Simulation.doublePendulum = (containerId) => {
         if (trail.length > 2000) {
             trail.pop();
         }
+
+        // Output the y-value of the pendulum's endpoint
+        //console.log("Current Y position of lower arm endpoint:", lowerArm.position.y);
+        
+        // Calculate the y position of the pendulum's endpoint
+        const yEndpoint = calculateYEndpoint(lowerArm, pendulum.bodies[0], length, length);
+        
+        // Update the Y position in the HTML element
+        const yPositionElement = document.getElementById("yPositionOutput");
+        if (yPositionElement) {
+            yPositionElement.textContent = 
+                "Current Y position of lower arm endpoint: " + yEndpoint.toFixed(2);
+        }
+
     });
 
     // add mouse control
