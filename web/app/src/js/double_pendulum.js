@@ -34,7 +34,7 @@ Simulation.doublePendulum = (containerId) => {
     const drawGrid = (context, width, height, gridSize = 20) => {
         context.strokeStyle = '#e0e0e0';
         context.lineWidth = 1;
-
+    
         // Draw vertical grid lines
         for (let x = gridSize; x < width; x += gridSize) {
             context.beginPath();
@@ -42,7 +42,7 @@ Simulation.doublePendulum = (containerId) => {
             context.lineTo(x, height);
             context.stroke();
         }
-
+    
         // Draw horizontal grid lines
         for (let y = gridSize; y < height; y += gridSize) {
             context.beginPath();
@@ -50,29 +50,18 @@ Simulation.doublePendulum = (containerId) => {
             context.lineTo(width, y);
             context.stroke();
         }
-
-        // Draw the x and y axes
-        context.strokeStyle = '#333';
-        context.lineWidth = 2;
-
-        // y-axis
-        context.beginPath();
-        context.moveTo(width / 2, 0);
-        context.lineTo(width / 2, height);
-        context.stroke();
-
-        // x-axis
-        context.beginPath();
-        context.moveTo(0, height / 2);
-        context.lineTo(width, height / 2);
-        context.stroke();
-
-        // Add axis labels
-        context.fillStyle = '#333';
-        context.font = '14px Arial';
-        context.fillText('Y', width / 2 + 10, 20);
-        context.fillText('X', width - 20, height / 2 - 10);
+    
+        // Remove the x and y axis lines
+        // No need for context.strokeStyle = '#333';
+        // No need to draw y-axis line
+        // No need to draw x-axis line
+    
+        // Remove axis labels as well (X and Y)
+        // No need for context.fillText('Y', width / 2 + 10, 20);
+        // No need for context.fillText('X', width - 20, height / 2 - 10);
     };
+    
+    
 
     // create runner
     const runner = Runner.create();
@@ -83,7 +72,7 @@ Simulation.doublePendulum = (containerId) => {
     const length = 200;
     const width = 25;
 
-    const pendulum = Composites.stack(350, 160, 2, 1, -20, 0, (x, y) => 
+    const pendulum = Composites.stack(300, 160, 2, 1, -20, 0, (x, y) => 
         Bodies.rectangle(x, y, length, width, { 
             collisionFilter: { group },
             frictionAir: 0,
