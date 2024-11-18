@@ -1,6 +1,0 @@
-# file for storing important everytime ran commands
-
-python3 -m venv venv
-source venv/bin/activate
-venv\Scripts\activate
-pip install -r web/app/requirements.txt

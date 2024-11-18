@@ -1,0 +1,84 @@
+/* Custom CSS styles for the website */
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+  }
+  body {
+    font-family: "Red Hat Text", sans-serif;
+    background: #fafafa;
+    padding: 40px 20px;
+  }
+  #authForm,
+  #secretContent {
+    background: #fff;
+    padding: 30px 30px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    margin-top: 20px;
+  }
+  #authForm h2 {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 30px;
+    color: #2a21a2;
+  }
+  #secretContent h3 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 30px;
+  }
+  #secretContent h1 {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 30px;
+  }
+  #authForm input {
+    width: 100%;
+    display: block;
+    padding: 12px 20px;
+    border: 1px solid #2a21a2;
+    border-radius: 5px;
+    font-size: 16px;
+    font-family: "Red Hat Text", sans-serif;
+    font-weight: 500;
+    color: #1c1c1c;
+  }
+  #authForm input:focus {
+    outline-color: #2a21a2;
+  }
+  #authForm input:not(:first-child) {
+    margin-top: 15px;
+  }
+  #secretContent .buttonContainer,
+  #authForm .buttonContainer {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+  }
+  #secretContent button,
+  #authForm button {
+    padding: 10px 0px;
+    width: 100%;
+    display: block;
+    font-size: 14px;
+    background: #2a21a2;
+    color: #fff;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-family: "Red Hat Text", sans-serif;
+    cursor: pointer;
+    transition: all 0.4s ease;
+  }
+  #authForm button:hover {
+    background: #fff;
+    color: #2a21a2;
+    border-color: #2a21a2;
+  }
+  
