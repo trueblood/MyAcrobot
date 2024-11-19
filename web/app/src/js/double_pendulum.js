@@ -1,3 +1,15 @@
+// Function to calculate the y-coordinate of the pendulum's endpoint
+function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
+    // Calculate theta1 and theta2 based on the rotation of each link
+    const theta1 = lowerArm.angle;  // Angle of the first link
+    const theta2 = upperArm.angle;  // Angle of the second link
+
+    // Calculate the y position of the endpoint
+    const y = -linkLength1 * Math.cos(theta1) - linkLength2 * Math.cos(theta1 + theta2);
+
+    return y;
+}
+
 var Simulation = Simulation || {};
 
 Simulation.doublePendulum = (containerId) => {
@@ -125,11 +137,22 @@ Simulation.doublePendulum = (containerId) => {
     const lowerArm = pendulum.bodies[1];
     const upperArm = pendulum.bodies[0];
 
+    // Rotate the lower arm 90 degrees (Math.PI/2) around its position
+    Body.rotate(lowerArm, Math.PI/2, {
+        x: lowerArm.position.x,
+        y: lowerArm.position.y
+    });
+
+    // Higher Values = more damping, we can adjust this for difficulty
+    lowerArm.friction = 0.3;
+    lowerArm.frictionAir = 0.1;
+    lowerArm.restitution = 0.1;
+
     // Set the pendulum to a stable, vertical position with no initial movement
-    Body.setPosition(lowerArm, { x: 300, y: 160 + length });
-    Body.setAngle(lowerArm, 0);
-    Body.setVelocity(lowerArm, { x: 0, y: 0 });
-    Body.setAngularVelocity(lowerArm, 0);
+    // Body.setPosition(lowerArm, { x: 300, y: 160 + length });
+    // Body.setAngle(lowerArm, 0);
+    // Body.setVelocity(lowerArm, { x: 0, y: 0 });
+    // Body.setAngularVelocity(lowerArm, 0);
     
     Composite.add(world, pendulum);
 
@@ -161,8 +184,22 @@ Simulation.doublePendulum = (containerId) => {
         if (trail.length > 2000) {
             trail.pop();
         }
+
+        // Output the y-value of the pendulum's endpoint
+        //console.log("Current Y position of lower arm endpoint:", lowerArm.position.y);
+        
+        // Calculate the y position of the pendulum's endpoint
+        const yEndpoint = calculateYEndpoint(lowerArm, pendulum.bodies[0], length, length);
+        
+        // Update the Y position in the HTML element
+        const yPositionElement = document.getElementById("yPositionOutput");
+        if (yPositionElement) {
+            yPositionElement.textContent = 
+                "Current Y position of lower arm endpoint: " + yEndpoint.toFixed(2);
+        }
     });
 
+    // add mouse control
     const mouse = Mouse.create(render.canvas);
     const mouseConstraint = MouseConstraint.create(engine, {
         mouse,
@@ -176,8 +213,10 @@ Simulation.doublePendulum = (containerId) => {
 
     Composite.add(world, mouseConstraint);
 
+    // keep the mouse in sync with rendering
     render.mouse = mouse;
 
+    // fit the render viewport to the scene
     Render.lookAt(render, {
         min: { x: 0, y: 0 },
         max: { x: container.clientWidth, y: container.clientHeight }
