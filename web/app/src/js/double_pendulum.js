@@ -26,6 +26,42 @@ function addKeyboardControl(pendulum) {
     });
 }
 
+// Draw Zone Indicators on the Grid
+function drawZoneLabels(context, canvasWidth, canvasHeight) {
+    const centerX = canvasWidth / 2;
+    const centerY = canvasHeight / 2;
+
+    context.font = '16px Arial';
+    context.fillStyle = '#555';
+
+    // Top-Left
+    context.fillText('Top-Left', centerX / 2 - 30, centerY / 2);
+
+    // Top-Right
+    context.fillText('Top-Right', centerX + centerX / 2 - 40, centerY / 2);
+
+    // Bottom-Left
+    context.fillText('Bottom-Left', centerX / 2 - 40, centerY + centerY / 2);
+
+    // Bottom-Right
+    context.fillText('Bottom-Right', centerX + centerX / 2 - 50, centerY + centerY / 2);
+}
+
+function getZone(position, canvasWidth, canvasHeight) {
+    const centerX = canvasWidth / 2; // X-axis center
+    const centerY = canvasHeight / 2; // Y-axis center
+
+    if (position.x < centerX && position.y < centerY) {
+        return 'Top-Left Zone';
+    } else if (position.x >= centerX && position.y < centerY) {
+        return 'Top-Right Zone';
+    } else if (position.x < centerX && position.y >= centerY) {
+        return 'Bottom-Left Zone';
+    } else if (position.x >= centerX && position.y >= centerY) {
+        return 'Bottom-Right Zone';
+    }
+}
+
 // function addKeyboardControl(pendulum) {
 //     const lowerArm = pendulum.bodies[1]; // Access the lower arm body
 //     document.addEventListener('keydown', (event) => {
@@ -227,6 +263,16 @@ Simulation.doublePendulum = (containerId) => {
         if (yPositionElement) {
             yPositionElement.textContent = 
                 "Current Y position of lower arm endpoint: " + yEndpoint.toFixed(2);
+        }
+        drawZoneLabels(render.context, render.options.width, render.options.height);
+
+        const lowerArmPos = lowerArm.position; // Access the pendulum's lower arm position
+        const zone = getZone(lowerArmPos, render.options.width, render.options.height); // Call getZone
+
+        // Update the zone display on the webpage
+        const zoneOutput = document.getElementById('zoneOutput');
+        if (zoneOutput) {
+            zoneOutput.textContent = `Current Zone: ${zone}`;
         }
     });
 
