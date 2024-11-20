@@ -81,7 +81,12 @@
                     window.onload = () => {
                         // Call the Simulation.doublePendulum function to run the simulation
                         const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas');
-            
+                        addKeyboardControl(pendulumExample); // Attach the keyboard control here
+
+                        // Call the function to add keyboard control
+                       // addKeyboardControl(pendulumExample);
+                      // addKeyboardControl(pendulumExample);
+
                         // Optionally store the instance to access its properties or stop it later
                         // pendulumExample.stop() can be called if you want to halt the animation.
                     };
