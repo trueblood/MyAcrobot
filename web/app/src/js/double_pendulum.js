@@ -12,7 +12,7 @@ function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
 
 // Function to add keyboard control
 function addKeyboardControl(pendulum) {
-    const lowerArm = pendulum.bodies[1]; // Access the lower arm body
+    const lowerArm = pendulum.bodies[1];
     document.addEventListener('keydown', (event) => {
         console.log(`Key pressed: ${event.key}`);
         const key = event.key;
@@ -26,7 +26,20 @@ function addKeyboardControl(pendulum) {
     });
 }
 
-
+// function addKeyboardControl(pendulum) {
+//     const lowerArm = pendulum.bodies[1]; // Access the lower arm body
+//     document.addEventListener('keydown', (event) => {
+//         console.log(`Key pressed: ${event.key}`);
+//         const key = event.key;
+//         if (key === 'ArrowLeft') {
+//             console.log('Applying left force');
+//             Matter.Body.applyForce(lowerArm, lowerArm.position, { x: -0.05, y: 0 });
+//         } else if (key === 'ArrowRight') {
+//             console.log('Applying right force');
+//             Matter.Body.applyForce(lowerArm, lowerArm.position, { x: 0.05, y: 0 });
+//         }
+//     });
+// }
 
 var Simulation = Simulation || {};
 
@@ -156,10 +169,10 @@ Simulation.doublePendulum = (containerId) => {
     const upperArm = pendulum.bodies[0];
 
     // Rotate the lower arm 90 degrees (Math.PI/2) around its position
-    // Body.rotate(lowerArm, Math.PI/2, {
-    //     x: lowerArm.position.x,
-    //     y: lowerArm.position.y
-    // });
+    Body.rotate(lowerArm, Math.PI/2, {
+        x: lowerArm.position.x,
+        y: lowerArm.position.y
+    });
 
     // Higher Values = more damping, for faster equilibrium
     // lowerArm.friction = 0.8;      // Increased from 0.3 to 0.8 for more surface friction
@@ -167,10 +180,10 @@ Simulation.doublePendulum = (containerId) => {
     // lowerArm.restitution = 0.05;  // Decreased from 0.1 to 0.05 for less bouncing
 
     // Set the pendulum to a stable, vertical position with no initial movement
-    Body.setPosition(lowerArm, { x: 300, y: 160 + length });
-    Body.setAngle(lowerArm, 0);
-    Body.setVelocity(lowerArm, { x: 0, y: 0 });
-    Body.setAngularVelocity(lowerArm, 0);
+    // Body.setPosition(lowerArm, { x: 300, y: 160 + length });
+    // Body.setAngle(lowerArm, 0);
+    // Body.setVelocity(lowerArm, { x: 0, y: 0 });
+    // Body.setAngularVelocity(lowerArm, 0);
     
     Composite.add(world, pendulum);
 
@@ -239,6 +252,9 @@ Simulation.doublePendulum = (containerId) => {
         min: { x: 0, y: 0 },
         max: { x: container.clientWidth, y: container.clientHeight }
     });
+
+    // Call the function to add keyboard control
+    addKeyboardControl(pendulum);
 
     return {
         engine,
