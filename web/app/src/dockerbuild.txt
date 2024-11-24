@@ -35,10 +35,10 @@ aws ecr get-login-password --region us-east-1 | docker login --username AWS --pa
 docker build -t my_acrobot:latest . 
 
 # for pushing to aws
-docker buildx build --platform linux/amd64 -t aws_docker_file:latest .
+docker buildx build --platform linux/amd64 -t my_acrobot:latest .
 
 # this is to run the docker container locally
-docker run -p 443:443 --name flask-https-app my_acrobot:latest
+docker run -p 443:443 --name my-acrbot-https-app my_acrobot:latest
 
 # Tag the image
 docker tag aws_docker_file:latest 445567114311.dkr.ecr.us-east-1.amazonaws.com/aws_docker_file:latest
@@ -63,4 +63,4 @@ copy into chat gpt and it will output kil command
 ssh -i "youtubedemo-key-pair.pem" ubuntu@ec2-54-197-23-79.compute-1.amazonaws.com
 
 # to copy the certs to the server
-scp -i "youtubedemo-key-pair.pem" -r /Users/squeebit/Documents/Projects/aws_docker_file/ssl-certs ubuntu@ec2-54-197-23-79.compute-1.amazonaws.com:/home/ubuntu/app/aws_docker_file/   
+scp -i "youtubedemo-key-pair.pem" -r /Users/squeebit/Documents/Projects/aws_docker_file/ssl-certs ubuntu@ec2-54-197-23-79.compute-1.amazonaws.com:/home/ubuntu/app/MyAcrobot/web/app/src  
