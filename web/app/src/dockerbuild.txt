@@ -32,13 +32,13 @@ docker run -p 8080:8080 aws_docker_file
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 445567114311.dkr.ecr.us-east-1.amazonaws.com
 
 # This is for mac building running locally
-docker build -t aws_docker_file:latest . 
+docker build -t my_acrobot:latest . 
 
 # for pushing to aws
 docker buildx build --platform linux/amd64 -t aws_docker_file:latest .
 
 # this is to run the docker container locally
-docker run -p 443:443 --name flask-https-app aws_docker_file:latest
+docker run -p 443:443 --name flask-https-app my_acrobot:latest
 
 # Tag the image
 docker tag aws_docker_file:latest 445567114311.dkr.ecr.us-east-1.amazonaws.com/aws_docker_file:latest
