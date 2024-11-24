@@ -1,0 +1,66 @@
+tidb-data-assistant-api
+
+###docker push us-central1-docker.pkg.dev/isentropic-tape-419722/tidb-data-assistant-api/tidb-data-assistant-api:latest 
+
+docker images
+
+## docker build -t tidb-data-assistant-api:latest . this is old version, use this on non mac devices, the -t auto tags
+
+docker buildx build --platform linux/amd64 -t tidb-data-assistant-api:latest .
+
+docker tag tidb-data-assistant-api:latest us-central1-docker.pkg.dev/isentropic-tape-419722/tidb-data-assistant-api/tidb-data-assistant-api:latest
+
+docker push us-central1-docker.pkg.dev/isentropic-tape-419722/tidb-data-assistant-api/tidb-data-assistant-api:latest
+
+#confirm they are uploaded correctly
+gcloud artifacts docker images list us-central1-docker.pkg.dev/isentropic-tape-419722/tidb-data-assistant-api
+
+docker stop <container_id>
+docker ps ### gets container id
+
+docker run -p 8080:8080 tidb-data-assistant-api
+
+docker run -p 8080:8080 aws_docker_file 
+
+#docker images - to list all images
+
+****************************************************
+
+#AWS Steps
+
+# Authenticate Docker to ECR in us-east-1
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 445567114311.dkr.ecr.us-east-1.amazonaws.com
+
+# This is for mac building running locally
+docker build -t aws_docker_file:latest . 
+
+# for pushing to aws
+docker buildx build --platform linux/amd64 -t aws_docker_file:latest .
+
+# this is to run the docker container locally
+docker run -p 443:443 --name flask-https-app aws_docker_file:latest
+
+# Tag the image
+docker tag aws_docker_file:latest 445567114311.dkr.ecr.us-east-1.amazonaws.com/aws_docker_file:latest
+
+# Push the image
+docker push 445567114311.dkr.ecr.us-east-1.amazonaws.com/aws_docker_file:latest
+
+# runs locally example
+docker run -p 8080:8080 first-time  
+
+docker tag first-time:latest 445567114311.dkr.ecr.us-east-1.amazonaws.com/test_http:latest
+docker push 445567114311.dkr.ecr.us-east-1.amazonaws.com/test_http:latest
+
+# another round
+docker buildx build --platform linux/amd64 -t test_http .
+
+#find the process using port 443
+sudo lsof -i :443
+copy into chat gpt and it will output kil command
+
+# to ssh to my server
+ssh -i "youtubedemo-key-pair.pem" ubuntu@ec2-54-197-23-79.compute-1.amazonaws.com
+
+# to copy the certs to the server
+scp -i "youtubedemo-key-pair.pem" -r /Users/squeebit/Documents/Projects/aws_docker_file/ssl-certs ubuntu@ec2-54-197-23-79.compute-1.amazonaws.com:/home/ubuntu/app/aws_docker_file/   
