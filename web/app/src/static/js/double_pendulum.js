@@ -10,6 +10,48 @@ function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
     return y;
 }
 
+// Function to add touch controls
+function addTouchControl(pendulum, canvas) {
+    const lowerArm = pendulum.bodies[1];
+
+    // Add touchstart and touchmove event listeners to the canvas
+    canvas.addEventListener('touchstart', handleTouch);
+    canvas.addEventListener('touchmove', handleTouch);
+
+    function handleTouch(event) {
+        event.preventDefault(); // Prevent default touch behavior (e.g., scrolling)
+
+        const touch = event.touches[0]; // Get the first touch point
+        const canvasRect = canvas.getBoundingClientRect(); // Get canvas dimensions and position
+        const touchX = touch.clientX - canvasRect.left; // X-coordinate relative to canvas
+        const touchY = touch.clientY - canvasRect.top; // Y-coordinate relative to canvas
+
+        // Determine the center of the canvas
+        const centerX = canvasRect.width / 2;
+
+        // Apply force based on touch position
+        if (touchX < centerX) {
+            const message = 'Touch detected: Left side - Applying left force';
+            console.log(message);
+            updateOutputMessage(message); // Update index page
+            Matter.Body.applyForce(lowerArm, lowerArm.position, { x: -0.05, y: 0 });
+        } else {
+            const message = 'Touch detected: Right side - Applying right force';
+            console.log(message);
+            updateOutputMessage(message); // Update index page  
+            Matter.Body.applyForce(lowerArm, lowerArm.position, { x: 0.05, y: 0 });
+        }
+    }
+}
+
+// Function to update output on the index page
+function updateOutputMessage(message) {
+    const keyPressOutElement = document.getElementById('keyPressOut');
+    if (keyPressOutElement) {
+        keyPressOutElement.textContent = `Event Message: ${message}`;
+    }
+}
+
 // Function to add keyboard control
 function addKeyboardControl(pendulum) {
     const lowerArm = pendulum.bodies[1];
@@ -17,10 +59,14 @@ function addKeyboardControl(pendulum) {
         console.log(`Key pressed: ${event.key}`);
         const key = event.key;
         if (key === 'ArrowLeft') {
-            console.log('Applying left force');
+            const message = 'Arrow key pressed: Left - Applying left force';
+            console.log(message);
+            updateOutputMessage(message); // Update index page
             Matter.Body.applyForce(lowerArm, lowerArm.position, { x: -0.05, y: 0 });
         } else if (key === 'ArrowRight') {
-            console.log('Applying right force');
+            const message = 'Arrow key pressed: Right - Applying right force';
+            console.log(message);
+            updateOutputMessage(message); // Update index page
             Matter.Body.applyForce(lowerArm, lowerArm.position, { x: 0.05, y: 0 });
         }
     });
@@ -315,6 +361,8 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
 
     // Call the function to add keyboard control
     addKeyboardControl(pendulum);
+
+    addTouchControl(pendulum, render.canvas);
 
     return {
         engine,
