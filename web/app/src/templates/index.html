@@ -77,20 +77,37 @@
                 
                 <!-- Container for the pendulum canvas -->
                 <div id="double_pendulum_canvas" style="width: 100%; height: 100vh; margin: 0 auto;"></div>
+
                 
                 <script>
                     // Initialize the double pendulum example after the page loads
                     window.onload = () => {
                         // Call the Simulation.doublePendulum function to run the simulation
-                        const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas');
-                       // addKeyboardControl(pendulumExample); // Attach the keyboard control here
+                        // const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas');
+                        // Select the element
+                        const canvasDiv = document.getElementById("double_pendulum_canvas");
 
-                        // Call the function to add keyboard control
-                       // addKeyboardControl(pendulumExample);
-                      // addKeyboardControl(pendulumExample);
+                        // Check if the canvas element exists
+                        if (!canvasDiv) {
+                            console.error("Canvas element with ID 'double_pendulum_canvas' not found.");
+                            return;
+                        }
 
-                        // Optionally store the instance to access its properties or stop it later
-                        // pendulumExample.stop() can be called if you want to halt the animation.
+                        // Get its size and position
+                        const rect = canvasDiv.getBoundingClientRect();
+
+                        // Access the width and height
+                        const width = rect.width;
+                        const height = rect.height;
+
+                        console.log(`Width: ${width}px, Height: ${height}px`);
+
+                        // Calculate the center of the canvas
+                        const centerX = width / 2;
+                        const centerY = height / 2;
+                        
+                        const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
+
                     };
                 </script>
         </section>
