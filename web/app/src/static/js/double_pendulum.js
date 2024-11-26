@@ -189,11 +189,15 @@ Simulation.doublePendulum = (containerId) => {
             strokeStyle: '#4a485b'
         }
     });
+
+    // Calculate grid center coordinates
+    const gridCenterX = 1296 / 2;  // = 648
+    const gridCenterY = 904 / 2;   // = 452
     
     Composite.add(pendulum, Constraint.create({ 
         bodyB: pendulum.bodies[0],
         pointB: { x: -length * 0.42, y: 0 },
-        pointA: { x: pendulum.bodies[0].position.x - length * 0.42, y: pendulum.bodies[0].position.y },
+        pointA: { x: gridCenterX, y: gridCenterY },
         stiffness: 0.9,
         length: 0,
         render: {
