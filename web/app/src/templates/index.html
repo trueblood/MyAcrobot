@@ -23,6 +23,7 @@
         <!-- Your custom JavaScript file -->
         <script src="{{ url_for('static', filename='js/double_pendulum.js') }}"></script>
 
+
     </head>
     <body id="page-top">
         <!-- Navigation-->
@@ -513,14 +514,46 @@
                 </div>
             </div>
         </div>
-        <!-- Bootstrap core JS-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Core theme JS-->
-        <!-- <script src="/src/js/scripts.js"></script> -->
-        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
-        <!-- * *                               SB Forms JS                               * *-->
-        <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
-        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
         <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Your code here
+                console.log('Document is ready!');
+
+                // Add this to your script
+                window.addEventListener('resize', () => {
+                    // Get the canvas div
+                    const canvasDiv = document.getElementById("double_pendulum_canvas");
+                    
+                    // Get updated dimensions
+                    const rect = canvasDiv.getBoundingClientRect();
+                    const width = rect.width;
+                    const height = rect.height;
+                    
+                    // Calculate new center points
+                    const centerX = width / 2;
+                    const centerY = height / 2;
+                    
+                    console.log(`New dimensions - Width: ${width}px, Height: ${height}px`);
+                    console.log(`New center - X: ${centerX}, Y: ${centerY}`);
+
+                    // Clear existing pendulum
+                    // First, remove the existing canvas if it exists
+                    const existingCanvas = canvasDiv.querySelector('canvas');
+                    if (existingCanvas) {
+                        existingCanvas.remove();
+                    }
+
+                    // Reinitialize the pendulum with new dimensions
+                    const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
+                });
+
+
+
+
+            });
+        </script>
+
     </body>
 </html>

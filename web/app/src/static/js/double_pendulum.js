@@ -79,8 +79,11 @@ function getZone(position, canvasWidth, canvasHeight) {
 
 var Simulation = Simulation || {};
 
-Simulation.doublePendulum = (containerId) => {
+Simulation.doublePendulum = (containerId, centerX, centerY) => {
     const { Engine, Events, Render, Runner, Body, Composite, Composites, Constraint, MouseConstraint, Mouse, Bodies, Vector } = Matter;
+
+    console.log("centerX = " + centerX);
+    console.log("centerY = " + centerY);
 
     // Get the container element by ID
     const container = document.getElementById(containerId);
@@ -190,10 +193,17 @@ Simulation.doublePendulum = (containerId) => {
         }
     });
 
+    // console.log("centerX = " + centerX);
+    // console.log("centerY = " + centerY);
+
+
     // Calculate grid center coordinates
-    const gridCenterX = 1296 / 2;  // = 648
-    const gridCenterY = 904 / 2;   // = 452
+    // const gridCenterX = 1296 / 2;  // = 648
+    // const gridCenterY = 904 / 2;   // = 452
     
+    const gridCenterX = centerX;  // = 648
+    const gridCenterY = centerY;   // = 452
+
     Composite.add(pendulum, Constraint.create({ 
         bodyB: pendulum.bodies[0],
         pointB: { x: -length * 0.42, y: 0 },
