@@ -213,6 +213,8 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
 
     // Add bodies
     const group = Body.nextGroup(true);
+    // we change this to change the number of links
+    
     // const length = 100;    // decreased from 200 to 100
     // const width = 25;
 
@@ -268,6 +270,8 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
         }
     }));
 
+
+    // so this where we add arm to control, lowerarm is the control now
     const lowerArm = pendulum.bodies[1];
     const upperArm = pendulum.bodies[0];
 
@@ -298,8 +302,8 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
 
         // Draw the pendulum trail
         trail.unshift({
-            position: Vector.clone(lowerArm.position),
-            speed: lowerArm.speed
+            position: Vector.clone(upperArm.position),
+            speed: upperArm.speed
         });
 
         Render.startViewTransform(render);
