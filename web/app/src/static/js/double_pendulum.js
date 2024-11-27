@@ -203,6 +203,44 @@ function getZone(position, canvasWidth, canvasHeight) {
     }
 }
 
+function detectCircleFromTrail(trail, tolerance = 5, minDistance = 50) {
+    if (trail.length < 10) return false; // Not enough points to detect a circle
+
+    const startPoint = trail[0].position; // Starting point of the trail
+
+    // Check the last point in the trail
+    const endPoint = trail[trail.length - 1].position;
+
+    // Calculate distance between start and end points
+    const distance = Math.sqrt(
+        Math.pow(endPoint.x - startPoint.x, 2) +
+        Math.pow(endPoint.y - startPoint.y, 2)
+    );
+
+    // Check if the trail has returned near the start point
+    if (distance < tolerance) {
+        // Verify the pendulum has traveled enough distance to form a circle
+        let totalTravelDistance = 0;
+        for (let i = 1; i < trail.length; i++) {
+            const prev = trail[i - 1].position;
+            const current = trail[i].position;
+
+            totalTravelDistance += Math.sqrt(
+                Math.pow(current.x - prev.x, 2) +
+                Math.pow(current.y - prev.y, 2)
+            );
+        }
+
+        // If the total travel distance is large enough, count as a circle
+        if (totalTravelDistance > minDistance) {
+            return true; // Circle detected
+        }
+    }
+
+    return false; // No circle detected
+}
+
+
 // function addKeyboardControl(pendulum) {
 //     const lowerArm = pendulum.bodies[1]; // Access the lower arm body
 //     document.addEventListener('keydown', (event) => {
@@ -390,6 +428,8 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     Composite.add(world, pendulum);
 
     const trail = [];
+    let lowerArmCircleCount = 0; // Count of lower arm circles
+    let upperArmCircleCount = 0; // Count of upper arm circles
 
     Events.on(render, 'afterRender', () => {
         // Draw the grid
@@ -398,6 +438,13 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
         // Update trails for both arms
         const lowerArmTrail = trails.lowerArm;
         const upperArmTrail = trails.upperArm;
+
+
+
+
+        // If you want to see the length of each trail
+        // console.log('Lower Arm Trail Length:', lowerArmTrail.length);
+        // console.log('Upper Arm Trail Length:', upperArmTrail.length);
 
         // Store the position of the current controlled link
         if (currentControl === 'lowerArm') {
@@ -412,9 +459,46 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
             });
         }
 
+        // // Print lower arm trail
+        // console.log('Lower Arm Trail:', lowerArmTrail.map(point => ({
+        //     x: point.position.x.toFixed(2),
+        //     y: point.position.y.toFixed(2),
+        //     speed: point.speed.toFixed(2)
+        // })));
+
+        // // Print upper arm trail
+        // console.log('Upper Arm Trail:', upperArmTrail.map(point => ({
+        //     x: point.position.x.toFixed(2),
+        //     y: point.position.y.toFixed(2),
+        //     speed: point.speed.toFixed(2)
+        // })));
+        // Check for circles in the lower arm trail
+        if (detectCircleFromTrail(trails.lowerArm)) {
+            console.log('Lower arm completed a circle!');
+            lowerArmCircleCount++;
+            trails.lowerArm.length = 0; // Reset trail after detecting a circle
+            // Update the lower arm circle count on the page
+            const lowerArmCircleElement = document.getElementById('lowerArmCircleCount');
+            if (lowerArmCircleElement) {
+                lowerArmCircleElement.textContent = `Lower Arm Circles: ${lowerArmCircleCount}`;
+            }
+        }
+
+        // Check for circles in the upper arm trail
+        if (detectCircleFromTrail(trails.upperArm)) {
+            console.log('Upper arm completed a circle!');
+            upperArmCircleCount++;
+            trails.upperArm.length = 0; // Reset trail after detecting a circle
+            // Update the upper arm circle count on the page
+            const upperArmCircleElement = document.getElementById('upperArmCircleCount');
+            if (upperArmCircleElement) {
+                upperArmCircleElement.textContent = `Upper Arm Circles: ${upperArmCircleCount}`;
+            }
+        }
+
         // Limit trail length
-        if (lowerArmTrail.length > 800) lowerArmTrail.pop();
-        if (upperArmTrail.length > 2000) upperArmTrail.pop();
+        // if (lowerArmTrail.length > 800) lowerArmTrail.pop();
+        // if (upperArmTrail.length > 2000) upperArmTrail.pop();
 
         // Draw the pendulum trail
         // trail.unshift({
