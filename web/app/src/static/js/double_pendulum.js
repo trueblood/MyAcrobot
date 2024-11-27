@@ -1,3 +1,9 @@
+const trails = {
+    lowerArm: [],
+    upperArm: [],
+};
+let currentControl = 'lowerArm'; // Track which link is currently controlled
+
 // Function to calculate the y-coordinate of the pendulum's endpoint
 function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
     // Calculate theta1 and theta2 based on the rotation of each link
@@ -13,6 +19,7 @@ function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
 // Function to add touch controls
 function addTouchControl(pendulum, canvas) {
     const lowerArm = pendulum.bodies[1];
+    const upperArm = pendulum.bodies[0];
 
     // Add touchstart and touchmove event listeners to the canvas
     canvas.addEventListener('touchstart', handleTouch);
@@ -28,18 +35,20 @@ function addTouchControl(pendulum, canvas) {
 
         // Determine the center of the canvas
         const centerX = canvasRect.width / 2;
+        
+        const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
 
         // Apply force based on touch position
         if (touchX < centerX) {
             const message = 'Touch detected: Left side - Applying left force';
             console.log(message);
             updateOutputMessage(message); // Update index page
-            Matter.Body.applyForce(lowerArm, lowerArm.position, { x: -0.05, y: 0 });
+            Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
         } else {
             const message = 'Touch detected: Right side - Applying right force';
             console.log(message);
             updateOutputMessage(message); // Update index page  
-            Matter.Body.applyForce(lowerArm, lowerArm.position, { x: 0.05, y: 0 });
+            Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
         }
     }
 }
@@ -52,12 +61,24 @@ function updateOutputMessage(message) {
     } 
 }
 
+// Function to update output on the index page
+function updateOutputMessageForCurrentlySelectedLink(message) {
+    const keyPressOutElement = document.getElementById('currentLink');
+    if (keyPressOutElement) {
+        keyPressOutElement.textContent = `Event Message: ${message}`;
+    } 
+}
+
 // Function to add keyboard control
 function addKeyboardControl(pendulum) {
     const lowerArm = pendulum.bodies[1];
+    const upperArm = pendulum.bodies[0];
+
     document.addEventListener('keydown', (event) => {
         console.log(`Key pressed: ${event.key}`);
         const key = event.key;
+        const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
+
         if (key === 'ArrowLeft') {
             const message = 'Arrow key pressed: Left - Applying left force';
             console.log(message);
@@ -68,8 +89,40 @@ function addKeyboardControl(pendulum) {
             console.log(message);
             updateOutputMessage(message); // Update index page
             Matter.Body.applyForce(lowerArm, lowerArm.position, { x: 0.05, y: 0 });
+        } else if (key === 'a') {
+            currentControl = 'lowerArm'; // Switch to lower arm
+            console.log('Switched control to lower arm');
+            // Fill the selected arm with lighter red
+            lowerArm.render.fillStyle = '#ff6666'; // Lighter red
+            lowerArm.render.strokeStyle = '#1a1a1a';
+            // Reset the other arm
+            upperArm.render.fillStyle = 'transparent';
+            upperArm.render.strokeStyle = '#1a1a1a';
+            updateOutputMessageForCurrentlySelectedLink('Currently controlling: Lower Arm');
+
+            // Update the zone display on the webpage
+            // document.querySelector('#currentLink').textContent = 'Currently controlling: Lower Arm';
+            // if (currentLink) {
+            //     currentLink.innerText = `Currently controlling: Lower Arm`;
+            // }
+        } else if (key === 's') {
+            currentControl = 'upperArm'; // Switch to upper arm
+            console.log('Switched control to upper arm');
+            // Fill the selected arm with lighter red
+            upperArm.render.fillStyle = '#ff6666'; // Lighter red
+            upperArm.render.strokeStyle = '#1a1a1a';
+            // Reset the other arm
+            lowerArm.render.fillStyle = 'transparent';
+            lowerArm.render.strokeStyle = '#1a1a1a';
+            // Update the zone display on the webpage
+            updateOutputMessageForCurrentlySelectedLink('Currently controlling: Upper Arm');
+            // document.querySelector('#currentLink').textContent = 'Currently controlling: Upper Arm';
+            // if (currentLink) {
+            //     currentLink.innerText = `Currently controlling: Upper Arm`;
+            // }
         }
-    });
+    });       
+
 }
 
 // Draw Zone Indicators on the Grid
@@ -222,7 +275,7 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     // const length = 150; // Change from 200 to whatever length you want
     // const width = 25;   // This is the width of each link
     
-    const length = 200;
+    const length = 100;
     const width = 25;
 
     const pendulum = Composites.stack(300, 160, 2, 1, -20, 0, (x, y) => 
@@ -300,18 +353,55 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
         // Draw the grid
         drawGrid(render.context, render.options.width, render.options.height);
 
+        // Update trails for both arms
+        const lowerArmTrail = trails.lowerArm;
+        const upperArmTrail = trails.upperArm;
+
+        // Store the position of the current controlled link
+        if (currentControl === 'lowerArm') {
+            lowerArmTrail.unshift({
+                position: Vector.clone(lowerArm.position),
+                speed: lowerArm.speed,
+            });
+        } else if (currentControl === 'upperArm') {
+            upperArmTrail.unshift({
+                position: Vector.clone(upperArm.position),
+                speed: upperArm.speed,
+            });
+        }
+
+        // Limit trail length
+        if (lowerArmTrail.length > 800) lowerArmTrail.pop();
+        if (upperArmTrail.length > 2000) upperArmTrail.pop();
+
         // Draw the pendulum trail
-        trail.unshift({
-            position: Vector.clone(upperArm.position),
-            speed: upperArm.speed
-        });
+        // trail.unshift({
+        //     position: Vector.clone(upperArm.position),
+        //     speed: upperArm.speed
+        // });
 
         Render.startViewTransform(render);
         render.context.globalAlpha = 0.7;
 
-        trail.forEach((pointInfo) => {
+        // trail.forEach((pointInfo) => {
+        //     const { position: point, speed } = pointInfo;
+        //     const hue = 250 + Math.round((1 - Math.min(1, speed / 10)) * 170);
+        //     render.context.fillStyle = `hsl(${hue}, 100%, 55%)`;
+        //     render.context.fillRect(point.x, point.y, 2, 2);
+        // });
+
+        // Draw lowerArm trail
+        lowerArmTrail.forEach((pointInfo) => {
             const { position: point, speed } = pointInfo;
             const hue = 250 + Math.round((1 - Math.min(1, speed / 10)) * 170);
+            render.context.fillStyle = `hsl(${hue}, 100%, 55%)`;
+            render.context.fillRect(point.x, point.y, 2, 2);
+        });
+
+        // Draw upperArm trail
+        upperArmTrail.forEach((pointInfo) => {
+            const { position: point, speed } = pointInfo;
+            const hue = 150 + Math.round((1 - Math.min(1, speed / 10)) * 170);
             render.context.fillStyle = `hsl(${hue}, 100%, 55%)`;
             render.context.fillRect(point.x, point.y, 2, 2);
         });
@@ -319,16 +409,16 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
         render.context.globalAlpha = 1;
         Render.endViewTransform(render);
 
-        if (trail.length > 2000) {
-            trail.pop();
-        }
+        // if (trail.length > 2000) {
+        //     trail.pop();
+        // }
 
         // Output the y-value of the pendulum's endpoint
         //console.log("Current Y position of lower arm endpoint:", lowerArm.position.y);
         
         // Calculate the y position of the pendulum's endpoint
-        const yEndpoint = calculateYEndpoint(lowerArm, pendulum.bodies[0], length, length);
-        
+        // const yEndpoint = calculateYEndpoint(lowerArm, pendulum.bodies[0], length, length);
+        const yEndpoint = calculateYEndpoint(lowerArm, upperArm, length, length);
         // Update the Y position in the HTML element
         const yPositionElement = document.getElementById("yPositionOutput");
         if (yPositionElement) {
