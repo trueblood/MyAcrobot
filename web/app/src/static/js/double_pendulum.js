@@ -49,7 +49,7 @@ function updateOutputMessage(message) {
     const keyPressOutElement = document.getElementById('keyPressOut');
     if (keyPressOutElement) {
         keyPressOutElement.textContent = `Event Message: ${message}`;
-    }
+    } 
 }
 
 // Function to add keyboard control
@@ -213,6 +213,13 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
 
     // Add bodies
     const group = Body.nextGroup(true);
+    // const length = 100;    // decreased from 200 to 100
+    // const width = 25;
+
+    // const group = Body.nextGroup(true);
+    // const length = 150; // Change from 200 to whatever length you want
+    // const width = 25;   // This is the width of each link
+    
     const length = 200;
     const width = 25;
 
@@ -232,7 +239,7 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     
     Composites.chain(pendulum, 0.45, 0, -0.45, 0, { 
         stiffness: 0.9, 
-        length: 0,
+        length: 50,
         angularStiffness: 0.7,
         render: {
             strokeStyle: '#4a485b'
