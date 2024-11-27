@@ -20,35 +20,77 @@ function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
 function addTouchControl(pendulum, canvas) {
     const lowerArm = pendulum.bodies[1];
     const upperArm = pendulum.bodies[0];
+    let isSwitching = false; // Prevent rapid toggling
 
     // Add touchstart and touchmove event listeners to the canvas
     canvas.addEventListener('touchstart', handleTouch);
     canvas.addEventListener('touchmove', handleTouch);
+    canvas.addEventListener('touchend', handleTouchEnd);
 
     function handleTouch(event) {
         event.preventDefault(); // Prevent default touch behavior (e.g., scrolling)
 
-        const touch = event.touches[0]; // Get the first touch point
-        const canvasRect = canvas.getBoundingClientRect(); // Get canvas dimensions and position
-        const touchX = touch.clientX - canvasRect.left; // X-coordinate relative to canvas
-        const touchY = touch.clientY - canvasRect.top; // Y-coordinate relative to canvas
-
-        // Determine the center of the canvas
-        const centerX = canvasRect.width / 2;
+        // Detect multi-touch
+        const touches = event.touches;
+        const touchCount = touches.length;
+     
+        if (touchCount === 2 && !isSwitching) {
+            isSwitching = true; // Set switching state
+            switchControl();
+            setTimeout(() => (isSwitching = false), 500); // Prevent immediate toggling
+            return;
+        }
         
-        const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
+        // For single touch, apply forces
+        if (touchCount === 1) {
+            const touch = touches[0];
+            const canvasRect = canvas.getBoundingClientRect();
+            const touchX = touch.clientX - canvasRect.left;
+            const centerX = canvasRect.width / 2;
 
-        // Apply force based on touch position
-        if (touchX < centerX) {
-            const message = 'Touch detected: Left side - Applying left force';
-            console.log(message);
-            updateOutputMessage(message); // Update index page
-            Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
+            const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
+
+            // Apply force based on touch position
+            if (touchX < centerX) {
+                const message = 'Touch detected: Left side - Applying left force';
+                console.log(message);
+                updateOutputMessage(message); // Update index page
+                Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
+            } else {
+                const message = 'Touch detected: Right side - Applying right force';
+                console.log(message);
+                updateOutputMessage(message); // Update index page
+                Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
+            }
+        }
+    }
+
+    function handleTouchEnd(event) {
+        event.preventDefault();
+        if (event.touches.length === 0) {
+            isSwitching = false; // Reset switching state if all fingers are lifted
+        }
+    }
+
+    function switchControl() {
+        if (currentControl === 'lowerArm') {
+            currentControl = 'upperArm';
+            console.log('Switched control to upper arm');
+            // Update rendering
+            upperArm.render.fillStyle = '#ff6666'; // Highlight upper arm
+            upperArm.render.strokeStyle = '#1a1a1a';
+            lowerArm.render.fillStyle = 'transparent';
+            lowerArm.render.strokeStyle = '#1a1a1a';
+            updateOutputMessageForCurrentlySelectedLink('Currently controlling: Upper Arm');
         } else {
-            const message = 'Touch detected: Right side - Applying right force';
-            console.log(message);
-            updateOutputMessage(message); // Update index page  
-            Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
+            currentControl = 'lowerArm';
+            console.log('Switched control to lower arm');
+            // Update rendering
+            lowerArm.render.fillStyle = '#ff6666'; // Highlight lower arm
+            lowerArm.render.strokeStyle = '#1a1a1a';
+            upperArm.render.fillStyle = 'transparent';
+            upperArm.render.strokeStyle = '#1a1a1a';
+            updateOutputMessageForCurrentlySelectedLink('Currently controlling: Lower Arm');
         }
     }
 }
