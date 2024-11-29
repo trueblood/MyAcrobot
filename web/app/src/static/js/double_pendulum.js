@@ -175,17 +175,36 @@ function drawZoneLabels(context, canvasWidth, canvasHeight) {
     context.font = '16px Arial';
     context.fillStyle = '#555';
 
-    // Top-Left
-    context.fillText('Top-Left', centerX / 2 - 30, centerY / 2);
+    // // Top-Left
+    // context.fillText('Top-Left', centerX / 2 - 30, centerY / 2);
 
-    // Top-Right
-    context.fillText('Top-Right', centerX + centerX / 2 - 40, centerY / 2);
+    // // Top-Right
+    // context.fillText('Top-Right', centerX + centerX / 2 - 40, centerY / 2);
 
-    // Bottom-Left
-    context.fillText('Bottom-Left', centerX / 2 - 40, centerY + centerY / 2);
+    // // Bottom-Left
+    // context.fillText('Bottom-Left', centerX / 2 - 40, centerY + centerY / 2);
 
-    // Bottom-Right
-    context.fillText('Bottom-Right', centerX + centerX / 2 - 50, centerY + centerY / 2);
+    // // Bottom-Right
+    // context.fillText('Bottom-Right', centerX + centerX / 2 - 50, centerY + centerY / 2);
+
+    // Quadrant Labels
+    context.font = '14px Arial';
+
+    // Q1: Top-Right (Blue)
+    context.fillStyle = 'blue';
+    context.fillText('Q1 (0° to 90°)', canvasWidth * 0.75 - 50, canvasHeight * 0.25 - 10);
+
+    // Q2: Top-Left (Orange)
+    context.fillStyle = 'orange';
+    context.fillText('Q2 (90° to 180°)', canvasWidth * 0.25 - 50, canvasHeight * 0.25 - 10);
+
+    // Q3: Bottom-Left (Green)
+    context.fillStyle = 'green';
+    context.fillText('Q3 (180° to 270°)', canvasWidth * 0.25 - 50, canvasHeight * 0.75 - 10);
+
+    // Q4: Bottom-Right (Red)
+    context.fillStyle = 'red';
+    context.fillText('Q4 (270° to 360°)', canvasWidth * 0.75 - 50, canvasHeight * 0.75 - 10);
 }
 
 function getZone(position, canvasWidth, canvasHeight) {
@@ -291,6 +310,10 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
 
     // Function to draw a grid with x and y axes and an arrow at the bottom of the y-axis
     const drawGrid = (context, width, height, gridSize = 20) => {
+        // Calculate center of the canvas
+        const centerX = width / 2;
+        const centerY = height / 2;
+        
         context.strokeStyle = '#e0e0e0';
         context.lineWidth = 1;
 
@@ -324,6 +347,35 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
         context.lineTo(width / 2, height);
         context.stroke();
 
+        // Add degree markings
+        context.font = '10px Arial';
+        context.fillStyle = '#000';
+
+        for (let angle = 0; angle < 360; angle += 10) {
+            const radians = (angle * Math.PI) / 180;
+
+            // Calculate position for the degree marker
+            const markerX = centerX + Math.cos(radians) * (gridSize * 8); // Adjust radius as needed
+            const markerY = centerY - Math.sin(radians) * (gridSize * 8); // Adjust radius as needed
+
+            // Position for text slightly outward
+            const textX = centerX + Math.cos(radians) * (gridSize * 9);
+            const textY = centerY - Math.sin(radians) * (gridSize * 9);
+
+            // Draw small line for degree marker
+            context.beginPath();
+            context.moveTo(centerX + Math.cos(radians) * (gridSize * 7), centerY - Math.sin(radians) * (gridSize * 7));
+            context.lineTo(markerX, markerY);
+            context.stroke();
+
+            // Draw degree text
+            context.fillText(angle.toString(), textX - 5, textY + 5);
+        }
+
+
+
+
+
         // Draw an arrow at the bottom of the y-axis
         context.fillStyle = '#333';
         context.beginPath();
@@ -338,6 +390,32 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
         context.fillStyle = '#333';
         context.fillText('Y', width / 2 + 5, 15);    // Label Y near the top
         context.fillText('X', width - 15, height / 2 - 5);  // Label X near the right
+
+        // // Draw quadrant labels with degree ranges
+        // context.font = '12px Arial';
+        // context.fillStyle = 'blue';
+        // context.fillText('Q1 (0° to 90°)', width * 0.75, height * 0.25);  // Quadrant 1
+        // context.fillStyle = 'orange';
+        // context.fillText('Q2 (90° to 180°)', width * 0.25, height * 0.25);  // Quadrant 2
+        // context.fillStyle = 'green';
+        // context.fillText('Q3 (180° to 270°)', width * 0.25, height * 0.75);  // Quadrant 3
+        // context.fillStyle = 'red';
+        // context.fillText('Q4 (270° to 360°)', width * 0.75, height * 0.75);  // Quadrant 4
+
+        // Color the quadrants with soft, distinct colors
+        context.fillStyle = 'rgba(255, 182, 193, 0.2)';    // Soft pink
+        context.fillRect(width / 2, 0, width / 2, height / 2);  // Q1
+
+        context.fillStyle = 'rgba(173, 216, 230, 0.2)';    // Soft blue
+        context.fillRect(0, 0, width / 2, height / 2);      // Q2
+
+        context.fillStyle = 'rgba(144, 238, 144, 0.2)';    // Soft green
+        context.fillRect(0, height / 2, width / 2, height / 2);  // Q3
+
+        context.fillStyle = 'rgba(255, 218, 185, 0.2)';    // Soft peach
+        context.fillRect(width / 2, height / 2, width / 2, height / 2);  // Q4
+
+
     };
 
     // Create runner
