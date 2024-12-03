@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Pendulum with Matter.js</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+    <!-- Matter.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.min.js"></script>
+    <!-- Your custom JavaScript file -->
+    <script src="/MyAcrobot/web/app/src/js/double_pendulum.js"></script>
+</head>
+<body>
+    <script>
+        // Initialize the double pendulum example after the page loads
+        window.onload = () => {
+            // Call the Simulation.doublePendulum function to run the simulation
+            const pendulumExample = Simulation.doublePendulum();
+
+            // Optionally store the instance to access its properties or stop it later
+            // pendulumExample.stop() can be called if you want to halt the animation.
+        };
+    </script>
+</body>
+</html>
