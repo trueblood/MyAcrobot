@@ -20,35 +20,77 @@ function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
 function addTouchControl(pendulum, canvas) {
     const lowerArm = pendulum.bodies[1];
     const upperArm = pendulum.bodies[0];
+    let isSwitching = false; // Prevent rapid toggling
 
     // Add touchstart and touchmove event listeners to the canvas
     canvas.addEventListener('touchstart', handleTouch);
     canvas.addEventListener('touchmove', handleTouch);
+    canvas.addEventListener('touchend', handleTouchEnd);
 
     function handleTouch(event) {
         event.preventDefault(); // Prevent default touch behavior (e.g., scrolling)
 
-        const touch = event.touches[0]; // Get the first touch point
-        const canvasRect = canvas.getBoundingClientRect(); // Get canvas dimensions and position
-        const touchX = touch.clientX - canvasRect.left; // X-coordinate relative to canvas
-        const touchY = touch.clientY - canvasRect.top; // Y-coordinate relative to canvas
-
-        // Determine the center of the canvas
-        const centerX = canvasRect.width / 2;
+        // Detect multi-touch
+        const touches = event.touches;
+        const touchCount = touches.length;
+     
+        if (touchCount === 2 && !isSwitching) {
+            isSwitching = true; // Set switching state
+            switchControl();
+            setTimeout(() => (isSwitching = false), 500); // Prevent immediate toggling
+            return;
+        }
         
-        const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
+        // For single touch, apply forces
+        if (touchCount === 1) {
+            const touch = touches[0];
+            const canvasRect = canvas.getBoundingClientRect();
+            const touchX = touch.clientX - canvasRect.left;
+            const centerX = canvasRect.width / 2;
 
-        // Apply force based on touch position
-        if (touchX < centerX) {
-            const message = 'Touch detected: Left side - Applying left force';
-            console.log(message);
-            updateOutputMessage(message); // Update index page
-            Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
+            const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
+
+            // Apply force based on touch position
+            if (touchX < centerX) {
+                const message = 'Touch detected: Left side - Applying left force';
+                console.log(message);
+                updateOutputMessage(message); // Update index page
+                Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
+            } else {
+                const message = 'Touch detected: Right side - Applying right force';
+                console.log(message);
+                updateOutputMessage(message); // Update index page
+                Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
+            }
+        }
+    }
+
+    function handleTouchEnd(event) {
+        event.preventDefault();
+        if (event.touches.length === 0) {
+            isSwitching = false; // Reset switching state if all fingers are lifted
+        }
+    }
+
+    function switchControl() {
+        if (currentControl === 'lowerArm') {
+            currentControl = 'upperArm';
+            console.log('Switched control to upper arm');
+            // Update rendering
+            upperArm.render.fillStyle = '#ff6666'; // Highlight upper arm
+            upperArm.render.strokeStyle = '#1a1a1a';
+            lowerArm.render.fillStyle = 'transparent';
+            lowerArm.render.strokeStyle = '#1a1a1a';
+            updateOutputMessageForCurrentlySelectedLink('Currently controlling: Upper Arm');
         } else {
-            const message = 'Touch detected: Right side - Applying right force';
-            console.log(message);
-            updateOutputMessage(message); // Update index page  
-            Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
+            currentControl = 'lowerArm';
+            console.log('Switched control to lower arm');
+            // Update rendering
+            lowerArm.render.fillStyle = '#ff6666'; // Highlight lower arm
+            lowerArm.render.strokeStyle = '#1a1a1a';
+            upperArm.render.fillStyle = 'transparent';
+            upperArm.render.strokeStyle = '#1a1a1a';
+            updateOutputMessageForCurrentlySelectedLink('Currently controlling: Lower Arm');
         }
     }
 }
@@ -133,17 +175,36 @@ function drawZoneLabels(context, canvasWidth, canvasHeight) {
     context.font = '16px Arial';
     context.fillStyle = '#555';
 
-    // Top-Left
-    context.fillText('Top-Left', centerX / 2 - 30, centerY / 2);
+    // // Top-Left
+    // context.fillText('Top-Left', centerX / 2 - 30, centerY / 2);
 
-    // Top-Right
-    context.fillText('Top-Right', centerX + centerX / 2 - 40, centerY / 2);
+    // // Top-Right
+    // context.fillText('Top-Right', centerX + centerX / 2 - 40, centerY / 2);
 
-    // Bottom-Left
-    context.fillText('Bottom-Left', centerX / 2 - 40, centerY + centerY / 2);
+    // // Bottom-Left
+    // context.fillText('Bottom-Left', centerX / 2 - 40, centerY + centerY / 2);
 
-    // Bottom-Right
-    context.fillText('Bottom-Right', centerX + centerX / 2 - 50, centerY + centerY / 2);
+    // // Bottom-Right
+    // context.fillText('Bottom-Right', centerX + centerX / 2 - 50, centerY + centerY / 2);
+
+    // Quadrant Labels
+    context.font = '14px Arial';
+
+    // Q1: Top-Right (Blue)
+    context.fillStyle = 'blue';
+    context.fillText('Q1 (0° to 90°)', canvasWidth * 0.75 - 50, canvasHeight * 0.25 - 10);
+
+    // Q2: Top-Left (Orange)
+    context.fillStyle = 'orange';
+    context.fillText('Q2 (90° to 180°)', canvasWidth * 0.25 - 50, canvasHeight * 0.25 - 10);
+
+    // Q3: Bottom-Left (Green)
+    context.fillStyle = 'green';
+    context.fillText('Q3 (180° to 270°)', canvasWidth * 0.25 - 50, canvasHeight * 0.75 - 10);
+
+    // Q4: Bottom-Right (Red)
+    context.fillStyle = 'red';
+    context.fillText('Q4 (270° to 360°)', canvasWidth * 0.75 - 50, canvasHeight * 0.75 - 10);
 }
 
 function getZone(position, canvasWidth, canvasHeight) {
@@ -160,6 +221,44 @@ function getZone(position, canvasWidth, canvasHeight) {
         return 'Bottom-Right Zone';
     }
 }
+
+function detectCircleFromTrail(trail, tolerance = 5, minDistance = 50) {
+    if (trail.length < 10) return false; // Not enough points to detect a circle
+
+    const startPoint = trail[0].position; // Starting point of the trail
+
+    // Check the last point in the trail
+    const endPoint = trail[trail.length - 1].position;
+
+    // Calculate distance between start and end points
+    const distance = Math.sqrt(
+        Math.pow(endPoint.x - startPoint.x, 2) +
+        Math.pow(endPoint.y - startPoint.y, 2)
+    );
+
+    // Check if the trail has returned near the start point
+    if (distance < tolerance) {
+        // Verify the pendulum has traveled enough distance to form a circle
+        let totalTravelDistance = 0;
+        for (let i = 1; i < trail.length; i++) {
+            const prev = trail[i - 1].position;
+            const current = trail[i].position;
+
+            totalTravelDistance += Math.sqrt(
+                Math.pow(current.x - prev.x, 2) +
+                Math.pow(current.y - prev.y, 2)
+            );
+        }
+
+        // If the total travel distance is large enough, count as a circle
+        if (totalTravelDistance > minDistance) {
+            return true; // Circle detected
+        }
+    }
+
+    return false; // No circle detected
+}
+
 
 // function addKeyboardControl(pendulum) {
 //     const lowerArm = pendulum.bodies[1]; // Access the lower arm body
@@ -211,6 +310,10 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
 
     // Function to draw a grid with x and y axes and an arrow at the bottom of the y-axis
     const drawGrid = (context, width, height, gridSize = 20) => {
+        // Calculate center of the canvas
+        const centerX = width / 2;
+        const centerY = height / 2;
+        
         context.strokeStyle = '#e0e0e0';
         context.lineWidth = 1;
 
@@ -244,6 +347,35 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
         context.lineTo(width / 2, height);
         context.stroke();
 
+        // Add degree markings
+        context.font = '10px Arial';
+        context.fillStyle = '#000';
+
+        for (let angle = 0; angle < 360; angle += 10) {
+            const radians = (angle * Math.PI) / 180;
+
+            // Calculate position for the degree marker
+            const markerX = centerX + Math.cos(radians) * (gridSize * 8); // Adjust radius as needed
+            const markerY = centerY - Math.sin(radians) * (gridSize * 8); // Adjust radius as needed
+
+            // Position for text slightly outward
+            const textX = centerX + Math.cos(radians) * (gridSize * 9);
+            const textY = centerY - Math.sin(radians) * (gridSize * 9);
+
+            // Draw small line for degree marker
+            context.beginPath();
+            context.moveTo(centerX + Math.cos(radians) * (gridSize * 7), centerY - Math.sin(radians) * (gridSize * 7));
+            context.lineTo(markerX, markerY);
+            context.stroke();
+
+            // Draw degree text
+            context.fillText(angle.toString(), textX - 5, textY + 5);
+        }
+
+
+
+
+
         // Draw an arrow at the bottom of the y-axis
         context.fillStyle = '#333';
         context.beginPath();
@@ -258,6 +390,32 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
         context.fillStyle = '#333';
         context.fillText('Y', width / 2 + 5, 15);    // Label Y near the top
         context.fillText('X', width - 15, height / 2 - 5);  // Label X near the right
+
+        // // Draw quadrant labels with degree ranges
+        // context.font = '12px Arial';
+        // context.fillStyle = 'blue';
+        // context.fillText('Q1 (0° to 90°)', width * 0.75, height * 0.25);  // Quadrant 1
+        // context.fillStyle = 'orange';
+        // context.fillText('Q2 (90° to 180°)', width * 0.25, height * 0.25);  // Quadrant 2
+        // context.fillStyle = 'green';
+        // context.fillText('Q3 (180° to 270°)', width * 0.25, height * 0.75);  // Quadrant 3
+        // context.fillStyle = 'red';
+        // context.fillText('Q4 (270° to 360°)', width * 0.75, height * 0.75);  // Quadrant 4
+
+        // Color the quadrants with soft, distinct colors
+        context.fillStyle = 'rgba(255, 182, 193, 0.2)';    // Soft pink
+        context.fillRect(width / 2, 0, width / 2, height / 2);  // Q1
+
+        context.fillStyle = 'rgba(173, 216, 230, 0.2)';    // Soft blue
+        context.fillRect(0, 0, width / 2, height / 2);      // Q2
+
+        context.fillStyle = 'rgba(144, 238, 144, 0.2)';    // Soft green
+        context.fillRect(0, height / 2, width / 2, height / 2);  // Q3
+
+        context.fillStyle = 'rgba(255, 218, 185, 0.2)';    // Soft peach
+        context.fillRect(width / 2, height / 2, width / 2, height / 2);  // Q4
+
+
     };
 
     // Create runner
@@ -348,6 +506,8 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     Composite.add(world, pendulum);
 
     const trail = [];
+    let lowerArmCircleCount = 0; // Count of lower arm circles
+    let upperArmCircleCount = 0; // Count of upper arm circles
 
     Events.on(render, 'afterRender', () => {
         // Draw the grid
@@ -356,6 +516,13 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
         // Update trails for both arms
         const lowerArmTrail = trails.lowerArm;
         const upperArmTrail = trails.upperArm;
+
+
+
+
+        // If you want to see the length of each trail
+        // console.log('Lower Arm Trail Length:', lowerArmTrail.length);
+        // console.log('Upper Arm Trail Length:', upperArmTrail.length);
 
         // Store the position of the current controlled link
         if (currentControl === 'lowerArm') {
@@ -370,9 +537,46 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
             });
         }
 
+        // // Print lower arm trail
+        // console.log('Lower Arm Trail:', lowerArmTrail.map(point => ({
+        //     x: point.position.x.toFixed(2),
+        //     y: point.position.y.toFixed(2),
+        //     speed: point.speed.toFixed(2)
+        // })));
+
+        // // Print upper arm trail
+        // console.log('Upper Arm Trail:', upperArmTrail.map(point => ({
+        //     x: point.position.x.toFixed(2),
+        //     y: point.position.y.toFixed(2),
+        //     speed: point.speed.toFixed(2)
+        // })));
+        // Check for circles in the lower arm trail
+        if (detectCircleFromTrail(trails.lowerArm)) {
+            console.log('Lower arm completed a circle!');
+            lowerArmCircleCount++;
+            trails.lowerArm.length = 0; // Reset trail after detecting a circle
+            // Update the lower arm circle count on the page
+            const lowerArmCircleElement = document.getElementById('lowerArmCircleCount');
+            if (lowerArmCircleElement) {
+                lowerArmCircleElement.textContent = `Lower Arm Circles: ${lowerArmCircleCount}`;
+            }
+        }
+
+        // Check for circles in the upper arm trail
+        if (detectCircleFromTrail(trails.upperArm)) {
+            console.log('Upper arm completed a circle!');
+            upperArmCircleCount++;
+            trails.upperArm.length = 0; // Reset trail after detecting a circle
+            // Update the upper arm circle count on the page
+            const upperArmCircleElement = document.getElementById('upperArmCircleCount');
+            if (upperArmCircleElement) {
+                upperArmCircleElement.textContent = `Upper Arm Circles: ${upperArmCircleCount}`;
+            }
+        }
+
         // Limit trail length
-        if (lowerArmTrail.length > 800) lowerArmTrail.pop();
-        if (upperArmTrail.length > 2000) upperArmTrail.pop();
+        // if (lowerArmTrail.length > 800) lowerArmTrail.pop();
+        // if (upperArmTrail.length > 2000) upperArmTrail.pop();
 
         // Draw the pendulum trail
         // trail.unshift({

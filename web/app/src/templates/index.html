@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Freelancer - Start Bootstrap Theme</title>
+        <title>MyAcrobot</title>
         <!-- Favicon-->
         <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <!-- Font Awesome icons (free version)-->
@@ -41,34 +41,9 @@
                 </div>
             </div>
         </nav>
-        <!-- Masthead-->
-        <header class="masthead bg-primary text-white text-center">
-            <div class="container d-flex align-items-center flex-column">
-                <!-- Masthead Avatar Image-->
-                <img class="masthead-avatar mb-5" src="/src/assets/img/avataaars.svg" alt="..." />
-                <!-- Masthead Heading-->
-                <h1 class="masthead-heading text-uppercase mb-0">Start Bootstrap</h1>
-                <!-- Icon Divider-->
-                <div class="divider-custom divider-light">
-                    <div class="divider-custom-line"></div>
-                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                    <div class="divider-custom-line"></div>
-                </div>
-                <!-- Masthead Subheading-->
-                <p class="masthead-subheading font-weight-light mb-0">Graphic Artist - Web Designer - Illustrator</p>
-            </div>
-        </header>
         <!-- Double Pendulum -->
         <section class="page-section double_pendulum" id="double_pendulum">
             <div class="container">
-                <!-- double_pendulum Section Heading-->
-                <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">double_pendulum</h2>
-                <!-- Icon Divider-->
-                <div class="divider-custom">
-                    <div class="divider-custom-line"></div>
-                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                    <div class="divider-custom-line"></div>
-                </div>
                 <div id="yPositionOutput"></div>
                 <br/>
                 <div id="keyPressOut"></div>
@@ -78,6 +53,20 @@
                 </div>
                 <br/>
                 <div id="currentLink" name="currentLink"></div>
+                
+                <div id="circleData" style="margin-top: 20px; font-size: 16px;">
+                    <div id="lowerArmCircleCount">Lower Arm Circles: 0</div>
+                    <div id="upperArmCircleCount">Upper Arm Circles: 0</div>
+                </div>
+
+                <div id="controls">
+                    <label>Link 1 Length: <input type="range" id="link1Length" min="50" max="300" value="150"></label>
+                    <label>Link 2 Length: <input type="range" id="link2Length" min="50" max="300" value="150"></label>
+                    <label>Mass of Link 1: <input type="range" id="mass1" min="1" max="10" value="5"></label>
+                    <label>Mass of Link 2: <input type="range" id="mass2" min="1" max="10" value="5"></label>
+                    <label>Damping: <input type="range" id="damping" min="0" max="1" step="0.01" value="0.05"></label>
+                    <label>Gravity: <input type="range" id="gravity" min="1" max="20" value="9.8"></label>
+                </div>
                 
                 
                 <!-- Container for the pendulum canvas -->
@@ -110,8 +99,25 @@
                         // Calculate the center of the canvas
                         const centerX = width / 2;
                         const centerY = height / 2;
-                        
+                        console.log(Simulation.doublePendulum);
+
                         const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
+                        const link1Input = document.getElementById('link1Length');
+                        const link2Input = document.getElementById('link2Length');
+                
+                        if (!link1Input || !link2Input) {
+                            console.error("Slider elements with IDs 'link1Length' or 'link2Length' not found.");
+                            return;
+                        }
+                
+                        // Add event listeners to update pendulum link lengths dynamically
+                        link1Input.addEventListener('input', () => {
+                        //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
+                        });
+                
+                        link2Input.addEventListener('input', () => {
+                        //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
+                        });
 
                     };
                 </script>
