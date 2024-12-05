@@ -32,3 +32,8 @@
 **/values.dev.yaml
 LICENSE
 README.md
+# Ignore all Acrobot model policy files
+/app/MyAcrobot/acrobot_model_policy_*.pth
+
+# Ignore all Acrobot model target files
+/app/MyAcrobot/acrobot_model_target_*.pth
