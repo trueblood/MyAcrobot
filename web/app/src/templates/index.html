@@ -84,7 +84,7 @@
                         // Check if the canvas element exists
                         if (!canvasDiv) {
                             console.error("Canvas element with ID 'double_pendulum_canvas' not found.");
-                            return;
+                            return; 
                         }
 
                         // Get its size and position
@@ -526,10 +526,25 @@
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
-        <script type="text/javascript">
-            document.addEventListener('DOMContentLoaded', function() {
-                // Your code here
+        <script type="module">
+            import { initializeWebSocket } from "{{ url_for('static', filename='js/websocketHandler.js') }}";
+        
+            // Define the WebSocket message handler
+            const handleWebSocketMessage = (data) => {
+                console.log("Received data:", data);
+                if (data.prediction) {
+                    console.log("Prediction:", data.prediction);
+                }
+            };
+        
+            document.addEventListener('DOMContentLoaded', async function () {
                 console.log('Document is ready!');
+        
+                try {
+                    // Initialize WebSocket
+                    const socket = await initializeWebSocket(handleWebSocketMessage);
+                    console.log("WebSocket initialized successfully.");
+        
 
                 // Add this to your script
                 window.addEventListener('resize', () => {
@@ -558,6 +573,9 @@
                     // Reinitialize the pendulum with new dimensions
                     const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
                 });
+           } catch (error) {
+                console.error("Error initializing WebSocket or simulation:", error);
+            }
 
 
 

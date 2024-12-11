@@ -39,39 +39,40 @@ def pend_test():
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Receive JSON data from the client
-        data = request.get_json()
-        state = data.get('state')
+        # # Receive JSON data from the client
+        # data = request.get_json()
+        # state = data.get('state')
         
-        if state is None:
-            return jsonify({'error': 'No state provided in request'}), 400
+        # if state is None:
+        #     return jsonify({'error': 'No state provided in request'}), 400
 
-        state_dim = len(state)  # Number of features in the state (6 in this case)
-        action_dim = 3  # Number of possible actions (adjust as per your environment)
+        # state_dim = len(state)  # Number of features in the state (6 in this case)
+        # action_dim = 3  # Number of possible actions (adjust as per your environment)
 
-        # Load the model
-        model = DQN(state_dim, action_dim)
-        model.load_state_dict(torch.load('acrobot_model_policy_v500.pth'))
-        model.eval()
+        # # Load the model
+        # model = DQN(state_dim, action_dim)
+        # model.load_state_dict(torch.load('acrobot_model_policy_v500.pth'))
+        # model.eval()
 
-        # Convert the example state to a tensor
-        state_tensor = torch.FloatTensor(state).unsqueeze(0)  # Add batch dimension
+        # # Convert the example state to a tensor
+        # state_tensor = torch.FloatTensor(state).unsqueeze(0)  # Add batch dimension
 
-        # Perform inference to get Q-values
-        with torch.no_grad():  # No gradients needed for inference
-            q_values = model(state_tensor)  # Forward pass to get Q-values
-            best_action = torch.argmax(q_values).item()  # Get the best action (highest Q-value)
+        # # Perform inference to get Q-values
+        # with torch.no_grad():  # No gradients needed for inference
+        #     q_values = model(state_tensor)  # Forward pass to get Q-values
+        #     best_action = torch.argmax(q_values).item()  # Get the best action (highest Q-value)
     
-        # Output the Q-values and the best action
+        # # Output the Q-values and the best action
 
-        print(f"Q-values: {q_values.numpy()}")
-        print(f"Best action: {best_action}")
+        # print(f"Q-values: {q_values.numpy()}")
+        # print(f"Best action: {best_action}")
 
         # Return the results as JSON
         return jsonify({
-            'state': state,
-            'q_values': q_values.tolist(),
-            'action': best_action
+            'state': 'Reteturn Tim'
+            #'state': state
+            # 'q_values': q_values.tolist(),
+            # 'action': best_action
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 400
