@@ -1,8 +1,41 @@
+
 const trails = {
     lowerArm: [],
     upperArm: [],
 };
 let currentControl = 'lowerArm'; // Track which link is currently controlled
+
+function getObservationFromPendulum(lowerArm, upperArm) {
+    // Extract angles and angular velocities
+    const theta1 = lowerArm.angle; // Lower arm angle
+    const theta2 = upperArm.angle; // Upper arm angle
+    const angularVelocityTheta1 = lowerArm.angularVelocity;
+    const angularVelocityTheta2 = upperArm.angularVelocity;
+
+    // Create the observation array
+    const observation = [
+        Math.cos(theta1), Math.sin(theta1), // Cosine and sine of θ1
+        Math.cos(theta2), Math.sin(theta2), // Cosine and sine of θ2
+        angularVelocityTheta1, angularVelocityTheta2 // Angular velocities
+    ];
+
+    return observation;
+}
+
+function logPendulumState(lowerArm, upperArm) {
+    console.log("Next group");
+    console.log("Lower Arm:");
+    console.log(`- Position: x=${lowerArm.position.x.toFixed(2)}, y=${lowerArm.position.y.toFixed(2)}`);
+    console.log(`- Velocity: x=${lowerArm.velocity.x.toFixed(2)}, y=${lowerArm.velocity.y.toFixed(2)}`);
+    console.log(`- Angle: ${lowerArm.angle.toFixed(2)} radians`);
+    console.log(`- Angular Velocity: ${lowerArm.angularVelocity.toFixed(2)}`);
+    
+    console.log("Upper Arm:");
+    console.log(`- Position: x=${upperArm.position.x.toFixed(2)}, y=${upperArm.position.y.toFixed(2)}`);
+    console.log(`- Velocity: x=${upperArm.velocity.x.toFixed(2)}, y=${upperArm.velocity.y.toFixed(2)}`);
+    console.log(`- Angle: ${upperArm.angle.toFixed(2)} radians`);
+    console.log(`- Angular Velocity: ${upperArm.angularVelocity.toFixed(2)}`);
+}
 
 // Function to calculate the y-coordinate of the pendulum's endpoint
 function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
@@ -510,6 +543,11 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     let upperArmCircleCount = 0; // Count of upper arm circles
 
     Events.on(render, 'afterRender', () => {
+        const observation = getObservationFromPendulum(lowerArm, upperArm);
+        console.log("Current Observation:", observation);
+        // Send the observation data to the WebSocket server
+        logPendulumState(lowerArm, upperArm);
+        
         // Draw the grid
         drawGrid(render.context, render.options.width, render.options.height);
 
