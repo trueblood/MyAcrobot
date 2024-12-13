@@ -86,7 +86,7 @@ if __name__ == '__main__':
     
     # Run the Flask app in a separate thread if needed
     from threading import Thread
-    server_thread = Thread(target=lambda: app.run(host='0.0.0.0', port=8080))
+    server_thread = Thread(target=lambda: app.run(host='0.0.0.0', port=8085))
     server_thread.start()
 
     # Give the server a moment to start

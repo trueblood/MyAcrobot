@@ -26,6 +26,12 @@
 
     </head>
     <body id="page-top">
+        <!-- Hidden input to store the value -->
+        <input type="hidden" id="hiddenValue" value="1">
+        <input type="hidden" id="hdnCurrentState" value="1">
+
+
+
         <!-- Navigation-->
         <nav class="navbar navbar-expand-lg bg-secondary" id="mainNav">
             <div class="container">
@@ -99,9 +105,9 @@
                         // Calculate the center of the canvas
                         const centerX = width / 2;
                         const centerY = height / 2;
-                        console.log(Simulation.doublePendulum);
+                        console.log(Simulation.doublePendulumWithSteps);
 
-                        const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
+                        const pendulumExample = Simulation.doublePendulumWithSteps('double_pendulum_canvas', centerX, centerY);
                         const link1Input = document.getElementById('link1Length');
                         const link2Input = document.getElementById('link2Length');
                 
@@ -571,7 +577,7 @@
                     }
 
                     // Reinitialize the pendulum with new dimensions
-                    const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
+                    const pendulumExample = Simulation.doublePendulumWithSteps('double_pendulum_canvas', centerX, centerY);
                 });
            } catch (error) {
                 console.error("Error initializing WebSocket or simulation:", error);

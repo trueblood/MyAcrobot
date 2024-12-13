@@ -5,6 +5,11 @@ const trails = {
 };
 let currentControl = 'lowerArm'; // Track which link is currently controlled
 
+// Add a function to handle pausing the simulation for a specific duration
+function pauseSimulation(duration) {
+    return new Promise((resolve) => setTimeout(resolve, duration));
+}
+
 function getObservationFromPendulum(lowerArm, upperArm) {
     // Extract angles and angular velocities
     const theta1 = lowerArm.angle; // Lower arm angle
@@ -197,7 +202,6 @@ function addKeyboardControl(pendulum) {
             // }
         }
     });       
-
 }
 
 // Draw Zone Indicators on the Grid
@@ -310,7 +314,7 @@ function detectCircleFromTrail(trail, tolerance = 5, minDistance = 50) {
 
 var Simulation = Simulation || {};
 
-Simulation.doublePendulum = (containerId, centerX, centerY) => {
+Simulation.doublePendulumWithSteps = async (containerId, centerX, centerY) => {
     const { Engine, Events, Render, Runner, Body, Composite, Composites, Constraint, MouseConstraint, Mouse, Bodies, Vector } = Matter;
 
     console.log("centerX = " + centerX);
@@ -543,10 +547,16 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     let upperArmCircleCount = 0; // Count of upper arm circles
 
     Events.on(render, 'afterRender', () => {
-        const observation = getObservationFromPendulum(lowerArm, upperArm);
-        console.log("Current Observation:", observation);
+        // const observation = getObservationFromPendulum(lowerArm, upperArm);
+        // console.log("Current Observation:", observation);
+
+        // // Create or get the hidden input element
+        // let hiddenElement = document.getElementById('hiddenValue');
+        // hiddenElement.value = observation;
+        // console.log("hiddenElement value is ", hiddenElement.value);
+
         // Send the observation data to the WebSocket server
-        logPendulumState(lowerArm, upperArm);
+     //   logPendulumState(lowerArm, upperArm);
         
         // Draw the grid
         drawGrid(render.context, render.options.width, render.options.height);
@@ -704,9 +714,30 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
 
     // Call the function to add keyboard control
     addKeyboardControl(pendulum);
-
     addTouchControl(pendulum, render.canvas);
 
+    // Stop the runner to implement manual stepping
+    Runner.stop(runner);
+
+    const stepInterval = 1000 / 60; // 60 FPS step duration
+    // const pauseDuration = 5000; // Pause for 5 seconds
+    const pauseDuration = 5000; // Pause for 5 seconds
+
+    while (true) {
+        Engine.update(engine, stepInterval);
+        logPendulumState(lowerArm, upperArm);
+        Render.world(render);
+        const observation = getObservationFromPendulum(lowerArm, upperArm);
+        console.log("Current Observation:", observation);
+
+        // Create or get the hidden input element
+        let hiddenElement = document.getElementById('hiddenValue');
+        hiddenElement.value = observation;
+        console.log("hiddenElement value is ", hiddenElement.value);
+        
+        await pauseSimulation(pauseDuration);
+    }
+    
     return {
         engine,
         runner,
