@@ -86,7 +86,7 @@ if __name__ == '__main__':
     
     # Run the Flask app in a separate thread if needed
     from threading import Thread
-    server_thread = Thread(target=lambda: app.run(host='0.0.0.0', port=8085))
+    server_thread = Thread(target=lambda: app.run(host='0.0.0.0', port=8086))
     server_thread.start()
 
     # Give the server a moment to start
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     }
 
     # Send a POST request to the server
-    url = "http://localhost:8080/predict"
+    url = "http://localhost:8086/predict"
     response = requests.post(url, data=json.dumps(example_json), headers={"Content-Type": "application/json"})
 
     # Print the server's response

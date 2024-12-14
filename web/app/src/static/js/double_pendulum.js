@@ -725,15 +725,15 @@ Simulation.doublePendulumWithSteps = async (containerId, centerX, centerY) => {
 
     while (true) {
         Engine.update(engine, stepInterval);
-        logPendulumState(lowerArm, upperArm);
+       //logPendulumState(lowerArm, upperArm);
         Render.world(render);
         const observation = getObservationFromPendulum(lowerArm, upperArm);
-        console.log("Current Observation:", observation);
+       // console.log("Current Observation:", observation);
 
         // Create or get the hidden input element
-        let hiddenElement = document.getElementById('hiddenValue');
+        let hiddenElement = document.getElementById('hdnCurrentState');
         hiddenElement.value = observation;
-        console.log("hiddenElement value is ", hiddenElement.value);
+       // console.log("hiddenElement value is ", hiddenElement.value);
         
         await pauseSimulation(pauseDuration);
     }
