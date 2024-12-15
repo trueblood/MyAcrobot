@@ -1,8 +1,10 @@
-flask
 gunicorn
 torch
 psutil
 requests
-flask-socketio
 eventlet
 torch
+flask
+flask-socketio
+gevent
+gevent-websocket

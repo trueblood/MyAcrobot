@@ -19,7 +19,8 @@ class DQN(nn.Module):
         return self.fc3(x)
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+app.debug = True
+socketio = SocketIO(app, path="/ws", logger=True, engineio_logger=True)
 
 # Routes for your HTML pages
 @app.route('/')
@@ -38,10 +39,28 @@ def double_pendulum():
 def pend_test():
     return render_template('pendtest.html')
 
+@app.route('/testsocket')
+def testsocket():
+    return render_template('testsocket.html')
+
+@app.route('/test', methods=['GET'])
+def predict():
+    try:
+        # Return the results as JSON
+        return jsonify({
+            'state': 'Reteturn Tim'
+            #'state': state
+            # 'q_values': q_values.tolist(),
+            # 'action': best_action
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
 @socketio.on('connect')
 def handle_connect():
-    print("Client connected.")
-    emit('message', {'status': 'Connected to WebSocket server'})
+    emit('message', {'status': 'Connected'})
+    # print("Client connected.")
+    # emit('message', {'status': 'Connected to WebSocket server from app.py'})
 
 @socketio.on('predict')
 def handle_predict(json_data):
@@ -82,16 +101,51 @@ def handle_predict(json_data):
 def handle_disconnect():
     print("Client disconnected.")
     
+@socketio.on('socket_test')
+def handle_predict():
+    try:
+        # Emit the prediction result back to the client
+        print("Received socket_test request: working")
+        emit('prediction', {'state': 'test from socket_test'})
+    except Exception as e:
+        emit('error', {'error': str(e)})
+        
 if __name__ == '__main__':
+    from gevent.pywsgi import WSGIServer
+    from geventwebsocket.handler import WebSocketHandler
+
     # Define the host and port
     host = '0.0.0.0'
-    port = 8087
+    port = 8089
+    
+    # Configure logging
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
 
-    # Start the Flask server and print a clickable URL
+    # Print server startup information
     print("\nStarting Flask server...")
     print(f"Server running at: http://localhost:{port} (Click the link to open in your browser)\n")
 
-    socketio.run(app, host=host, port=port, debug=True)
+    # Start the Gevent WSGI server with WebSocketHandler
+    http_server = WSGIServer((host, port), app, handler_class=WebSocketHandler, log=logger)
+    http_server.serve_forever()
+    
+# if __name__ == '__main__':
+#     from gevent import monkey
+#     monkey.patch_all()
+#     # Define the host and port
+#     host = '0.0.0.0'
+#     port = 8088
+
+#     # Start the Flask server and print a clickable URL
+#     print("\nStarting Flask server...")
+#     print(f"Server running at: http://localhost:{port} (Click the link to open in your browser)\n")
+
+#     socketio.run(app, host=host, port=port, debug=True)
+    
+    
 
 # @app.route('/predict', methods=['POST'])
 # def predict():

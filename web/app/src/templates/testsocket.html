@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Test</h1>
+    <button id="testButton">Send WebSocket Test</button>
+    <div id="responseContainer">
+        <h2>Response:</h2>
+        <pre id="responseData">No response yet...</pre>
+    </div>
+
+    <script type="module">
+        import { initializeWebSocket } from "{{ url_for('static', filename='js/websocketHandler.js') }}";
+
+
+        // Callback function to handle WebSocket responses
+        const handleWebSocketMessage = (data) => {
+            console.log("Message from server:", data);
+
+            // Display the response in the response container
+            const responseElement = document.getElementById("responseData");
+            responseElement.textContent = JSON.stringify(data, null, 2);
+        };
+
+        // Initialize WebSocket connection
+        let socket;
+
+        async function setupWebSocket() {
+            try {
+                // Call the initializeWebSocket function from websocketHandler.js
+                console.log("before initializeWebSocket(handleWebSocketMessage)");
+                socket = await initializeWebSocket(handleWebSocketMessage);
+                console.log("WebSocket is ready.");
+            } catch (error) {
+                console.error("Failed to initialize WebSocket:", error);
+            }
+        }
+
+        // Set up WebSocket connection on page load
+        setupWebSocket();
+
+        // Event listener for the test button
+        document.getElementById("testButton").addEventListener("click", () => {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                console.log("Sending test message to 'socket_test' endpoint.");
+                // Emit the 'socket_test' event
+                socket.send(JSON.stringify({ action: "socket_test" }));
+            } else {
+                console.error("WebSocket is not connected.");
+            }
+        });
+    </script>
+</body>
+</html>
