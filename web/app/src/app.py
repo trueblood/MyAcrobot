@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+from flask_socketio import SocketIO, emit
 import torch
 import psutil
 import os
@@ -18,6 +19,7 @@ class DQN(nn.Module):
         return self.fc3(x)
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 
 # Routes for your HTML pages
 @app.route('/')
@@ -36,9 +38,64 @@ def double_pendulum():
 def pend_test():
     return render_template('pendtest.html')
 
-@app.route('/predict', methods=['POST'])
-def predict():
+@socketio.on('connect')
+def handle_connect():
+    print("Client connected.")
+    emit('message', {'status': 'Connected to WebSocket server'})
+
+@socketio.on('predict')
+def handle_predict(json_data):
     try:
+        print("Received data for prediction:", json_data)
+        state = json_data.get('state')
+
+        if not state:
+            emit('error', {'error': 'State data is required'})
+            return
+
+        state_dim = len(state)
+        action_dim = 3  # Adjust based on your environment
+
+        # Load the model
+        model = DQN(state_dim, action_dim)
+        model.load_state_dict(torch.load('acrobot_model_policy_v500.pth'))
+        model.eval()
+
+        # Convert the state to a tensor
+        state_tensor = torch.FloatTensor(state).unsqueeze(0)
+
+        # Perform inference
+        with torch.no_grad():
+            q_values = model(state_tensor)
+            best_action = torch.argmax(q_values).item()
+
+        # Emit the prediction result back to the client
+        emit('prediction', {
+            'state': state,
+            'q_values': q_values.tolist(),
+            'action': best_action
+        })
+    except Exception as e:
+        emit('error', {'error': str(e)})
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print("Client disconnected.")
+    
+if __name__ == '__main__':
+    # Define the host and port
+    host = '0.0.0.0'
+    port = 8087
+
+    # Start the Flask server and print a clickable URL
+    print("\nStarting Flask server...")
+    print(f"Server running at: http://localhost:{port} (Click the link to open in your browser)\n")
+
+    socketio.run(app, host=host, port=port, debug=True)
+
+# @app.route('/predict', methods=['POST'])
+# def predict():
+#     try:
         # # Receive JSON data from the client
         # data = request.get_json()
         # state = data.get('state')
@@ -68,44 +125,44 @@ def predict():
         # print(f"Best action: {best_action}")
 
         # Return the results as JSON
-        return jsonify({
-            'state': 'Reteturn Tim'
-            #'state': state
-            # 'q_values': q_values.tolist(),
-            # 'action': best_action
-        }), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
+    #     return jsonify({
+    #         'state': 'Reteturn Tim'
+    #         #'state': state
+    #         # 'q_values': q_values.tolist(),
+    #         # 'action': best_action
+    #     }), 200
+    # except Exception as e:
+    #     return jsonify({'error': str(e)}), 400
 
-if __name__ == '__main__':
-    import requests
-    import json
+# if __name__ == '__main__':
+#     import requests
+#     import json
 
-    # Start the Flask server
-    print("\nStarting Flask server...")
+#     # Start the Flask server
+#     print("\nStarting Flask server...")
     
-    # Run the Flask app in a separate thread if needed
-    from threading import Thread
-    server_thread = Thread(target=lambda: app.run(host='0.0.0.0', port=8086))
-    server_thread.start()
+#     # Run the Flask app in a separate thread if needed
+#     from threading import Thread
+#     server_thread = Thread(target=lambda: app.run(host='0.0.0.0', port=8087))
+#     server_thread.start()
 
-    # Give the server a moment to start
-    import time
-    time.sleep(2)
+#     # Give the server a moment to start
+#     import time
+#     time.sleep(2)
 
-    # Define the example JSON body
-    example_json = {
-        "state": [0.06528811, 0.99786645, -0.03661686, -0.9993294, 0.02972009, 1.3947774]
-    }
+#     # Define the example JSON body
+#     example_json = {
+#         "state": [0.06528811, 0.99786645, -0.03661686, -0.9993294, 0.02972009, 1.3947774]
+#     }
 
-    # Send a POST request to the server
-    url = "http://localhost:8086/predict"
-    response = requests.post(url, data=json.dumps(example_json), headers={"Content-Type": "application/json"})
+#     # Send a POST request to the server
+#     url = "http://localhost:8087/predict"
+#     response = requests.post(url, data=json.dumps(example_json), headers={"Content-Type": "application/json"})
 
-    # Print the server's response
-    if response.status_code == 200:
-        print("Response from server:")
-        print(response.json())
-    else:
-        print("Error:", response.status_code, response.text)
+#     # Print the server's response
+#     if response.status_code == 200:
+#         print("Response from server:")
+#         print(response.json())
+#     else:
+#         print("Error:", response.status_code, response.text)
 

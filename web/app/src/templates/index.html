@@ -607,11 +607,23 @@
 
         // Define the WebSocket message handler
         const handleWebSocketMessage = (data) => {
-            console.log("Received data:", data);
+            console.log("Received data from index.html:", data);
             if (data.prediction) {
                 console.log("Prediction:", data.prediction);
             }
         };
+        console.log("before initializeWebSocket(handleWebSocketMessage");
+        // Initialize the WebSocket with the callback
+        initializeWebSocket(handleWebSocketMessage)
+            .then((socket) => {
+                console.log("WebSocket is ready:", socket);
+
+                // Example: Send a message to the server
+              //  socket.send(JSON.stringify({ action: "initialize", payload: "Hello from the client!" }));
+            })
+            .catch((error) => {
+                console.error("Failed to initialize WebSocket:", error);
+            });
 
         document.addEventListener('DOMContentLoaded', async function () {
             console.log('Document is ready!');
@@ -624,6 +636,14 @@
                 const observer = new MutationObserver(function (mutations) {
                     mutations.forEach(function (mutation) {
                         if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                            // Create data object with the new value
+                            const data = {
+                                prediction: hiddenInput.value
+                            };
+
+                            // Call the handleWebSocketMessage function
+                            handleWebSocketMessage(data);
+
                             console.log('Element updated:', hiddenInput.value);
                         }
                     });
@@ -637,6 +657,10 @@
                 // Also add an input event listener as a backup
                 hiddenInput.addEventListener('input', function (e) {
                     console.log('Element updated:', e.target.value);
+                    const data = {
+                        prediction: e.target.value
+                    };
+                    handleWebSocketMessage(data);
                 });
 
                 // Initialize WebSocket

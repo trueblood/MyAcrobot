@@ -1,5 +1,5 @@
 // WebSocket URL (replace with the appropriate server URL)
-const serverUrl = "ws://localhost:8080/ws"; // Example WebSocket endpoint
+const serverUrl = "ws://localhost:8087/";
 
 /**
  * Initialize WebSocket and set up message handling.
@@ -14,6 +14,10 @@ export async function initializeWebSocket(onMessageCallback) {
         socket.onopen = () => {
             console.log("WebSocket connection established.");
             resolve(socket);
+
+            // Example: Send a prediction request upon connection
+            const exampleState = [0.06528811, 0.99786645, -0.03661686, -0.9993294, 0.02972009, 1.3947774];
+            socket.send(JSON.stringify({ action: "predict", state: exampleState }));
         };
 
         // Handle connection errors
@@ -25,6 +29,7 @@ export async function initializeWebSocket(onMessageCallback) {
         // Handle incoming messages
         socket.onmessage = (message) => {
             const data = JSON.parse(message.data); // Parse JSON message
+            console.log("WebSocket message received:", data);
             if (onMessageCallback) {
                 onMessageCallback(data); // Call the provided callback with the data
             }
@@ -39,8 +44,8 @@ export async function initializeWebSocket(onMessageCallback) {
 
 // Example WebSocket message handler
 export const handleWebSocketMessage = (data) => {
-    console.log("Received data:", data);
+    console.log("Received data Tim:", data);
     if (data.prediction) {
-        console.log("Prediction:", data.prediction);
+        console.log("Prediction Tim:", data.prediction);
     }
 };

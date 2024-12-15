@@ -3,3 +3,6 @@ gunicorn
 torch
 psutil
 requests
+flask-socketio
+eventlet
+torch
