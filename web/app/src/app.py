@@ -42,10 +42,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 
-@app.route('/testsocket')
-def index():
-    return render_template('testsocket.html')
-
 @socketio.on('connect')
 def handle_connect():
     print('Client connected')
@@ -106,9 +102,18 @@ def handle_message_from_client(message):
 @socketio.on('disconnect')
 def handle_disconnect():
     print('Client disconnected')
+    
+# Routes for your HTML pages
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/testsocket')
+def index():
+    return render_template('testsocket.html')
 
 if __name__ == '__main__':
     print("\nServer running!")
-    print("WebSocket URL: http://localhost:8099/testsocket")
+    print("WebSocket URL: http://localhost:8077/testsocket")
     print("Click the URL above to open in your browser\n")
-    socketio.run(app, host='0.0.0.0', port=8099)
+    socketio.run(app, host='0.0.0.0', port=8077)
