@@ -23,7 +23,35 @@
         <!-- Your custom JavaScript file -->
         <script src="{{ url_for('static', filename='js/double_pendulum.js') }}"></script>
 
-
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+        <script type="text/javascript">
+            var socket = io();
+            var savedMessages = []; // Array to store all messages
+    
+            socket.on('connect', function () {
+                console.log('Connected to server');
+            });
+    
+            socket.on('message_from_server', function (msg) {
+                console.log('Received:', msg);
+                // Save message to array
+                savedMessages = [];
+                savedMessages.push(msg);
+                // Update hidden input with stringified array
+                document.getElementById('savedMessagesHidden').value = JSON.stringify(savedMessages);
+                document.getElementById('messages').innerHTML += '<br>' + JSON.stringify(msg);
+            });
+    
+            function sendState() {
+                var state = document.getElementById('stateInput').value;
+                var messageData = { state: state };
+                socket.emit('message_from_client', { state: state });
+                savedMessages = [];
+                // Save sent message
+                savedMessages.push(messageData);
+                document.getElementById('savedMessagesHidden').value = JSON.stringify(savedMessages);
+            }
+        </script>
     </head>
     <body id="page-top">
         <!-- Navigation-->
@@ -68,6 +96,12 @@
                     <label>Gravity: <input type="range" id="gravity" min="1" max="20" value="9.8"></label>
                 </div>
                 
+                <h1>DQN Model Test</h1>
+                <input type="text" id="stateInput" placeholder="Enter state (e.g. [1,2,3,4,5,6])" style="width: 300px;">
+                <button onclick="sendState()">Send State</button>
+                <div id="messages"></div>
+                <!-- Hidden input to store messages -->
+                <input type="hidden" id="savedMessagesHidden" value="[]">
                 
                 <!-- Container for the pendulum canvas -->
                 <div id="double_pendulum_canvas" style="width: 100%; height: 100vh; margin: 0 auto;"></div>
