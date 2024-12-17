@@ -76,7 +76,7 @@ def handle_message_from_client(message):
 
         # Load the model
         model = DQN(state_dim, action_dim)
-        model.load_state_dict(torch.load('/model/acrobot_model_policy_v4000.pth'))
+        model.load_state_dict(torch.load('static/model/acrobot_model_policy_v4000.pth'))
         model.eval()
 
         # Convert the state to tensor
