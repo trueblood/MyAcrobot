@@ -15,7 +15,7 @@ function getBestActionFromModel(parsedValue) {
     if (parsedValue && parsedValue.length > 0 && parsedValue[0]?.data?.best_action !== undefined) {
         return parsedValue[0].data.best_action;
     }
-    console.error("Invalid input structure: Unable to retrieve best_action.");
+   // console.error("Invalid input structure: Unable to retrieve best_action.");
     return null; // Return null if best_action is not found
 }
 
@@ -23,15 +23,15 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("in event listener");
     const hiddenInput = document.getElementById('savedMessagesHidden');
     // const hiddenInput = document.getElementById('hdnPendulumState');
-    console.log('Raw hidden input value:', hiddenInput.value);
+   // console.log('Raw hidden input value:', hiddenInput.value);
 
     if (hiddenInput) {
         // Listen for changes using multiple approaches to ensure we catch all updates
         hiddenInput.addEventListener('change', function () {
-            console.log('Value changed from event listner tim:', this.value);
+      //      console.log('Value changed from event listner tim:', this.value);
             try {
                 const parsedValue = JSON.parse(this.value);
-                console.log('Parsed value:', parsedValue);
+          //      console.log('Parsed value:', parsedValue);
             } catch (error) {
                 console.error('Error parsing value:', error);
             }
@@ -41,12 +41,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
-                    console.log('Value updated here:', hiddenInput.value);
+                //    console.log('Value updated here:', hiddenInput.value);
 
 
                     try {
                         const parsedValue = JSON.parse(hiddenInput.value);
-                        console.log('Parsed updated value:', parsedValue);
+                       // console.log('Parsed updated value:', parsedValue);
                     } catch (error) {
                         console.error('Error parsing updated value:', error);
                     }
@@ -850,7 +850,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         // Step 3: Fetch best action from a model (e.g., AI prediction)
         const hiddenInputValue = document.getElementById('savedMessagesHidden').value;
         const parsedValue = JSON.parse(hiddenInputValue);
-        console.log("Parsed Value for function:", parsedValue);
+      //  console.log("Parsed Value for function:", parsedValue);
 
         const bestAction = getBestActionFromModel(parsedValue); // Replace with your AI logic
         console.log("Best Action:", bestAction);

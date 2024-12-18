@@ -35,7 +35,7 @@
         });
 
         socket.on('message_from_server', function (msg) {
-            console.log('Received:', msg);
+          //  console.log('Received:', msg);
             // Save message to array
             savedMessages = [];
             savedMessages.push(msg);
@@ -634,7 +634,7 @@
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
             // Your code here
-            console.log('Document is ready!');
+          //  console.log('Document is ready!');
 
 //            document.getElementById('savedMessagesHidden').addEventListener('change', function () {
 //                console.log('Hidden input value changed from here:', this.value);
@@ -646,7 +646,7 @@
             if (pendulumStateInput) {
                 // Add change event listener
                 pendulumStateInput.addEventListener('change', function () {
-                    console.log('Pendulum state changed:', this.value);
+                  //  console.log('Pendulum state changed:', this.value);
                     try {
                         const parsedState = JSON.parse(this.value);
                         console.log('Parsed pendulum state:', parsedState);
@@ -669,7 +669,7 @@
                 const observer = new MutationObserver(function (mutations) {
                     mutations.forEach(function (mutation) {
                         if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
-                            console.log('Pendulum state updated tim:', pendulumStateInput.value);
+                         //   console.log('Pendulum state updated tim:', pendulumStateInput.value);
                            
                             const stateInput = document.getElementById('stateInput');
                             if (stateInput) {
