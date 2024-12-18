@@ -2,7 +2,97 @@ const trails = {
     lowerArm: [],
     upperArm: [],
 };
+
 let currentControl = 'lowerArm'; // Track which link is currently controlled
+
+// Add a function to handle pausing the simulation for a specific duration
+function pauseSimulation(duration) {
+    return new Promise((resolve) => setTimeout(resolve, duration));
+}
+
+function getBestActionFromModel(parsedValue) {
+    // Safely navigate to best_action
+    if (parsedValue && parsedValue.length > 0 && parsedValue[0]?.data?.best_action !== undefined) {
+        return parsedValue[0].data.best_action;
+    }
+    console.error("Invalid input structure: Unable to retrieve best_action.");
+    return null; // Return null if best_action is not found
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    console.log("in event listener");
+    const hiddenInput = document.getElementById('savedMessagesHidden');
+    // const hiddenInput = document.getElementById('hdnPendulumState');
+    console.log('Raw hidden input value:', hiddenInput.value);
+
+    if (hiddenInput) {
+        // Listen for changes using multiple approaches to ensure we catch all updates
+        hiddenInput.addEventListener('change', function () {
+            console.log('Value changed from event listner tim:', this.value);
+            try {
+                const parsedValue = JSON.parse(this.value);
+                console.log('Parsed value:', parsedValue);
+            } catch (error) {
+                console.error('Error parsing value:', error);
+            }
+        });
+
+        // Using MutationObserver to catch programmatic changes
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                    console.log('Value updated here:', hiddenInput.value);
+
+
+                    try {
+                        const parsedValue = JSON.parse(hiddenInput.value);
+                        console.log('Parsed updated value:', parsedValue);
+                    } catch (error) {
+                        console.error('Error parsing updated value:', error);
+                    }
+                }
+            });
+        });
+
+        observer.observe(hiddenInput, {
+            attributes: true
+        });
+    } else {
+        console.error('Hidden input element not found');
+    }
+});
+
+function getObservationFromPendulum(lowerArm, upperArm) {
+    // Extract angles and angular velocities
+    const theta1 = lowerArm.angle; // Lower arm angle
+    const theta2 = upperArm.angle; // Upper arm angle
+    const angularVelocityTheta1 = lowerArm.angularVelocity;
+    const angularVelocityTheta2 = upperArm.angularVelocity;
+
+    // Create the observation array
+    const observation = [
+        Math.cos(theta1), Math.sin(theta1), // Cosine and sine of θ1
+        Math.cos(theta2), Math.sin(theta2), // Cosine and sine of θ2
+        angularVelocityTheta1, angularVelocityTheta2 // Angular velocities
+    ];
+
+    return observation;
+}
+
+function logPendulumState(lowerArm, upperArm) {
+    console.log("Next group");
+    console.log("Lower Arm:");
+    console.log(`- Position: x=${lowerArm.position.x.toFixed(2)}, y=${lowerArm.position.y.toFixed(2)}`);
+    console.log(`- Velocity: x=${lowerArm.velocity.x.toFixed(2)}, y=${lowerArm.velocity.y.toFixed(2)}`);
+    console.log(`- Angle: ${lowerArm.angle.toFixed(2)} radians`);
+    console.log(`- Angular Velocity: ${lowerArm.angularVelocity.toFixed(2)}`);
+
+    console.log("Upper Arm:");
+    console.log(`- Position: x=${upperArm.position.x.toFixed(2)}, y=${upperArm.position.y.toFixed(2)}`);
+    console.log(`- Velocity: x=${upperArm.velocity.x.toFixed(2)}, y=${upperArm.velocity.y.toFixed(2)}`);
+    console.log(`- Angle: ${upperArm.angle.toFixed(2)} radians`);
+    console.log(`- Angular Velocity: ${upperArm.angularVelocity.toFixed(2)}`);
+}
 
 // Function to calculate the y-coordinate of the pendulum's endpoint
 function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
@@ -33,14 +123,14 @@ function addTouchControl(pendulum, canvas) {
         // Detect multi-touch
         const touches = event.touches;
         const touchCount = touches.length;
-     
+
         if (touchCount === 2 && !isSwitching) {
             isSwitching = true; // Set switching state
             switchControl();
             setTimeout(() => (isSwitching = false), 500); // Prevent immediate toggling
             return;
         }
-        
+
         // For single touch, apply forces
         if (touchCount === 1) {
             const touch = touches[0];
@@ -100,7 +190,7 @@ function updateOutputMessage(message) {
     const keyPressOutElement = document.getElementById('keyPressOut');
     if (keyPressOutElement) {
         keyPressOutElement.textContent = `Event Message: ${message}`;
-    } 
+    }
 }
 
 // Function to update output on the index page
@@ -108,7 +198,57 @@ function updateOutputMessageForCurrentlySelectedLink(message) {
     const keyPressOutElement = document.getElementById('currentLink');
     if (keyPressOutElement) {
         keyPressOutElement.textContent = `Event Message: ${message}`;
-    } 
+    }
+}
+
+// Function for adding moving the pendulum by the ai
+function addAIMovement(pendulum) {
+    const lowerArm = pendulum.bodies[1];
+    const upperArm = pendulum.bodies[0];
+
+
+
+    // Function to move the pendulum based on the AI's prediction
+    // function movePendulum(prediction) {
+    //     const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
+
+    //     // Apply force based on the prediction
+    //     if (prediction === 0) {
+    //         const message = 'AI Prediction: Left - Applying left force';
+    //         console.log(message);
+    //         updateOutputMessage(message); // Update index page
+    //         Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
+    //     } else if (prediction === 1) {
+    //         const message = 'AI Prediction: Right - Applying right force';
+    //         console.log(message);
+    //         updateOutputMessage(message); // Update index page
+    //         Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
+    //     }
+    // }
+
+    // // Listen for messages from the AI
+    // window.addEventListener('message', (event) => {
+    //     if (event.data.type === 'aiPrediction') {
+    //         movePendulum(event.data.prediction);
+    //     }
+    // });
+}
+
+// Function to apply torque based on best action
+function applyBestActionTorque(pendulum, bestAction) {
+    const lowerArm = pendulum.bodies[1];
+    const torqueMagnitude = 0.05; // Torque magnitude (N m)
+
+    if (bestAction === 0) { // Apply -1 torque
+        console.log("Best Action: Apply -1 torque");
+        Matter.Body.applyForce(lowerArm, lowerArm.position, { x: -torqueMagnitude, y: 0 });
+    } else if (bestAction === 1) { // Apply 0 torque
+        console.log("Best Action: Apply 0 torque");
+        // No force applied
+    } else if (bestAction === 2) { // Apply 1 torque
+        console.log("Best Action: Apply 1 torque");
+        Matter.Body.applyForce(lowerArm, lowerArm.position, { x: torqueMagnitude, y: 0 });
+    }
 }
 
 // Function to add keyboard control
@@ -163,7 +303,7 @@ function addKeyboardControl(pendulum) {
             //     currentLink.innerText = `Currently controlling: Upper Arm`;
             // }
         }
-    });       
+    });
 
 }
 
@@ -277,7 +417,7 @@ function detectCircleFromTrail(trail, tolerance = 5, minDistance = 50) {
 
 var Simulation = Simulation || {};
 
-Simulation.doublePendulum = (containerId, centerX, centerY) => {
+Simulation.doublePendulum = async (containerId, centerX, centerY) => {
     const { Engine, Events, Render, Runner, Body, Composite, Composites, Constraint, MouseConstraint, Mouse, Bodies, Vector } = Matter;
 
     console.log("centerX = " + centerX);
@@ -313,7 +453,7 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
         // Calculate center of the canvas
         const centerX = width / 2;
         const centerY = height / 2;
-        
+
         context.strokeStyle = '#e0e0e0';
         context.lineWidth = 1;
 
@@ -425,19 +565,19 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     // Add bodies
     const group = Body.nextGroup(true);
     // we change this to change the number of links
-    
+
     // const length = 100;    // decreased from 200 to 100
     // const width = 25;
 
     // const group = Body.nextGroup(true);
     // const length = 150; // Change from 200 to whatever length you want
     // const width = 25;   // This is the width of each link
-    
+
     const length = 100;
     const width = 25;
 
-    const pendulum = Composites.stack(300, 160, 2, 1, -20, 0, (x, y) => 
-        Bodies.rectangle(x, y, length, width, { 
+    const pendulum = Composites.stack(300, 160, 2, 1, -20, 0, (x, y) =>
+        Bodies.rectangle(x, y, length, width, {
             collisionFilter: { group },
             frictionAir: 0,
             chamfer: 5,
@@ -449,9 +589,9 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     );
 
     engine.gravity.scale = 0.002;
-    
-    Composites.chain(pendulum, 0.45, 0, -0.45, 0, { 
-        stiffness: 0.9, 
+
+    Composites.chain(pendulum, 0.45, 0, -0.45, 0, {
+        stiffness: 0.9,
         length: 50,
         angularStiffness: 0.7,
         render: {
@@ -466,11 +606,11 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     // Calculate grid center coordinates
     // const gridCenterX = 1296 / 2;  // = 648
     // const gridCenterY = 904 / 2;   // = 452
-    
+
     const gridCenterX = centerX;  // = 648
     const gridCenterY = centerY;   // = 452
 
-    Composite.add(pendulum, Constraint.create({ 
+    Composite.add(pendulum, Constraint.create({
         bodyB: pendulum.bodies[0],
         pointB: { x: -length * 0.42, y: 0 },
         pointA: { x: gridCenterX, y: gridCenterY },
@@ -487,7 +627,7 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     const upperArm = pendulum.bodies[0];
 
     // Rotate the lower arm 90 degrees (Math.PI/2) around its position
-    Body.rotate(lowerArm, Math.PI/2, {
+    Body.rotate(lowerArm, Math.PI / 2, {
         x: lowerArm.position.x,
         y: lowerArm.position.y
     });
@@ -502,7 +642,7 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     // Body.setAngle(lowerArm, 0);
     // Body.setVelocity(lowerArm, { x: 0, y: 0 });
     // Body.setAngularVelocity(lowerArm, 0);
-    
+
     Composite.add(world, pendulum);
 
     const trail = [];
@@ -510,6 +650,24 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     let upperArmCircleCount = 0; // Count of upper arm circles
 
     Events.on(render, 'afterRender', () => {
+        //    const observation = getObservationFromPendulum(lowerArm, upperArm);
+        //     document.getElementById('hdnPendulumState').value = JSON.stringify(observation);
+
+        // document.getElementById('hdnPendulumState').value = JSON.stringify({
+        //     state: 'example',
+        //     data: 123
+        // });
+        //  console.log("Current Observation:", observation);
+        // set the hidden value 
+
+        // Create or get the hidden input element
+        // let hiddenElement = document.getElementById('hiddenValue');
+        // hiddenElement.value = observation;
+        // console.log("hiddenElement value is ", hiddenElement.value);
+
+        // Send the observation data to the WebSocket server
+        // logPendulumState(lowerArm, upperArm);
+
         // Draw the grid
         drawGrid(render.context, render.options.width, render.options.height);
 
@@ -619,14 +777,14 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
 
         // Output the y-value of the pendulum's endpoint
         //console.log("Current Y position of lower arm endpoint:", lowerArm.position.y);
-        
+
         // Calculate the y position of the pendulum's endpoint
         // const yEndpoint = calculateYEndpoint(lowerArm, pendulum.bodies[0], length, length);
         const yEndpoint = calculateYEndpoint(lowerArm, upperArm, length, length);
         // Update the Y position in the HTML element
         const yPositionElement = document.getElementById("yPositionOutput");
         if (yPositionElement) {
-            yPositionElement.textContent = 
+            yPositionElement.textContent =
                 "Current Y position of lower arm endpoint: " + yEndpoint.toFixed(2);
         }
         drawZoneLabels(render.context, render.options.width, render.options.height);
@@ -666,8 +824,47 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
 
     // Call the function to add keyboard control
     addKeyboardControl(pendulum);
-
     addTouchControl(pendulum, render.canvas);
+
+    // Stop the runner to implement manual stepping
+    Runner.stop(runner);
+
+    const stepInterval = 1000 / 60; // 60 FPS step duration
+    // const pauseDuration = 5000; // Pause for 5 seconds
+    const pauseDuration = 50; // Pause for 5 seconds
+
+    while (true) {
+        Engine.update(engine, stepInterval);
+        //logPendulumState(lowerArm, upperArm);
+        Render.world(render);
+        // const observation = getObservationFromPendulum(lowerArm, upperArm);
+        // console.log("Current Observation:", observation);
+
+        // Create or get the hidden input element
+        // let hiddenElement = document.getElementById('hdnCurrentState');
+        //  hiddenElement.value = observation;
+        // console.log("hiddenElement value is ", hiddenElement.value);
+
+        const observation = getObservationFromPendulum(lowerArm, upperArm);
+        document.getElementById('hdnPendulumState').value = JSON.stringify(observation);
+        // Step 3: Fetch best action from a model (e.g., AI prediction)
+        const hiddenInputValue = document.getElementById('savedMessagesHidden').value;
+        const parsedValue = JSON.parse(hiddenInputValue);
+        console.log("Parsed Value for function:", parsedValue);
+
+        const bestAction = getBestActionFromModel(parsedValue); // Replace with your AI logic
+        console.log("Best Action:", bestAction);
+
+        // Step 4: Apply torque based on the best action
+        // Apply torque based on the best action
+        if (bestAction !== null) {
+            applyBestActionTorque({ bodies: [upperArm, lowerArm] }, bestAction);
+        }
+
+        // Step 5: Pause simulation
+         await pauseSimulation(pauseDuration);
+        //   await pauseSimulation(pauseDuration);
+    }
 
     return {
         engine,

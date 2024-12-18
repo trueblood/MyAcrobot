@@ -114,6 +114,6 @@ def index():
 
 if __name__ == '__main__':
     print("\nServer running!")
-    print("WebSocket URL: http://localhost:8077/testsocket")
+    print("WebSocket URL: http://localhost:8078/testsocket")
     print("Click the URL above to open in your browser\n")
-    socketio.run(app, host='0.0.0.0', port=8077)
+    socketio.run(app, host='0.0.0.0', port=8078)
