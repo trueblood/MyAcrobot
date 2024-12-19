@@ -15,23 +15,57 @@ function getBestActionFromModel(parsedValue) {
     if (parsedValue && parsedValue.length > 0 && parsedValue[0]?.data?.best_action !== undefined) {
         return parsedValue[0].data.best_action;
     }
-   // console.error("Invalid input structure: Unable to retrieve best_action.");
+    // console.error("Invalid input structure: Unable to retrieve best_action.");
     return null; // Return null if best_action is not found
 }
+
+function detectChainConstraints(pendulum, engine) {
+    const chainConstraints = engine.world.constraints.filter(constraint => {
+        const bodyAInPendulum = pendulum.bodies.includes(constraint.bodyA);
+        const bodyBInPendulum = pendulum.bodies.includes(constraint.bodyB);
+        return bodyAInPendulum && bodyBInPendulum;
+    });
+
+    console.log('Chain Constraints:', chainConstraints);
+    return chainConstraints;
+}
+
+function removeLowerArmFromChain(lowerArm, pendulum, engine) {
+    const constraintsToRemove = engine.world.constraints.filter(constraint =>
+        (constraint.bodyA === lowerArm || constraint.bodyB === lowerArm) &&
+        pendulum.bodies.includes(constraint.bodyA) &&
+        pendulum.bodies.includes(constraint.bodyB)
+    );
+
+    constraintsToRemove.forEach(constraint => {
+        Matter.World.remove(engine.world, constraint);
+        console.log('Removed Constraint:', constraint);
+    });
+
+    // Remove the lower arm from the composite
+    Matter.Composite.remove(pendulum, lowerArm);
+
+    // Add the lower arm back to the world if needed
+    Matter.World.add(engine.world, lowerArm);
+
+    console.log('Lower arm detached from chain.');
+}
+
+
 
 document.addEventListener('DOMContentLoaded', function () {
     console.log("in event listener");
     const hiddenInput = document.getElementById('savedMessagesHidden');
     // const hiddenInput = document.getElementById('hdnPendulumState');
-   // console.log('Raw hidden input value:', hiddenInput.value);
+    // console.log('Raw hidden input value:', hiddenInput.value);
 
     if (hiddenInput) {
         // Listen for changes using multiple approaches to ensure we catch all updates
         hiddenInput.addEventListener('change', function () {
-      //      console.log('Value changed from event listner tim:', this.value);
+            //      console.log('Value changed from event listner tim:', this.value);
             try {
                 const parsedValue = JSON.parse(this.value);
-          //      console.log('Parsed value:', parsedValue);
+                //      console.log('Parsed value:', parsedValue);
             } catch (error) {
                 console.error('Error parsing value:', error);
             }
@@ -41,12 +75,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
-                //    console.log('Value updated here:', hiddenInput.value);
+                    //    console.log('Value updated here:', hiddenInput.value);
 
 
                     try {
                         const parsedValue = JSON.parse(hiddenInput.value);
-                       // console.log('Parsed updated value:', parsedValue);
+                        // console.log('Parsed updated value:', parsedValue);
                     } catch (error) {
                         console.error('Error parsing updated value:', error);
                     }
@@ -251,10 +285,46 @@ function applyBestActionTorque(pendulum, bestAction) {
     }
 }
 
+function detachLowerArm(pendulum, lowerArm, engine) {
+    console.log('Detaching lower arm...');
+
+    // Access constraints directly from the composite
+    const chainConstraints = pendulum.constraints;
+
+    // Remove all constraints involving the lower arm
+    chainConstraints.forEach(constraint => {
+        if (constraint.bodyA === lowerArm || constraint.bodyB === lowerArm) {
+            Matter.Composite.remove(pendulum, constraint);
+            console.log('Removed Constraint:', constraint);
+        }
+    });
+
+    // Remove the lower arm from the composite
+    Matter.Composite.remove(pendulum, lowerArm);
+    console.log('Lower arm removed from pendulum.');
+
+    // Add the lower arm back to the world as an independent body
+    Matter.World.add(engine.world, lowerArm);
+
+    // Apply a force to make the lower arm move
+    const flyForce = { x: 0.05, y: -0.1 }; // Adjust the force as needed
+    Matter.Body.applyForce(lowerArm, lowerArm.position, flyForce);
+
+    console.log('Lower arm detached and force applied.');
+}
+
+
 // Function to add keyboard control
-function addKeyboardControl(pendulum) {
+function addKeyboardControl(pendulum, engine, upperToLowerConstraint) {
     const lowerArm = pendulum.bodies[1];
     const upperArm = pendulum.bodies[0];
+    // Iterate through constraints to detect those involving the pendulum's arms
+const chainConstraints = engine.world.constraints.filter(constraint =>
+    (constraint.bodyA === upperArm && constraint.bodyB === lowerArm) ||
+    (constraint.bodyA === lowerArm && constraint.bodyB === upperArm)
+);
+
+console.log('Detected Chain Constraints:', chainConstraints);
 
     document.addEventListener('keydown', (event) => {
         console.log(`Key pressed: ${event.key}`);
@@ -302,6 +372,48 @@ function addKeyboardControl(pendulum) {
             // if (currentLink) {
             //     currentLink.innerText = `Currently controlling: Upper Arm`;
             // }
+        } else if (key === 'd') {
+            console.log("Key 'd' pressed: Removing upper arm and spinning lower arm");
+
+            console.log("upperToLowerContstraint is ", upperToLowerConstraint);
+
+            // Remove the constraint between upperArm and lowerArm
+            if (upperToLowerConstraint) {
+
+                Matter.World.remove(engine.world, upperToLowerConstraint);
+                console.log('Constraint between upper and lower arm removed.');
+            }
+            Matter.Composite.remove(pendulum, upperArm);
+
+            // Remove the upper arm from the simulation
+            Matter.World.remove(engine.world, upperArm);
+           // upperArm.render.visible = false; // Optionally hide the upper arm visually
+           Matter.Engine.update(engine);
+            // Apply torque to the lower arm to make it spin
+            const spinTorque = 0.1; // Adjust torque value for desired spin
+            Matter.Body.applyForce(lowerArm, lowerArm.position, { x: spinTorque, y: 0 });
+
+            updateOutputMessage('Upper arm removed, lower arm spinning!');
+
+            detachLowerArm(lowerArm, pendulum, engine);
+// Call this function to find all constraints forming the chain
+const chainConstraints = detectChainConstraints(pendulum, engine);
+console.log('Detected Chain Constraints:', chainConstraints);
+
+    // console.log('Detected Chain Constraints:', chainConstraints);
+
+    // // Visualize the chain
+    // chainConstraints.forEach(constraint => {
+    //     constraint.render.strokeStyle = 'red';
+    //     constraint.render.lineWidth = 3;
+    // });
+
+    // // Example: Remove the chain
+    // chainConstraints.forEach(constraint => {
+    //     Matter.World.remove(engine.world, constraint);
+    // });
+
+    // console.log('Remaining Constraints:', engine.world.constraints);
         }
     });
 
@@ -590,6 +702,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
 
     engine.gravity.scale = 0.002;
 
+    // Create the chain
     Composites.chain(pendulum, 0.45, 0, -0.45, 0, {
         stiffness: 0.9,
         length: 50,
@@ -621,7 +734,6 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         }
     }));
 
-
     // so this where we add arm to control, lowerarm is the control now
     const lowerArm = pendulum.bodies[1];
     const upperArm = pendulum.bodies[0];
@@ -642,6 +754,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
     // Body.setAngle(lowerArm, 0);
     // Body.setVelocity(lowerArm, { x: 0, y: 0 });
     // Body.setAngularVelocity(lowerArm, 0);
+    
 
     Composite.add(world, pendulum);
 
@@ -810,8 +923,20 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
             }
         }
     });
-
     Composite.add(world, mouseConstraint);
+
+    const upperToLowerConstraint = Constraint.create({
+        bodyA: upperArm,
+        pointA: { x: 0, y: length / 2 }, // Attach to the bottom of the upper arm
+        bodyB: lowerArm,
+        pointB: { x: 0, y: -length / 2 }, // Attach to the top of the lower arm
+        stiffness: 0.9,
+        length: 0,
+        render: {
+            strokeStyle: '#4a485b'
+        }
+    });
+    Composite.add(world, upperToLowerConstraint);
 
     // keep the mouse in sync with rendering
     render.mouse = mouse;
@@ -823,7 +948,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
     });
 
     // Call the function to add keyboard control
-    addKeyboardControl(pendulum);
+    addKeyboardControl(pendulum, engine, upperToLowerConstraint);
     addTouchControl(pendulum, render.canvas);
 
     // Stop the runner to implement manual stepping
@@ -831,7 +956,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
 
     const stepInterval = 1000 / 60; // 60 FPS step duration
     // const pauseDuration = 5000; // Pause for 5 seconds
-    const pauseDuration = 50; // Pause for 5 seconds
+    const pauseDuration = 100; // Pause for 5 seconds
 
     while (true) {
         Engine.update(engine, stepInterval);
@@ -850,7 +975,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         // Step 3: Fetch best action from a model (e.g., AI prediction)
         const hiddenInputValue = document.getElementById('savedMessagesHidden').value;
         const parsedValue = JSON.parse(hiddenInputValue);
-      //  console.log("Parsed Value for function:", parsedValue);
+        //  console.log("Parsed Value for function:", parsedValue);
 
         const bestAction = getBestActionFromModel(parsedValue); // Replace with your AI logic
         console.log("Best Action:", bestAction);
@@ -862,7 +987,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         }
 
         // Step 5: Pause simulation
-         await pauseSimulation(pauseDuration);
+        await pauseSimulation(pauseDuration);
         //   await pauseSimulation(pauseDuration);
     }
 
