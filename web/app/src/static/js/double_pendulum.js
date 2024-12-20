@@ -9,16 +9,26 @@ let currentControl = 'lowerArm'; // Track which link is currently controlled
 let alignmentCount = 0;
 let lastAlignmentTime = 0;
 
+function removeChain(engine, chainComposite) {
+    // Remove all constraints in the chain composite
+    chainComposite.constraints.forEach(constraint => {
+        Matter.World.remove(engine.world, constraint);
+    });
+
+    // Clear the constraints array
+    chainComposite.constraints = [];
+}
+
 function trackAlignment(upperArm, lowerArm) {
     const currentTime = Date.now();
     const alignmentInfo = checkPendulumsAlignment(upperArm, lowerArm);
-    
+
     if (alignmentInfo.isAligned) {
         // Only count as new alignment if more than 500ms has passed
         if (currentTime - lastAlignmentTime > 500) {
             alignmentCount++;
             lastAlignmentTime = currentTime;
-            
+
             // Store alignment data
             const alignmentData = {
                 timestamp: currentTime,
@@ -28,9 +38,9 @@ function trackAlignment(upperArm, lowerArm) {
                 upperArmPosition: { x: upperArm.position.x, y: upperArm.position.y },
                 lowerArmPosition: { x: lowerArm.position.x, y: lowerArm.position.y }
             };
-            
+
             console.log('Alignment detected:', alignmentData);
-            
+
             // Update UI with alignment count
             const countDisplay = document.getElementById('alignmentCountDisplay');
             countDisplay.textContent = `Total Alignments: ${alignmentCount}`;
@@ -314,7 +324,7 @@ function applyBestActionTorque(pendulum, bestAction) {
 }
 
 // Function to add keyboard control
-function addKeyboardControl(pendulum) {
+function addKeyboardControl(pendulum, engine, chainComposite) {
     const lowerArm = pendulum.bodies[1];
     const upperArm = pendulum.bodies[0];
 
@@ -364,7 +374,9 @@ function addKeyboardControl(pendulum) {
             // if (currentLink) {
             //     currentLink.innerText = `Currently controlling: Upper Arm`;
             // }
-        }
+        } else if (key === 'c') {
+            removeChain(engine, chainComposite);
+        } 
     });
 
 }
@@ -652,7 +664,8 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
 
     engine.gravity.scale = 0.002;
 
-    Composites.chain(pendulum, 0.45, 0, -0.45, 0, {
+    // Store the chain composite when you create it
+    const chainComposite = Composites.chain(pendulum, 0.45, 0, -0.45, 0, {
         stiffness: 0.9,
         length: 50,
         angularStiffness: 0.7,
@@ -660,6 +673,15 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
             strokeStyle: '#4a485b'
         }
     });
+
+    // Composites.chain(pendulum, 0.45, 0, -0.45, 0, {
+    //     stiffness: 0.9,
+    //     length: 50,
+    //     angularStiffness: 0.7,
+    //     render: {
+    //         strokeStyle: '#4a485b'
+    //     }
+    // });
 
     // console.log("centerX = " + centerX);
     // console.log("centerY = " + centerY);
@@ -732,7 +754,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
 
         // Check alignment
         const alignmentInfo = checkPendulumsAlignment(upperArm, lowerArm);
-       // updateAlignmentDisplay(alignmentInfo);
+        // updateAlignmentDisplay(alignmentInfo);
         if (alignmentInfo.isAligned) {
             console.log('Pendulums are aligned!');
             console.log('Upper arm angle:', alignmentInfo.upperDegrees.toFixed(2));
@@ -917,7 +939,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
     });
 
     // Call the function to add keyboard control
-    addKeyboardControl(pendulum);
+    addKeyboardControl(pendulum, engine, chainComposite);
     addTouchControl(pendulum, render.canvas);
 
     // Stop the runner to implement manual stepping
