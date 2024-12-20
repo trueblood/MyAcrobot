@@ -327,8 +327,16 @@ function applyBestActionTorque(pendulum, bestAction) {
 function addKeyboardControl(pendulum, engine, chainComposite) {
     const lowerArm = pendulum.bodies[1];
     const upperArm = pendulum.bodies[0];
+    const pauseDuration = 100; // 100ms pause duration
+    let isPaused = false;
+    let isKeyPressed = false;
 
     document.addEventListener('keydown', (event) => {
+    //    isPaused = true;
+    //    isKeyPressed = true;
+        // Start the while loop that sets pendulum state to null
+        // Start the asynchronous loop in a separate function
+       // handleKeyPress();
         console.log(`Key pressed: ${event.key}`);
         const key = event.key;
         const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
@@ -376,9 +384,27 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
             // }
         } else if (key === 'c') {
             removeChain(engine, chainComposite);
-        } 
+        }
     });
 
+   // document.addEventListener('keyup', (event) => {
+    //    isKeyPressed = false;
+    //    isPaused = false;
+      //  const pendulumStateInput = document.getElementById('stateInput');
+      //  pendulumStateInput.disabled = false;  // Disable the element
+      //  pendulumStateInput.readOnly = false;  // Make it read-only as an extra measure
+   // });
+
+    // Separate async function for handling the loop
+  //  async function handleKeyPress() {
+   //     while (isKeyPressed) {
+   //         const pendulumStateInput = document.getElementById('stateInput');
+         //   pendulumStateInput.value = 'stop';
+          //  pendulumStateInput.disabled = true;  // Disable the element
+          //  pendulumStateInput.readOnly = true;  // Make it read-only as an extra measure
+         //   await new Promise(resolve => setTimeout(resolve, pauseDuration)); // 100ms delay between updates
+   //     }
+   // }
 }
 
 // Draw Zone Indicators on the Grid
@@ -426,13 +452,13 @@ function getZone(position, canvasWidth, canvasHeight) {
     const centerY = canvasHeight / 2; // Y-axis center
 
     if (position.x < centerX && position.y < centerY) {
-        return 'Top-Left Zone';
+        return 'Top-Left Quadrant';
     } else if (position.x >= centerX && position.y < centerY) {
-        return 'Top-Right Zone';
+        return 'Top-Right Quadrant';
     } else if (position.x < centerX && position.y >= centerY) {
-        return 'Bottom-Left Zone';
+        return 'Bottom-Left Quadrant';
     } else if (position.x >= centerX && position.y >= centerY) {
-        return 'Bottom-Right Zone';
+        return 'Bottom-Right Quadrant';
     }
 }
 
@@ -750,7 +776,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         // console.log("hiddenElement value is ", hiddenElement.value);
 
         // Send the observation data to the WebSocket server
-        // logPendulumState(lowerArm, upperArm);
+       // logPendulumState(lowerArm, upperArm);
 
         // Check alignment
         const alignmentInfo = checkPendulumsAlignment(upperArm, lowerArm);
@@ -904,13 +930,29 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         drawZoneLabels(render.context, render.options.width, render.options.height);
 
         const lowerArmPos = lowerArm.position; // Access the pendulum's lower arm position
+        const upperArmPos = upperArm.position;
         const zone = getZone(lowerArmPos, render.options.width, render.options.height); // Call getZone
+        const lowerArmZone = getZone(lowerArmPos, render.options.width, render.options.height); // Call getZone
+        const upperArmZone = getZone(upperArmPos, render.options.width, render.options.height); // Call getZone
 
         // Update the zone display on the webpage
         const zoneOutput = document.getElementById('zoneOutput');
         if (zoneOutput) {
             zoneOutput.textContent = `Current Zone: ${zone}`;
         }
+
+        // Update the zone display on the webpage
+        const lowerArmZoneOutput = document.getElementById('lowerArmZoneOutput');
+        if (lowerArmZoneOutput) {
+            lowerArmZoneOutput.textContent = `Current Lower Arm Zone: ${zone}`;
+        }
+
+        // Update the zone display on the webpage
+        const upperArmZoneOutput = document.getElementById('upperArmZoneOutput');
+        if (upperArmZoneOutput) {
+            upperArmZoneOutput.textContent = `Current Upper Arm Zone: ${zone}`;
+        }
+
 
         trackAlignment(upperArm, lowerArm);
     });
@@ -964,7 +1006,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         const observation = getObservationFromPendulum(lowerArm, upperArm);
         document.getElementById('hdnPendulumState').value = JSON.stringify(observation);
         // Step 3: Fetch best action from a model (e.g., AI prediction)
-        const hiddenInputValue = document.getElementById('savedMessagesHidden').value;
+        const hiddenInputValue = document.getElementById('savedMessagesHidden').value; // this comes back from the server
         const parsedValue = JSON.parse(hiddenInputValue);
         //  console.log("Parsed Value for function:", parsedValue);
 
