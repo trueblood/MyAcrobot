@@ -5,9 +5,71 @@ const trails = {
 
 let currentControl = 'lowerArm'; // Track which link is currently controlled
 
+// You can also track alignment events
+let alignmentCount = 0;
+let lastAlignmentTime = 0;
+
+function trackAlignment(upperArm, lowerArm) {
+    const currentTime = Date.now();
+    const alignmentInfo = checkPendulumsAlignment(upperArm, lowerArm);
+    
+    if (alignmentInfo.isAligned) {
+        // Only count as new alignment if more than 500ms has passed
+        if (currentTime - lastAlignmentTime > 500) {
+            alignmentCount++;
+            lastAlignmentTime = currentTime;
+            
+            // Store alignment data
+            const alignmentData = {
+                timestamp: currentTime,
+                count: alignmentCount,
+                upperArmAngle: alignmentInfo.upperDegrees,
+                lowerArmAngle: alignmentInfo.lowerDegrees,
+                upperArmPosition: { x: upperArm.position.x, y: upperArm.position.y },
+                lowerArmPosition: { x: lowerArm.position.x, y: lowerArm.position.y }
+            };
+            
+            console.log('Alignment detected:', alignmentData);
+            
+            // Update UI with alignment count
+            const countDisplay = document.getElementById('alignmentCountDisplay');
+            countDisplay.textContent = `Total Alignments: ${alignmentCount}`;
+        }
+    }
+}
+
 // Add a function to handle pausing the simulation for a specific duration
 function pauseSimulation(duration) {
     return new Promise((resolve) => setTimeout(resolve, duration));
+}
+
+function checkPendulumsAlignment(upperArm, lowerArm) {
+    // Get the angles of both arms in radians
+    const upperAngle = upperArm.angle % (2 * Math.PI);
+    const lowerAngle = lowerArm.angle % (2 * Math.PI);
+
+    // Convert to degrees for easier understanding
+    const upperDegrees = (upperAngle * 180 / Math.PI);
+    const lowerDegrees = (lowerAngle * 180 / Math.PI);
+
+    // Define tolerance for "straightness" (in degrees)
+    const tolerance = 5; // adjust this value as needed
+
+    // Check if angles are aligned (either both vertical or both horizontal)
+    const angleDifference = Math.abs(upperDegrees - lowerDegrees);
+
+    // They are aligned if their angle difference is near 0° or 180°
+    const isAligned = (
+        angleDifference <= tolerance ||
+        Math.abs(angleDifference - 180) <= tolerance
+    );
+
+    return {
+        isAligned: isAligned,
+        upperDegrees: upperDegrees,
+        lowerDegrees: lowerDegrees,
+        angleDifference: angleDifference
+    };
 }
 
 function getBestActionFromModel(parsedValue) {
@@ -15,7 +77,7 @@ function getBestActionFromModel(parsedValue) {
     if (parsedValue && parsedValue.length > 0 && parsedValue[0]?.data?.best_action !== undefined) {
         return parsedValue[0].data.best_action;
     }
-   // console.error("Invalid input structure: Unable to retrieve best_action.");
+    // console.error("Invalid input structure: Unable to retrieve best_action.");
     return null; // Return null if best_action is not found
 }
 
@@ -23,15 +85,15 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("in event listener");
     const hiddenInput = document.getElementById('savedMessagesHidden');
     // const hiddenInput = document.getElementById('hdnPendulumState');
-   // console.log('Raw hidden input value:', hiddenInput.value);
+    // console.log('Raw hidden input value:', hiddenInput.value);
 
     if (hiddenInput) {
         // Listen for changes using multiple approaches to ensure we catch all updates
         hiddenInput.addEventListener('change', function () {
-      //      console.log('Value changed from event listner tim:', this.value);
+            //      console.log('Value changed from event listner tim:', this.value);
             try {
                 const parsedValue = JSON.parse(this.value);
-          //      console.log('Parsed value:', parsedValue);
+                //      console.log('Parsed value:', parsedValue);
             } catch (error) {
                 console.error('Error parsing value:', error);
             }
@@ -41,12 +103,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
-                //    console.log('Value updated here:', hiddenInput.value);
+                    //    console.log('Value updated here:', hiddenInput.value);
 
 
                     try {
                         const parsedValue = JSON.parse(hiddenInput.value);
-                       // console.log('Parsed updated value:', parsedValue);
+                        // console.log('Parsed updated value:', parsedValue);
                     } catch (error) {
                         console.error('Error parsing updated value:', error);
                     }
@@ -668,6 +730,36 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         // Send the observation data to the WebSocket server
         // logPendulumState(lowerArm, upperArm);
 
+        // Check alignment
+        const alignmentInfo = checkPendulumsAlignment(upperArm, lowerArm);
+       // updateAlignmentDisplay(alignmentInfo);
+        if (alignmentInfo.isAligned) {
+            console.log('Pendulums are aligned!');
+            console.log('Upper arm angle:', alignmentInfo.upperDegrees.toFixed(2));
+            console.log('Lower arm angle:', alignmentInfo.lowerDegrees.toFixed(2));
+
+            // Optional: Update UI to show alignment
+            const alignmentDisplay = document.getElementById('alignmentDisplay');
+            alignmentDisplay.innerHTML = `
+            <div style="color: green;">
+                Pendulums Aligned!
+                <br>
+                Upper: ${alignmentInfo.upperDegrees.toFixed(2)}°
+                <br>
+                Lower: ${alignmentInfo.lowerDegrees.toFixed(2)}°
+            </div>
+        `;
+        } else {
+            console.log('Pendulums are not aligned.');
+            // Optional: Update UI to show non-alignment
+            const alignmentDisplay = document.getElementById('alignmentDisplay');
+            alignmentDisplay.innerHTML = `
+            <div style="color: red;">
+                Pendulums Not Aligned
+            </div>
+        `;
+        }
+
         // Draw the grid
         drawGrid(render.context, render.options.width, render.options.height);
 
@@ -797,6 +889,8 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         if (zoneOutput) {
             zoneOutput.textContent = `Current Zone: ${zone}`;
         }
+
+        trackAlignment(upperArm, lowerArm);
     });
 
     // add mouse control
@@ -850,7 +944,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         // Step 3: Fetch best action from a model (e.g., AI prediction)
         const hiddenInputValue = document.getElementById('savedMessagesHidden').value;
         const parsedValue = JSON.parse(hiddenInputValue);
-      //  console.log("Parsed Value for function:", parsedValue);
+        //  console.log("Parsed Value for function:", parsedValue);
 
         const bestAction = getBestActionFromModel(parsedValue); // Replace with your AI logic
         console.log("Best Action:", bestAction);
@@ -862,7 +956,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         }
 
         // Step 5: Pause simulation
-         await pauseSimulation(pauseDuration);
+        await pauseSimulation(pauseDuration);
         //   await pauseSimulation(pauseDuration);
     }
 
