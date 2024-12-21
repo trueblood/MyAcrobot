@@ -14,6 +14,7 @@ let randomZone1 = ''; // Random zone for the upper arm
 let randomZone2 = ''; // Random zone for the lower arm
 let score = 0; // Initialize the score
 
+
 // Function to pick a random zone
 function pickRandomZone() {
     const zones = ['Top-Left Quadrant', 'Top-Right Quadrant', 'Bottom-Left Quadrant', 'Bottom-Right Quadrant'];
@@ -74,7 +75,7 @@ function updateScore(value) {
     score = value;
     const scoreDisplay = document.getElementById('scoreDisplay');
     if (scoreDisplay) {
-        scoreDisplay.textContent = `Score: ${value}`;
+        scoreDisplay.textContent = `${value}`;
     }
 }
 
@@ -557,6 +558,80 @@ function drawZoneLabels(context, canvasWidth, canvasHeight) {
     context.fillText('Bottom-Right (270° to 360°)', canvasWidth * 0.75 - 50, canvasHeight * 0.75 - 10);
 }
 
+// Function to get a cookie value by its name
+function getCookieValue(cookieName) {
+    // const name = `${cookieName}=`;
+    // const decodedCookies = decodeURIComponent(document.cookie);
+    // const cookiesArray = decodedCookies.split(';');
+    // for (let cookie of cookiesArray) {
+    //     cookie = cookie.trim();
+    //     if (cookie.startsWith(name)) {
+    //         return cookie.substring(name.length);
+    //     }
+    // }
+    // return null; // Return null if the cookie is not found
+
+    const decodedCookies = decodeURIComponent(document.cookie);
+    const cookiesArray = decodedCookies.split(';');
+    let cookieDisplay = 'Current Cookies:\n------------------\n';
+    
+    if (cookiesArray[0] === '') {
+        return alert('No cookies found!');
+    }
+
+    cookiesArray.forEach(cookie => {
+        const [name, value] = cookie.trim().split('=');
+        try {
+            // Try to parse JSON values
+            const parsedValue = JSON.parse(value);
+            if (typeof parsedValue === 'object') {
+                cookieDisplay += `${name}:\n`;
+                for (const [key, val] of Object.entries(parsedValue)) {
+                    cookieDisplay += `  ${key}: ${val}\n`;
+                }
+            } else {
+                cookieDisplay += `${name}: ${value}\n`;
+            }
+        } catch {
+            // If not JSON, show raw value
+            cookieDisplay += `${name}: ${value}\n`;
+        }
+    });
+
+    alert(cookieDisplay);
+
+    // const decodedCookies = decodeURIComponent(document.cookie);
+    // const cookiesArray = decodedCookies.split(';');
+    // let cookieDisplay = 'Player Score Data:\n------------------\n';
+    
+    // // Find the websitePlayerScore cookie
+    // const playerScoreCookie = cookiesArray.find(cookie => 
+    //     cookie.trim().startsWith(cookieName)
+    // );
+
+    // if (!playerScoreCookie) {
+    //     return alert('No player score data found!');
+    // }
+
+    // try {
+    //     // Try to parse JSON value
+    //     const parsedValue = JSON.parse(value);
+    //     if (typeof parsedValue === 'object') {
+    //         for (const [key, val] of Object.entries(parsedValue)) {
+    //             cookieDisplay += `${key}: ${val}\n`;
+    //         }
+    //     } else {
+    //         cookieDisplay += `Score: ${value}\n`;
+    //     }
+    // } catch {
+    //     // If not JSON, show raw value
+    //     cookieDisplay += `Score: ${value}\n`;
+    // }
+
+    // alert(cookieDisplay);
+
+}
+
 function getZone(position, canvasWidth, canvasHeight) {
     const centerX = canvasWidth / 2; // X-axis center
     const centerY = canvasHeight / 2; // Y-axis center
@@ -630,9 +705,19 @@ var Simulation = Simulation || {};
 Simulation.doublePendulum = async (containerId, centerX, centerY) => {
     const { Engine, Events, Render, Runner, Body, Composite, Composites, Constraint, MouseConstraint, Mouse, Bodies, Vector } = Matter;
 
+    // const scoreDisplay = document.getElementById('scoreDisplay');
+    // if (scoreDisplay) {
+    //     score = `${value}`;
+    // }
+
     // Initialize the game
     determineZonesForLevel();
-    updateScore(0);
+    // Retrieve name and score from cookies
+const savedName = getCookieValue('websitePlayerScore=');
+//const savedScore = getCookieValue('websitePlayerScore');
+alert("saved cookie savedName is", savedName);
+
+    updateScore(5);
     updateLevel(1);
 
     console.log("centerX = " + centerX);
