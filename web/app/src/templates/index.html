@@ -80,16 +80,19 @@
             <div id="keyPressOut"></div>
             <br />
             <div id="lowerArmZoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px;">
-                lowerArmZoneOutput Current Zone: N/A
+                <span>Lower Arm Zone: </span>
+                <span id="lowerArmZoneValue">N/A</span>
             </div>
             <br />
             <div id="upperArmZoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px;">
-                upperArmZoneOutput Current Zone: N/A
+                <span>Upper Arm Zone: </span>
+                <span id="upperArmZoneValue">N/A</span>
             </div>
+            
             <br />
-            <div id="zoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px;">
+        <!--    <div id="zoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px;">
                 Current Zone: N/A
-            </div>
+            </div>-->
             <br />
             <div id="currentLink" name="currentLink"></div>
             <div id="alignmentDisplay" name="alignmentDisplay"></div>
@@ -98,6 +101,15 @@
             <div id="circleData" style="margin-top: 20px; font-size: 16px;">
                 <div id="lowerArmCircleCount">Lower Arm Circles: 0</div>
                 <div id="upperArmCircleCount">Upper Arm Circles: 0</div>
+            </div>
+
+            <!-- Game Info -->
+            <div id="gameInfo">
+                <h2>Game Info</h2>
+                <p id="levelDisplay">Level: 1</p>
+                <p id="randomZone1Display">Random Zone (Upper Arm): </p>
+                <p id="randomZone2Display">Random Zone (Lower Arm): </p>
+                <p id="scoreDisplay">Score: 0</p>
             </div>
 
             <!--    <div id="controls">
@@ -782,7 +794,7 @@
 
                 // Reinitialize the pendulum with new dimensions
                 const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
-                 
+
             });
 
 

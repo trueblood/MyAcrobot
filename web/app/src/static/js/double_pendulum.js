@@ -9,6 +9,83 @@ let currentControl = 'lowerArm'; // Track which link is currently controlled
 let alignmentCount = 0;
 let lastAlignmentTime = 0;
 
+let level = 1; // Initialize the level
+let randomZone1 = ''; // Random zone for the upper arm
+let randomZone2 = ''; // Random zone for the lower arm
+let score = 0; // Initialize the score
+
+// Function to pick a random zone
+function pickRandomZone() {
+    const zones = ['Top-Left Quadrant', 'Top-Right Quadrant', 'Bottom-Left Quadrant', 'Bottom-Right Quadrant'];
+    return zones[Math.floor(Math.random() * zones.length)];
+}
+
+// Function to pick a zone adjacent to the given zone
+function pickAdjacentZone(currentZone) {
+    const adjacentZones = {
+        'Top-Left Quadrant': ['Top-Right Quadrant', 'Bottom-Left Quadrant'],
+        'Top-Right Quadrant': ['Top-Left Quadrant', 'Bottom-Right Quadrant'],
+        'Bottom-Left Quadrant': ['Top-Left Quadrant', 'Bottom-Right Quadrant'],
+        'Bottom-Right Quadrant': ['Top-Right Quadrant', 'Bottom-Left Quadrant'],
+    };
+    const possibleZones = adjacentZones[currentZone];
+    return possibleZones[Math.floor(Math.random() * possibleZones.length)];
+}
+
+// Function to determine random zones based on the level
+function determineZonesForLevel() {
+    if (level === 1) {
+        // Level 1: Both zones are the same
+        const zone = pickRandomZone();
+        randomZone1 = zone;
+        randomZone2 = zone;
+    } else if (level === 2) {
+        // Level 2: Zones are adjacent
+        randomZone1 = pickRandomZone();
+        randomZone2 = pickAdjacentZone(randomZone1);
+    } else if (level >= 3) {
+        // Level 3: Zones are random
+        randomZone1 = pickRandomZone();
+        randomZone2 = pickRandomZone();
+    }
+
+    updateRandomZone1(randomZone1);
+    updateRandomZone2(randomZone2);
+}
+
+// Functions to update HTML elements
+function updateRandomZone1(value) {
+    randomZone1 = value;
+    const randomZone1Display = document.getElementById('randomZone1Display');
+    if (randomZone1Display) {
+        randomZone1Display.textContent = `Random Zone (Upper Arm): ${value}`;
+    }
+}
+
+function updateRandomZone2(value) {
+    randomZone2 = value;
+    const randomZone2Display = document.getElementById('randomZone2Display');
+    if (randomZone2Display) {
+        randomZone2Display.textContent = `Random Zone (Lower Arm): ${value}`;
+    }
+}
+
+function updateScore(value) {
+    score = value;
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    if (scoreDisplay) {
+        scoreDisplay.textContent = `Score: ${value}`;
+    }
+}
+
+function updateLevel(value) {
+    level = value;
+    const levelDisplay = document.getElementById('levelDisplay');
+    if (levelDisplay) {
+        levelDisplay.textContent = `Level: ${value}`;
+    }
+}
+
 function removeChain(engine, chainComposite) {
     // Remove all constraints in the chain composite
     chainComposite.constraints.forEach(constraint => {
@@ -332,11 +409,11 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
     let isKeyPressed = false;
 
     document.addEventListener('keydown', (event) => {
-    //    isPaused = true;
-    //    isKeyPressed = true;
+        //    isPaused = true;
+        //    isKeyPressed = true;
         // Start the while loop that sets pendulum state to null
         // Start the asynchronous loop in a separate function
-       // handleKeyPress();
+        // handleKeyPress();
         console.log(`Key pressed: ${event.key}`);
         const key = event.key;
         const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
@@ -383,28 +460,55 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
             //     currentLink.innerText = `Currently controlling: Upper Arm`;
             // }
         } else if (key === 'c') {
+            // Call removeChain if required (keeping your original functionality)
             removeChain(engine, chainComposite);
+
+            // Add a 1.5-second delay using setTimeout
+            setTimeout(() => {
+                // Update the zone display on the webpage
+                const lowerArmZone = document.getElementById('lowerArmZoneOutput');
+                // Update the zone display on the webpage
+                const upperArmZone = document.getElementById('upperArmZoneOutput');
+                alert(`Lower Arm Zone: ${lowerArmZone.innerText}, Upper Arm Zone: ${upperArmZone.innerText}`);
+
+                if (lowerArmZone.innerText === randomZone2 && upperArmZone.innerText === randomZone1) {
+                    updateScore(score + 1);
+                    alert('Success! Both links are in their correct zones. Score +1');
+                } else {
+                    alert(`Mismatch!
+            Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
+            Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`);
+                }
+
+                // Progression logic: Increase level after every 5 successful scores
+                if (score > 0 && score % 5 === 0) {
+                    updateLevel(level + 1);
+                }
+            }, 1500); // 1.5-second delay
+
+            // Determine zones based on the current level
+            determineZonesForLevel();
         }
     });
 
-   // document.addEventListener('keyup', (event) => {
+    // document.addEventListener('keyup', (event) => {
     //    isKeyPressed = false;
     //    isPaused = false;
-      //  const pendulumStateInput = document.getElementById('stateInput');
-      //  pendulumStateInput.disabled = false;  // Disable the element
-      //  pendulumStateInput.readOnly = false;  // Make it read-only as an extra measure
-   // });
+    //  const pendulumStateInput = document.getElementById('stateInput');
+    //  pendulumStateInput.disabled = false;  // Disable the element
+    //  pendulumStateInput.readOnly = false;  // Make it read-only as an extra measure
+    // });
 
     // Separate async function for handling the loop
-  //  async function handleKeyPress() {
-   //     while (isKeyPressed) {
-   //         const pendulumStateInput = document.getElementById('stateInput');
-         //   pendulumStateInput.value = 'stop';
-          //  pendulumStateInput.disabled = true;  // Disable the element
-          //  pendulumStateInput.readOnly = true;  // Make it read-only as an extra measure
-         //   await new Promise(resolve => setTimeout(resolve, pauseDuration)); // 100ms delay between updates
-   //     }
-   // }
+    //  async function handleKeyPress() {
+    //     while (isKeyPressed) {
+    //         const pendulumStateInput = document.getElementById('stateInput');
+    //   pendulumStateInput.value = 'stop';
+    //  pendulumStateInput.disabled = true;  // Disable the element
+    //  pendulumStateInput.readOnly = true;  // Make it read-only as an extra measure
+    //   await new Promise(resolve => setTimeout(resolve, pauseDuration)); // 100ms delay between updates
+    //     }
+    // }
 }
 
 // Draw Zone Indicators on the Grid
@@ -432,19 +536,19 @@ function drawZoneLabels(context, canvasWidth, canvasHeight) {
 
     // Q1: Top-Right (Blue)
     context.fillStyle = 'blue';
-    context.fillText('Q1 (0° to 90°)', canvasWidth * 0.75 - 50, canvasHeight * 0.25 - 10);
+    context.fillText('Top-Right Quadrant (0° to 90°)', canvasWidth * 0.75 - 50, canvasHeight * 0.25 - 10);
 
     // Q2: Top-Left (Orange)
     context.fillStyle = 'orange';
-    context.fillText('Q2 (90° to 180°)', canvasWidth * 0.25 - 50, canvasHeight * 0.25 - 10);
+    context.fillText('Top-Left Quadrant (90° to 180°)', canvasWidth * 0.25 - 50, canvasHeight * 0.25 - 10);
 
     // Q3: Bottom-Left (Green)
     context.fillStyle = 'green';
-    context.fillText('Q3 (180° to 270°)', canvasWidth * 0.25 - 50, canvasHeight * 0.75 - 10);
+    context.fillText('Bottom-Left Quadrant (180° to 270°)', canvasWidth * 0.25 - 50, canvasHeight * 0.75 - 10);
 
     // Q4: Bottom-Right (Red)
     context.fillStyle = 'red';
-    context.fillText('Q4 (270° to 360°)', canvasWidth * 0.75 - 50, canvasHeight * 0.75 - 10);
+    context.fillText('Bottom-Right (270° to 360°)', canvasWidth * 0.75 - 50, canvasHeight * 0.75 - 10);
 }
 
 function getZone(position, canvasWidth, canvasHeight) {
@@ -519,6 +623,11 @@ var Simulation = Simulation || {};
 
 Simulation.doublePendulum = async (containerId, centerX, centerY) => {
     const { Engine, Events, Render, Runner, Body, Composite, Composites, Constraint, MouseConstraint, Mouse, Bodies, Vector } = Matter;
+
+    // Initialize the game
+    determineZonesForLevel();
+    updateScore(0);
+    updateLevel(1);
 
     console.log("centerX = " + centerX);
     console.log("centerY = " + centerY);
@@ -776,7 +885,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         // console.log("hiddenElement value is ", hiddenElement.value);
 
         // Send the observation data to the WebSocket server
-       // logPendulumState(lowerArm, upperArm);
+        // logPendulumState(lowerArm, upperArm);
 
         // Check alignment
         const alignmentInfo = checkPendulumsAlignment(upperArm, lowerArm);
@@ -936,21 +1045,21 @@ Simulation.doublePendulum = async (containerId, centerX, centerY) => {
         const upperArmZone = getZone(upperArmPos, render.options.width, render.options.height); // Call getZone
 
         // Update the zone display on the webpage
-        const zoneOutput = document.getElementById('zoneOutput');
-        if (zoneOutput) {
-            zoneOutput.textContent = `Current Zone: ${zone}`;
-        }
+        // const zoneOutput = document.getElementById('zoneOutput');
+        // if (zoneOutput) {
+        //     zoneOutput.textContent = `Current Zone: ${zone}`;
+        // }
 
         // Update the zone display on the webpage
         const lowerArmZoneOutput = document.getElementById('lowerArmZoneOutput');
         if (lowerArmZoneOutput) {
-            lowerArmZoneOutput.textContent = `Current Lower Arm Zone: ${zone}`;
+            lowerArmZoneOutput.textContent = `${lowerArmZone}`;
         }
 
         // Update the zone display on the webpage
         const upperArmZoneOutput = document.getElementById('upperArmZoneOutput');
         if (upperArmZoneOutput) {
-            upperArmZoneOutput.textContent = `Current Upper Arm Zone: ${zone}`;
+            upperArmZoneOutput.textContent = `${upperArmZone}`;
         }
 
 
