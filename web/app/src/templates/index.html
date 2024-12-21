@@ -22,6 +22,8 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <!-- Matter.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chance/1.1.11/chance.min.js"></script>
+
     <!-- Your custom JavaScript file -->
     <script src="{{ url_for('static', filename='js/double_pendulum.js') }}"></script>
 
@@ -216,7 +218,30 @@
                                 <h5 class="modal-title" id="resultModalLabel">Simulation Result</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <div class="modal-body" id="modalMessage">
+                            <div class="modal-body">
+                                <div id="modalMessage" class="mb-3"></div>
+                                
+                                <!-- Name Input Section -->
+                                <div class="form-group">
+                                    <label for="nameInput" class="form-label">Enter Your Name:</label>
+                                    <div class="input-group">
+                                        <input type="text" 
+                                            class="form-control" 
+                                            id="nameInput" 
+                                            name="nameInput"
+                                            placeholder="Enter your name" 
+                                            required
+                                            aria-describedby="nameHelp">
+                                        <button class="btn btn-outline-secondary" 
+                                            type="button" 
+                                            id="generateRandomName">
+                                            <i class="fas fa-dice"></i> Random
+                                        </button>
+                                    </div>
+                                    <div id="nameHelp" class="form-text">
+                                        Please enter your name or generate a random one
+                                    </div>
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Quit</button>
@@ -774,6 +799,62 @@
         document.addEventListener('DOMContentLoaded', function () {
 // Add modal to document
 document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Get elements
+    const nameInput = document.getElementById('nameInput');
+    const generateButton = document.getElementById('generateRandomName');
+    const continueButton = document.getElementById('continueButton');
+
+    // Array of sample names for random generation
+    const sampleNames = [
+        "Alex Smith", "Jordan Lee", "Taylor Wong", 
+        "Sam Johnson", "Casey Brown", "Morgan Davis"
+    ];
+
+    // Generate random name function
+    function generateRandomName() {
+          // Use chance.js to create a random name
+    //const randomName = chance.name(); // Generates a random full name
+    const randomName = chance.word() + chance.integer({ min: 1, max: 99 }); // Combines a random word and number
+
+    // Update the input field with the random name
+    const nameInput = document.querySelector("#nameInput");
+    nameInput.value = randomName;
+      
+        //  const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
+      //  nameInput.value = randomName;
+        // Add animation effect
+     //   nameInput.classList.add('highlight-animation');
+    //    setTimeout(() => nameInput.classList.remove('highlight-animation'), 500);
+    }
+
+    // Add click handler for random name generation
+    generateButton.addEventListener('click', generateRandomName);
+
+    // Handle continue button click
+    continueButton.addEventListener('click', function() {
+        const name = nameInput.value.trim();
+        if (name) {
+            // Store the name
+            localStorage.setItem('playerName', name);
+            // Continue with the simulation
+            location.reload();
+        } else {
+            // Show validation error
+            nameInput.classList.add('is-invalid');
+            document.getElementById('nameHelp').innerHTML = `
+                <span class="text-danger">Please enter a name to continue</span>`;
+        }
+    });
+
+    // Add input validation
+    nameInput.addEventListener('input', function() {
+        if (this.value.trim()) {
+            this.classList.remove('is-invalid');
+            document.getElementById('nameHelp').innerHTML = 
+                'Please enter your name or generate a random one';
+        }
+    });
 
 
             // Your code here
