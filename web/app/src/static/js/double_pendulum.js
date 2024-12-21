@@ -400,6 +400,7 @@ function applyBestActionTorque(pendulum, bestAction) {
     }
 }
 
+
 // Function to add keyboard control
 function addKeyboardControl(pendulum, engine, chainComposite) {
     const lowerArm = pendulum.bodies[1];
@@ -469,15 +470,20 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
                 const lowerArmZone = document.getElementById('lowerArmZoneOutput');
                 // Update the zone display on the webpage
                 const upperArmZone = document.getElementById('upperArmZoneOutput');
-                alert(`Lower Arm Zone: ${lowerArmZone.innerText}, Upper Arm Zone: ${upperArmZone.innerText}`);
+               // alert(`Lower Arm Zone: ${lowerArmZone.innerText}, Upper Arm Zone: ${upperArmZone.innerText}`);
 
                 if (lowerArmZone.innerText === randomZone2 && upperArmZone.innerText === randomZone1) {
                     updateScore(score + 1);
-                    alert('Success! Both links are in their correct zones. Score +1');
+                 //   alert('Success! Both links are in their correct zones. Score +1');
+                 showResultModal(true, 'Success! Both links are in their correct zones. Score +1');
+
                 } else {
-                    alert(`Mismatch!
-            Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
-            Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`);
+                    var mismatchMessage = `Mismatch!
+                     Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
+                    Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`;
+            //         alert(`);
+            showResultModal(false, mismatchMessage);
+
                 }
 
                 // Progression logic: Increase level after every 5 successful scores

@@ -19,7 +19,7 @@
     <!-- <link rel="stylesheet" href="/src/css/styles.css" /> -->
     <!-- <link rel="stylesheet" href="//web/app/src/css/layout_styles.css" /> -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layout_styles.css') }}">
-
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <!-- Matter.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.min.js"></script>
     <!-- Your custom JavaScript file -->
@@ -149,8 +149,88 @@
 
 
             <script>
+
+                function showResultModal(isSuccess, message) {
+                    const modalElement = document.getElementById('resultModal');
+                    const modalMessage = document.getElementById('modalMessage');
+                    const modalTitle = document.getElementById('resultModalLabel');
+                    const continueButton = document.getElementById('continueButton');
+                    
+                    // Set modal content and styling
+                    if (isSuccess) {
+                        modalTitle.textContent = 'Success!';
+                        modalTitle.className = 'modal-title text-success';
+                        modalMessage.innerHTML = `
+                            <div class="alert alert-success fade show">
+                                <i class="fas fa-check-circle me-2"></i>
+                                ${message}
+                            </div>`;
+                        continueButton.className = 'btn btn-success';
+                    } else {
+                        modalTitle.textContent = 'Mismatch!';
+                        modalTitle.className = 'modal-title text-danger';
+                        modalMessage.innerHTML = `
+                            <div class="alert alert-danger fade show">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                ${message}
+                            </div>`;
+                        continueButton.className = 'btn btn-danger';
+                    }
+                
+                    // Create modal instance
+                    const modal = new bootstrap.Modal(modalElement);
+                    
+                    // Handle continue button click with loading state
+                    continueButton.onclick = () => {
+                        continueButton.innerHTML = `
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Loading...`;
+                        continueButton.disabled = true;
+                        
+                        setTimeout(() => {
+                            modal.hide();
+                            location.reload();
+                        }, 500);
+                    };
+                
+                    // Show modal with fade effect
+                    modalElement.addEventListener('shown.bs.modal', () => {
+                        if (isSuccess) {
+                            confetti({
+                                particleCount: 100,
+                                spread: 70,
+                                origin: { y: 0.6 }
+                            });
+                        }
+                    });
+                
+                    modal.show();
+                }
+                
+                // First, add this HTML to your page for the modal
+                const modalHTML = `
+                <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="resultModalLabel">Simulation Result</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="modalMessage">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Quit</button>
+                                <button type="button" class="btn btn-primary" id="continueButton">Continue</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+
+
                 // Initialize the double pendulum example after the page loads
                 window.onload = () => {
+
                     // Call the Simulation.doublePendulum function to run the simulation
                     // const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas');
                     // Select the element
@@ -692,7 +772,8 @@
 
 
         document.addEventListener('DOMContentLoaded', function () {
-
+// Add modal to document
+document.body.insertAdjacentHTML('beforeend', modalHTML);
 
 
             // Your code here
