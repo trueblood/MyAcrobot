@@ -565,14 +565,14 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
 
 
 
-                 showResultModal(true, 'Success! Both links are in their correct zones. Score +1', playerName, playerDifficultyLevel);
+                 showResultModal(true, 'Success! Both links are in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks);
 
                 } else {
                     var mismatchMessage = `Mismatch!
                      Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
                     Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`;
             //         alert(`);
-            showResultModal(false, mismatchMessage, playerName, playerDifficultyLevel);
+            showResultModal(false, mismatchMessage, playerName, playerDifficultyLevel, numberOfLinks);
 
                 }
 
@@ -717,9 +717,9 @@ function detectCircleFromTrail(trail, tolerance = 5, minDistance = 50) {
 
 var Simulation = Simulation || {};
 
-Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerScore=0, websitePlayerLevel=1, websitePendulumWidth=25, websitePendulumLength=100, websitePlayerDifficultyLevel='easy', websitePlayerName='Guest') => {
+Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerScore=0, websitePlayerLevel=1, websitePendulumWidth=25, websitePendulumLength=100, websitePlayerDifficultyLevel='easy', websitePlayerName='Guest', pendulumNumberValue=2) => {
     const { Engine, Events, Render, Runner, Body, Composite, Composites, Constraint, MouseConstraint, Mouse, Bodies, Vector } = Matter;
-
+    
     // Initialize the game
     determineZonesForLevel(websitePlayerDifficultyLevel);
    // alert(`websitePlayerScore is ${websitePlayerScore}`)
@@ -729,11 +729,13 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
     width = websitePendulumWidth;
     playerName = websitePlayerName;
     playerDifficultyLevel = websitePlayerDifficultyLevel;
+    numberOfLinks= pendulumNumberValue;
     alert(`Debug Values:
         Player Score: ${websitePlayerScore === null ? 0 : websitePlayerScore}
         Player Level: ${websitePlayerLevel === null ? 1 : websitePlayerLevel}
         websitePlayerName: ${websitePlayerName} 
         Difficulty Level: ${websitePlayerDifficultyLevel}
+        Number of Pendulum Links: ${pendulumNumberValue}
         Pendulum Length: ${websitePendulumLength}
         Pendulum Width: ${websitePendulumWidth}`)
         ;

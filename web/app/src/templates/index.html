@@ -150,6 +150,7 @@
             <input type="hidden" id="hdnPendulumState" value="">
             <hr/>
             <div id="playerName">Guest</div>
+            <div id="pendulumNumber">2</div>
             <div id="pendulumLength">0</div>
             <div id="pendulumWidth">0</div>
             <div id="playerScore">0</div>
@@ -160,11 +161,6 @@
             <p id="randomZone2Display">Random Zone (Lower Arm): </p>
          <p id="randomZone3Display" class="display-element">Random Zone 3 (Upper Arm): </p>
          <p id="randomZone4Display" class="display-element">Random Zone 4 (Lower Arm): </p>
-            
-
-
-
-
 
             <!-- Container for the pendulum canvas -->
             <div id="double_pendulum_canvas" style="width: 100%; height: 100vh; margin: 0 auto;"></div>
@@ -172,13 +168,14 @@
 
             <script>
 
-                function showResultModal(isSuccess, message, webPlayerName, playerDifficultyLevel) {
+                function showResultModal(isSuccess, message, webPlayerName, playerDifficultyLevel, numberOfLinks) {
                     const modalElement = document.getElementById('resultModal');
                     const modalMessage = document.getElementById('modalMessage');
                     const modalTitle = document.getElementById('resultModalLabel');
                     const continueButton = document.getElementById('continueButton');
                     const nameInput = document.getElementById('nameInput');
                     const difficultySelect = document.getElementById('difficultySelect');
+                    const pendulumLinksSelect = document.getElementById('pendulumLinksSelect');
                     
                     // Set modal content and styling
                     if (isSuccess) {
@@ -192,6 +189,7 @@
                         continueButton.className = 'btn btn-success';
                         nameInput.value = webPlayerName;
                         difficultySelect.value = playerDifficultyLevel; 
+                        pendulumLinksSelect.value = numberOfLinks;
                     } else {
                         modalTitle.textContent = 'Mismatch!';
                         modalTitle.className = 'modal-title text-danger';
@@ -203,6 +201,7 @@
                         continueButton.className = 'btn btn-danger';
                         nameInput.value = webPlayerName;
                         difficultySelect.value = playerDifficultyLevel; 
+                        pendulumLinksSelect.value = numberOfLinks;
                     }
                 
                     // Create modal instance
@@ -284,6 +283,20 @@
                         <strong>Easy peasy for 1 quadrant</strong>, but think twice before picking <strong>Expert!</strong>
                     </div>
                 </div>
+                                    <!-- Pendulum Links Section -->
+                    <div class="form-group mb-3">
+                        <label for="pendulumLinksSelect" class="form-label">Select Number of Pendulum Links:</label>
+                        <select class="form-select" id="pendulumLinksSelect" aria-label="Pendulum Links">
+                            <option value="2" selected>2 Links (Minimum for Easy)</option>
+                            <option value="3">3 Links</option>
+                            <option value="4">4 Links</option>
+                            <option value="5">5 Links</option>
+                            <option value="6">6 Links (Maximum)</option>
+                        </select>
+                        <div id="pendulumLinksHelp" class="form-text">
+                            Select how many links you want for your pendulum. More links add complexity to both the user and AI!
+                        </div>
+                    </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Quit</button>
@@ -304,6 +317,7 @@
                     let websitePendulumWidth = 25;
                     let websitePendulumLength = 100;
                     let websiteDifficultyLevel = "easy";
+                    let websitePendulumNumber = 2;
 
                     function getCookieValues() {
                         // const name = `${cookieName}=`;
@@ -354,6 +368,11 @@
                                // return value; // This will actually return from the function
                                websiteDifficultyLevel = value;
                             }
+                            if (name === 'websitePendulumNumber') {
+                                //alert(`alue  is ${value}`);
+                               // return value; // This will actually return from the function
+                               websitePendulumNumber = value;
+                            }
                         }
                       //  alert(cookieDisplay);
                     
@@ -396,6 +415,7 @@
 
 
                   getCookieValues();  
+                    document.getElementById('pendulumNumber').textContent = websitePendulumNumber;
                   document.getElementById('playerName').textContent = websitePlayerName;
                   document.getElementById('pendulumLength').textContent = websitePendulumLength;
                   document.getElementById('pendulumWidth').textContent = websitePendulumWidth;
@@ -403,6 +423,7 @@
                   document.getElementById('playerLevel').textContent = websitePlayerLevel;
                   document.getElementById('playerDifficultyLevel').textContent = websiteDifficultyLevel;
 
+                  const pendulumNumber = document.getElementById('pendulumNumber').textContent;
                   const playerName = document.getElementById('playerName').textContent;
 const pendulumLength = document.getElementById('pendulumLength').textContent;
 const pendulumWidth = document.getElementById('pendulumWidth').textContent;
@@ -417,6 +438,7 @@ const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').t
                     const widthValue = parseInt(pendulumWidth, 10);
                     const scoreValue = parseInt(playerScore, 10);
                     const levelValue = parseInt(playerLevel, 10);
+                    const pendulumNumberValue = parseInt(pendulumNumber, 10);
 
              //     alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
               //    alert(`websitePlayerName is Tim ${websitePlayerName}`);
@@ -449,7 +471,7 @@ const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').t
                     const centerX = width / 2;
                     const centerY = height / 2;
                     console.log(Simulation.doublePendulum);
-                    const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY, scoreValue, levelValue, widthValue, lengthValue, playerDifficultyLevel, playerName);
+                    const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY, scoreValue, levelValue, widthValue, lengthValue, playerDifficultyLevel, playerName, pendulumNumberValue);
 
 
 
@@ -1009,6 +1031,7 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
     const generateButton = document.getElementById('generateRandomName');
     const continueButton = document.getElementById('continueButton');
     const difficultySelect = document.getElementById('difficultySelect'); // Difficulty dropdown
+    const numberOfLinksSelect = document.getElementById('pendulumLinksSelect'); // Difficulty dropdown
 
     // Array of sample names for random generation
     const sampleNames = [
@@ -1041,6 +1064,7 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
     continueButton.addEventListener('click', function() {
         const name = nameInput.value.trim();
         const selectedDifficulty = difficultySelect.value; // Get the selected difficulty value
+        const numberOfLinks = numberOfLinksSelect.value;
        // alert("selectedDifficulty is ", selectedDifficulty);
 
         if (name) {
@@ -1048,6 +1072,7 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
             // Store the name
            // localStorage.setItem('playerName', name);
                // Clear existing cookies first
+               document.cookie = `websitePendulumNumber=; path=/; max-age=0`; 
                document.cookie = `websitePendulumWidth=; path=/; max-age=0`; 
                document.cookie = `websitePendulumLength=; path=/; max-age=0`; 
     document.cookie = `websitePlayerName=; path=/; max-age=0`; // Clear the player name cookie
@@ -1056,6 +1081,7 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
     document.cookie = `websiteDifficultyLevel=; path=/; max-age=0`; // Clear difficulty level cookie
 
     // Store name and score in cookies
+    document.cookie = `websitePendulumNumber=${numberOfLinks}; path=/; max-age=31536000`; // Save for 1 year
     document.cookie = `websitePendulumLength=${length}; path=/; max-age=31536000`; // Save for 1 year
     document.cookie = `websitePendulumWidth=${width}; path=/; max-age=31536000`; // Save for 1 year
     document.cookie = `websitePlayerName=${encodeURIComponent(name)}; path=/; max-age=31536000`; // Save for 1 year
