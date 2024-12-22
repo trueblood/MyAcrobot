@@ -55,6 +55,36 @@
             savedMessages.push(messageData);
             document.getElementById('savedMessagesHidden').value = JSON.stringify(savedMessages);
         }
+
+        function createArmZones(numberOfLinks) {
+            const container = document.getElementById('armZonesContainer');
+            container.innerHTML = ''; // Clear existing content
+        
+            for (let i = 0; i < numberOfLinks; i++) {
+                const zoneDiv = document.createElement('div');
+                zoneDiv.id = `armZone${i}Output`;
+                zoneDiv.style.textAlign = 'center';
+                zoneDiv.style.fontSize = '18px';
+                zoneDiv.style.marginTop = '10px';
+        
+                zoneDiv.innerHTML = `
+                    <span>Arm ${i + 1} Zone: </span>
+                    <span id="armZone${i}Value">N/A</span>
+                `;
+        
+                container.appendChild(zoneDiv);
+                
+                // Add break element between zones
+                if (i < numberOfLinks - 1) {
+                    const br = document.createElement('br');
+                    container.appendChild(br);
+                }
+            }
+        }
+        
+
+
+
     </script>
 </head>
 
@@ -90,6 +120,7 @@
                 <span>Upper Arm Zone: </span>
                 <span id="upperArmZoneValue">N/A</span>
             </div>
+            <div id="armZonesContainer"></div>
             
             <br />
         <!--    <div id="zoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px;">
@@ -532,6 +563,8 @@ const playerAirFriction = document.getElementById('airFriction').textContent;
                         console.error("Canvas element with ID 'double_pendulum_canvas' not found.");
                         return;
                     }
+
+                    createArmZones(pendulumNumberValue);
 
                     // Get its size and position
                     const rect = canvasDiv.getBoundingClientRect();

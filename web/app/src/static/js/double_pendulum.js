@@ -961,6 +961,15 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
         }
     }));
 
+    const links = [];
+    for (let i = 0; i < numberOfLinks; i++) {
+        links.push(pendulum.bodies[i]);
+    }
+
+    // Show all the links in alert boxes
+// links.forEach((link, index) => {
+//     alert(`Link ${index + 1}:\nPosition: (${link.position.x.toFixed(2)}, ${link.position.y.toFixed(2)})\nAngle: ${link.angle.toFixed(2)} radians`);
+// });
 
     // so this where we add arm to control, lowerarm is the control now
     const lowerArm = pendulum.bodies[1];
@@ -1164,6 +1173,21 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
         const zone = getZone(lowerArmPos, render.options.width, render.options.height); // Call getZone
         const lowerArmZone = getZone(lowerArmPos, render.options.width, render.options.height); // Call getZone
         const upperArmZone = getZone(upperArmPos, render.options.width, render.options.height); // Call getZone
+     
+// Loop through links and get zone for each
+links.forEach((link, index) => {
+    const zone = getZone(link.position, render.options.width, render.options.height);
+    
+    // Get the zone value element using the naming convention from createArmZones
+    const zoneValueElement = document.getElementById(`armZone${index}Output`);
+    
+    
+    // Update the zone value if the element exists
+    if (zoneValueElement) {
+        zoneValueElement.textContent = `${zone}`;
+    }
+   // console.log(`Link position: (${link.position.x}, ${link.position.y}), Zone: ${zone}`);
+});
 
         // Update the zone display on the webpage
         // const zoneOutput = document.getElementById('zoneOutput');
