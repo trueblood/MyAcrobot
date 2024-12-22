@@ -22,6 +22,7 @@ let width = 25;
 let numberOfLinks = 2;
 let playerDifficultyLevel = 'easy';
 let playerName = "Guest";
+let airFriction = 0;
 
 
 // Function to pick a random zone
@@ -565,14 +566,14 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
 
 
 
-                 showResultModal(true, 'Success! Both links are in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks);
+                 showResultModal(true, 'Success! Both links are in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
 
                 } else {
                     var mismatchMessage = `Mismatch!
                      Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
                     Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`;
             //         alert(`);
-            showResultModal(false, mismatchMessage, playerName, playerDifficultyLevel, numberOfLinks);
+            showResultModal(false, mismatchMessage, playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
 
                 }
 
@@ -717,7 +718,7 @@ function detectCircleFromTrail(trail, tolerance = 5, minDistance = 50) {
 
 var Simulation = Simulation || {};
 
-Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerScore=0, websitePlayerLevel=1, websitePendulumWidth=25, websitePendulumLength=100, websitePlayerDifficultyLevel='easy', websitePlayerName='Guest', pendulumNumberValue=2) => {
+Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerScore=0, websitePlayerLevel=1, websitePendulumWidth=25, websitePendulumLength=100, websitePlayerDifficultyLevel='easy', websitePlayerName='Guest', pendulumNumberValue=2, airFrictionValue=0) => {
     const { Engine, Events, Render, Runner, Body, Composite, Composites, Constraint, MouseConstraint, Mouse, Bodies, Vector } = Matter;
     
     // Initialize the game
@@ -730,6 +731,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
     playerName = websitePlayerName;
     playerDifficultyLevel = websitePlayerDifficultyLevel;
     numberOfLinks= pendulumNumberValue;
+    airFriction = airFrictionValue;
     alert(`Debug Values:
         Player Score: ${websitePlayerScore === null ? 0 : websitePlayerScore}
         Player Level: ${websitePlayerLevel === null ? 1 : websitePlayerLevel}
@@ -737,7 +739,8 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
         Difficulty Level: ${websitePlayerDifficultyLevel}
         Number of Pendulum Links: ${pendulumNumberValue}
         Pendulum Length: ${websitePendulumLength}
-        Pendulum Width: ${websitePendulumWidth}`)
+        Pendulum Width: ${websitePendulumWidth}
+         Airfriction Value: ${airFrictionValue}`)
         ;
         
 
@@ -905,7 +908,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
     const pendulum = Composites.stack(300, 160, numberOfLinks, 1, -20, 0, (x, y) =>
         Bodies.rectangle(x, y, length, width, {
             collisionFilter: { group },
-            frictionAir: 0,
+            frictionAir: airFriction,
             chamfer: 5,
             render: {
                 fillStyle: 'transparent',
@@ -948,7 +951,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
 
     Composite.add(pendulum, Constraint.create({
         bodyB: pendulum.bodies[0],
-        pointB: { x: -length * 0.42, y: 0 },
+        //pointB: { x: -length * 0.42, y: 0 },
        // pointB: { x: 19, y: 0 },  // Fixed smaller value
         pointA: { x: gridCenterX, y: gridCenterY },
         stiffness: 0.9,

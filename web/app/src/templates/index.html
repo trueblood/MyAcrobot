@@ -153,6 +153,7 @@
             <div id="pendulumNumber">2</div>
             <div id="pendulumLength">0</div>
             <div id="pendulumWidth">0</div>
+            <div id="airFriction">0</div>
             <div id="playerScore">0</div>
             <div id="playerLevel">0</div>
             <div id="playerDifficultyLevel">0</div>
@@ -167,8 +168,9 @@
 
 
             <script>
+             //   showResultModal(true, 'Success! Both links are in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
 
-                function showResultModal(isSuccess, message, webPlayerName, playerDifficultyLevel, numberOfLinks) {
+                function showResultModal(isSuccess, message, webPlayerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction) {
                     const modalElement = document.getElementById('resultModal');
                     const modalMessage = document.getElementById('modalMessage');
                     const modalTitle = document.getElementById('resultModalLabel');
@@ -176,6 +178,11 @@
                     const nameInput = document.getElementById('nameInput');
                     const difficultySelect = document.getElementById('difficultySelect');
                     const pendulumLinksSelect = document.getElementById('pendulumLinksSelect');
+                    const airFrictionSelect = document.getElementById('airFrictionSelect');
+const pendulumLengthSelect = document.getElementById('pendulumLengthSelect');
+const pendulumWidthSelect = document.getElementById('pendulumWidthSelect');
+const currentScoreElement = document.getElementById('currentScore');
+
                     
                     // Set modal content and styling
                     if (isSuccess) {
@@ -190,6 +197,10 @@
                         nameInput.value = webPlayerName;
                         difficultySelect.value = playerDifficultyLevel; 
                         pendulumLinksSelect.value = numberOfLinks;
+                        airFrictionSelect.value = airFriction;
+                        pendulumLengthSelect.value = length;
+                        pendulumWidthSelect.value = width;
+                    //    currentScoreElement = score;
                     } else {
                         modalTitle.textContent = 'Mismatch!';
                         modalTitle.className = 'modal-title text-danger';
@@ -202,6 +213,10 @@
                         nameInput.value = webPlayerName;
                         difficultySelect.value = playerDifficultyLevel; 
                         pendulumLinksSelect.value = numberOfLinks;
+                        airFrictionSelect.value = airFriction;
+                        pendulumLengthSelect.value = length;
+                        pendulumWidthSelect.value = width;
+                     //   currentScoreElement = score;
                     }
                 
                     // Create modal instance
@@ -244,6 +259,13 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
+                                                    <!-- Current Score Section -->
+                    <div class="form-group text-center mb-4">
+                        <h4 id="currentScoreDisplay" class="text-success">
+                            Current Score: <span id="currentScore">0</span> 🎉
+                        </h4>
+                    </div>
+
                                 <div id="modalMessage" class="mb-3"></div>
                                 
                                 <!-- Name Input Section -->
@@ -283,6 +305,10 @@
                         <strong>Easy peasy for 1 quadrant</strong>, but think twice before picking <strong>Expert!</strong>
                     </div>
                 </div>
+                                                    <!-- Cute Separator -->
+                    <hr class="my-4">
+                    <h6 class="text-center text-primary">✨ Custom Pendulum Options 🎮 ✨</h6>
+                    <hr class="my-4">
                                     <!-- Pendulum Links Section -->
                     <div class="form-group mb-3">
                         <label for="pendulumLinksSelect" class="form-label">Select Number of Pendulum Links:</label>
@@ -295,6 +321,45 @@
                         </select>
                         <div id="pendulumLinksHelp" class="form-text">
                             Select how many links you want for your pendulum. More links add complexity to both the user and AI!
+                        </div>
+                    </div>
+                    <!-- Air Friction Section -->
+                    <div class="form-group mb-3">
+                        <label for="airFrictionSelect" class="form-label">Select Air Friction Level:</label>
+                        <select class="form-select" id="airFrictionSelect" aria-label="Air Friction">
+                            <option value="0" selected>Breezy (Low Friction)</option>
+                            <option value="1">Gusty (Medium Friction)</option>
+                            <option value="2">Stormy (High Friction)</option>
+                        </select>
+                        <div id="airFrictionHelp" class="form-text">
+                            The air resistance affects the pendulum's movement. A breezy day might be easier to handle!
+                        </div>
+                    </div>
+
+                    <!-- Pendulum Length Section -->
+                    <div class="form-group mb-3">
+                        <label for="pendulumLengthSelect" class="form-label">Select Pendulum Length:</label>
+                        <select class="form-select" id="pendulumLengthSelect" aria-label="Pendulum Length">
+                            <option value="100" selected>Short (100px)</option>
+                            <option value="150">Medium (150px)</option>
+                            <option value="200">Long (200px)</option>
+                        </select>
+                        <div id="pendulumLengthHelp" class="form-text">
+                            Choose how long you want each pendulum link to be. Long pendulums are tricky but fun!
+                        </div>
+                    </div>
+    
+
+                    <!-- Pendulum Width Section -->
+                    <div class="form-group mb-3">
+                        <label for="pendulumWidthSelect" class="form-label">Select Pendulum Width:</label>
+                        <select class="form-select" id="pendulumWidthSelect" aria-label="Pendulum Width">
+                            <option value="10" selected>Thin (10px)</option>
+                            <option value="25">Medium (20px)</option>
+                            <option value="30">Thick (30px)</option>
+                        </select>
+                        <div id="pendulumWidthHelp" class="form-text">
+                            Adjust the width of each pendulum link. Thicker links add more inertia!
                         </div>
                     </div>
                             </div>
@@ -318,6 +383,7 @@
                     let websitePendulumLength = 100;
                     let websiteDifficultyLevel = "easy";
                     let websitePendulumNumber = 2;
+                    let websiteAirFriction = 0;
 
                     function getCookieValues() {
                         // const name = `${cookieName}=`;
@@ -373,6 +439,11 @@
                                // return value; // This will actually return from the function
                                websitePendulumNumber = value;
                             }
+                            if (name === 'websiteAirFriction') {
+                                //alert(`alue  is ${value}`);
+                               // return value; // This will actually return from the function
+                               websiteAirFriction = value;
+                            }
                         }
                       //  alert(cookieDisplay);
                     
@@ -422,6 +493,7 @@
                   document.getElementById('playerScore').textContent = websitePlayerScore;
                   document.getElementById('playerLevel').textContent = websitePlayerLevel;
                   document.getElementById('playerDifficultyLevel').textContent = websiteDifficultyLevel;
+                  document.getElementById('airFriction').textContent = websiteAirFriction;
 
                   const pendulumNumber = document.getElementById('pendulumNumber').textContent;
                   const playerName = document.getElementById('playerName').textContent;
@@ -430,6 +502,7 @@ const pendulumWidth = document.getElementById('pendulumWidth').textContent;
 const playerScore = document.getElementById('playerScore').textContent;
 const playerLevel = document.getElementById('playerLevel').textContent;
 const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').textContent;
+const playerAirFriction = document.getElementById('airFriction').textContent;
 
 //alert(`playerDifficultyLevel is ${playerDifficultyLevel}`);
 //alert(`playerName is ${playerName}`);
@@ -439,6 +512,8 @@ const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').t
                     const scoreValue = parseInt(playerScore, 10);
                     const levelValue = parseInt(playerLevel, 10);
                     const pendulumNumberValue = parseInt(pendulumNumber, 10);
+                    const airFrictionValue = parseInt(playerAirFriction);
+
 
              //     alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
               //    alert(`websitePlayerName is Tim ${websitePlayerName}`);
@@ -471,7 +546,7 @@ const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').t
                     const centerX = width / 2;
                     const centerY = height / 2;
                     console.log(Simulation.doublePendulum);
-                    const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY, scoreValue, levelValue, widthValue, lengthValue, playerDifficultyLevel, playerName, pendulumNumberValue);
+                    const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY, scoreValue, levelValue, widthValue, lengthValue, playerDifficultyLevel, playerName, pendulumNumberValue, airFrictionValue);
 
 
 
@@ -1032,7 +1107,12 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
     const continueButton = document.getElementById('continueButton');
     const difficultySelect = document.getElementById('difficultySelect'); // Difficulty dropdown
     const numberOfLinksSelect = document.getElementById('pendulumLinksSelect'); // Difficulty dropdown
+    const currentScore = document.getElementById('currentScore'); // Difficulty dropdown
+    const airFrictionSelect = document.getElementById('airFrictionSelect'); // Difficulty dropdown
+    const pendulumLengthSelect = document.getElementById('pendulumLengthSelect'); // Difficulty dropdown
+    const pendulumWidthSelect = document.getElementById('pendulumWidthSelect'); // Difficulty dropdown
 
+    
     // Array of sample names for random generation
     const sampleNames = [
         "Alex Smith", "Jordan Lee", "Taylor Wong", 
@@ -1065,6 +1145,10 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
         const name = nameInput.value.trim();
         const selectedDifficulty = difficultySelect.value; // Get the selected difficulty value
         const numberOfLinks = numberOfLinksSelect.value;
+        const curScore = currentScore.value;
+        const airFriction = airFrictionSelect.value;
+        const pendLength = pendulumLengthSelect.value;
+        const pendWidth = pendulumWidthSelect.value;
        // alert("selectedDifficulty is ", selectedDifficulty);
 
         if (name) {
@@ -1079,15 +1163,17 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
     document.cookie = `websitePlayerScore=; path=/; max-age=0`; // Clear the player score cookie
     document.cookie = `websitePlayerLevel=; path=/; max-age=0`; // Clear the player level cookie
     document.cookie = `websiteDifficultyLevel=; path=/; max-age=0`; // Clear difficulty level cookie
+    document.cookie = `websiteAirFriction=; path=/; max-age=0`; // Clear difficulty level cookie
 
     // Store name and score in cookies
     document.cookie = `websitePendulumNumber=${numberOfLinks}; path=/; max-age=31536000`; // Save for 1 year
-    document.cookie = `websitePendulumLength=${length}; path=/; max-age=31536000`; // Save for 1 year
-    document.cookie = `websitePendulumWidth=${width}; path=/; max-age=31536000`; // Save for 1 year
+    document.cookie = `websitePendulumLength=${pendLength}; path=/; max-age=31536000`; // Save for 1 year
+    document.cookie = `websitePendulumWidth=${pendWidth}; path=/; max-age=31536000`; // Save for 1 year
     document.cookie = `websitePlayerName=${encodeURIComponent(name)}; path=/; max-age=31536000`; // Save for 1 year
-    document.cookie = `websitePlayerScore=${score}; path=/; max-age=31536000`; // Save for 1 year
+    document.cookie = `websitePlayerScore=${curScore}; path=/; max-age=31536000`; // Save for 1 year
     document.cookie = `websitePlayerLevel=${level}; path=/; max-age=31536000`; // Save for 1 year
     document.cookie = `websiteDifficultyLevel=${selectedDifficulty}; path=/; max-age=31536000`; // Save difficulty level
+    document.cookie = `websiteAirFriction=${airFriction}; path=/; max-age=31536000`; // Save difficulty level
 
     console.log("Player name and score saved to cookies.");
             // Continue with the simulation
