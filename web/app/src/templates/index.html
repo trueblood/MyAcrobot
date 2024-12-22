@@ -145,6 +145,7 @@
             <!-- Hidden input to store messages -->
             <input type="hidden" id="savedMessagesHidden" value="[]">
             <input type="hidden" id="hdnPendulumState" value="">
+            <div id="playerName">Guest</div>
 
             <!-- Container for the pendulum canvas -->
             <div id="double_pendulum_canvas" style="width: 100%; height: 100vh; margin: 0 auto;"></div>
@@ -337,10 +338,11 @@
 
                   getCookieValues();  
 
+                  document.getElementById('playerName').textContent = websitePlayerName;
 
-                  alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
-                  alert(`websitePlayerName is Tim ${websitePlayerName}`);
-                  alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
+             //     alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
+              //    alert(`websitePlayerName is Tim ${websitePlayerName}`);
+              //    alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
                  // alert("websitePlayerScore is ", websitePlayerScore);
                  // let websitePlayerName = getCookieValue('websitePlayerName');  
                  // let websitePlayerLevel = getCookieValue('websitePlayerLevel');  
@@ -370,7 +372,7 @@
                     const centerY = height / 2;
                     console.log(Simulation.doublePendulum);
 
-                    const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
+                    const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY, websitePlayerScore, websitePlayerLevel);
                     //const link1Input = document.getElementById('link1Length');
                     //const link2Input = document.getElementById('link2Length');
 
@@ -1035,12 +1037,12 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
 
             // Add this to your script
             window.addEventListener('resize', () => {
-                getCookieValues();  
+                //getCookieValues();  
 
 
-                alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
-                alert(`websitePlayerName is Tim ${websitePlayerName}`);
-                alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
+                //alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
+               // alert(`websitePlayerName is Tim ${websitePlayerName}`);
+               // alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
                 // Get the canvas div
                 const canvasDiv = document.getElementById("double_pendulum_canvas");
 

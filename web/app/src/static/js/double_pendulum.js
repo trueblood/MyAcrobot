@@ -627,13 +627,13 @@ function detectCircleFromTrail(trail, tolerance = 5, minDistance = 50) {
 
 var Simulation = Simulation || {};
 
-Simulation.doublePendulum = async (containerId, centerX, centerY, score, level) => {
+Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerScore, websitePlayerLevel) => {
     const { Engine, Events, Render, Runner, Body, Composite, Composites, Constraint, MouseConstraint, Mouse, Bodies, Vector } = Matter;
 
     // Initialize the game
     determineZonesForLevel();
-    updateScore(0);
-    updateLevel(1);
+    updateScore(websitePlayerScore === null ? 0 : websitePlayerScore);
+    updateLevel(websitePlayerLevel === null ? 1 : websitePlayerLevel);    
 
     console.log("centerX = " + centerX);
     console.log("centerY = " + centerY);
