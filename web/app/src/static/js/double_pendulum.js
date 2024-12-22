@@ -627,7 +627,7 @@ function detectCircleFromTrail(trail, tolerance = 5, minDistance = 50) {
 
 var Simulation = Simulation || {};
 
-Simulation.doublePendulum = async (containerId, centerX, centerY) => {
+Simulation.doublePendulum = async (containerId, centerX, centerY, score, level) => {
     const { Engine, Events, Render, Runner, Body, Composite, Composites, Constraint, MouseConstraint, Mouse, Bodies, Vector } = Matter;
 
     // Initialize the game

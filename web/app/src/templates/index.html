@@ -256,6 +256,95 @@
                 // Initialize the double pendulum example after the page loads
                 window.onload = () => {
 
+                    let websitePlayerScore = 0;
+                    let websitePlayerName = "Guest";
+                    let websitePlayerLevel = 1;
+
+                    function getCookieValues() {
+                        // const name = `${cookieName}=`;
+                        // const decodedCookies = decodeURIComponent(document.cookie);
+                        // const cookiesArray = decodedCookies.split(';');
+                        // for (let cookie of cookiesArray) {
+                        //     cookie = cookie.trim();
+                        //     if (cookie.startsWith(name)) {
+                        //         return cookie.substring(name.length);
+                        //     }
+                        // }
+                        // return null; // Return null if the cookie is not found
+                        const decodedCookies = decodeURIComponent(document.cookie);
+                        const cookiesArray = decodedCookies.split(';');        
+                        
+                        if (cookiesArray[0] === '') {
+                            return alert('No cookies found!');
+                        }
+                        for (const cookie of cookiesArray) {
+                            const [name, value] = cookie.trim().split('=');
+                            if (name === 'websitePlayerScore') {
+                                //alert(`alue  is ${value}`);
+                               // return value; // This will actually return from the function
+                               websitePlayerScore = value;
+                            }
+                            if (name === 'websitePlayerName') {
+                                //alert(`alue  is ${value}`);
+                               // return value; // This will actually return from the function
+                               websitePlayerName = value;
+                            }
+                            if (name === 'websitePlayerLevel') {
+                                //alert(`alue  is ${value}`);
+                               // return value; // This will actually return from the function
+                               websitePlayerLevel = value;
+                            }
+                        }
+                      //  alert(cookieDisplay);
+                    
+                        // const decodedCookies = decodeURIComponent(document.cookie);
+                        // const cookiesArray = decodedCookies.split(';');
+                        // let cookieDisplay = 'Player Score Data:\n------------------\n';
+                        
+                        // // Find the websitePlayerScore cookie
+                        // const playerScoreCookie = cookiesArray.find(cookie => 
+                        //     cookie.trim().startsWith(cookieName)
+                        // );
+                    
+                        // if (!playerScoreCookie) {
+                        //     return alert('No player score data found!');
+                        // }
+                    
+                        // try {
+                        //     // Try to parse JSON value
+                        //     const parsedValue = JSON.parse(value);
+                        //     if (typeof parsedValue === 'object') {
+                        //         for (const [key, val] of Object.entries(parsedValue)) {
+                        //             cookieDisplay += `${key}: ${val}\n`;
+                        //         }
+                        //     } else {
+                        //         cookieDisplay += `Score: ${value}\n`;
+                        //     }
+                        // } catch {
+                        //     // If not JSON, show raw value
+                        //     cookieDisplay += `Score: ${value}\n`;
+                        // }
+                    
+                        // alert(cookieDisplay);
+                    
+                    }
+
+
+
+
+
+
+
+                  getCookieValues();  
+
+
+                  alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
+                  alert(`websitePlayerName is Tim ${websitePlayerName}`);
+                  alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
+                 // alert("websitePlayerScore is ", websitePlayerScore);
+                 // let websitePlayerName = getCookieValue('websitePlayerName');  
+                 // let websitePlayerLevel = getCookieValue('websitePlayerLevel');  
+
                     // Call the Simulation.doublePendulum function to run the simulation
                     // const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas');
                     // Select the element
@@ -282,22 +371,22 @@
                     console.log(Simulation.doublePendulum);
 
                     const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
-                    const link1Input = document.getElementById('link1Length');
-                    const link2Input = document.getElementById('link2Length');
+                    //const link1Input = document.getElementById('link1Length');
+                    //const link2Input = document.getElementById('link2Length');
 
-                    if (!link1Input || !link2Input) {
-                        console.error("Slider elements with IDs 'link1Length' or 'link2Length' not found.");
-                        return;
-                    }
+                   // if (!link1Input || !link2Input) {
+                    //    console.error("Slider elements with IDs 'link1Length' or 'link2Length' not found.");
+                     //   return;
+                   // }
 
                     // Add event listeners to update pendulum link lengths dynamically
-                    link1Input.addEventListener('input', () => {
+                  //  link1Input.addEventListener('input', () => {
                         //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
-                    });
+                  //  });
 
-                    link2Input.addEventListener('input', () => {
+                //    link2Input.addEventListener('input', () => {
                         //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
-                    });
+                 //   });
 
                 };
             </script>
@@ -797,6 +886,9 @@
 
 
         document.addEventListener('DOMContentLoaded', function () {
+
+               
+
 // Add modal to document
 document.body.insertAdjacentHTML('beforeend', modalHTML);
 
@@ -836,7 +928,18 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
         const name = nameInput.value.trim();
         if (name) {
             // Store the name
-            localStorage.setItem('playerName', name);
+           // localStorage.setItem('playerName', name);
+               // Clear existing cookies first
+    document.cookie = `websitePlayerName=; path=/; max-age=0`; // Clear the player name cookie
+    document.cookie = `websitePlayerScore=; path=/; max-age=0`; // Clear the player score cookie
+    document.cookie = `websitePlayerLevel=; path=/; max-age=0`; // Clear the player level cookie
+
+    // Store name and score in cookies
+    document.cookie = `websitePlayerName=${encodeURIComponent(name)}; path=/; max-age=31536000`; // Save for 1 year
+    document.cookie = `websitePlayerScore=${score}; path=/; max-age=31536000`; // Save for 1 year
+    document.cookie = `websitePlayerLevel=${level}; path=/; max-age=31536000`; // Save for 1 year
+
+    console.log("Player name and score saved to cookies.");
             // Continue with the simulation
             location.reload();
         } else {
@@ -932,6 +1035,12 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
 
             // Add this to your script
             window.addEventListener('resize', () => {
+                getCookieValues();  
+
+
+                alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
+                alert(`websitePlayerName is Tim ${websitePlayerName}`);
+                alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
                 // Get the canvas div
                 const canvasDiv = document.getElementById("double_pendulum_canvas");
 
