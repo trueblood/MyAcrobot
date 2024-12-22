@@ -1,3 +1,5 @@
+// https://chatgpt.com/c/6766dfef-3500-8000-9c2a-2bdd33925e1c
+
 const trails = {
     lowerArm: [],
     upperArm: [],
@@ -12,7 +14,15 @@ let lastAlignmentTime = 0;
 let level = 1; // Initialize the level
 let randomZone1 = ''; // Random zone for the upper arm
 let randomZone2 = ''; // Random zone for the lower arm
+let randomZone3 = ''; // Random zone for the upper arm
+let randomZone4 = ''; // Random zone for the lower arm
 let score = 0; // Initialize the score
+let length = 100;
+let width = 25;
+let numberOfLinks = 2;
+let playerDifficultyLevel = 'easy';
+let playerName = "Guest";
+
 
 // Function to pick a random zone
 function pickRandomZone() {
@@ -33,24 +43,76 @@ function pickAdjacentZone(currentZone) {
 }
 
 // Function to determine random zones based on the level
-function determineZonesForLevel() {
-    if (level === 1) {
-        // Level 1: Both zones are the same
+// function determineZonesForLevel() {
+//     if (level === 1) {
+//         // Level 1: Both zones are the same
+//         const zone = pickRandomZone();
+//         randomZone1 = zone;
+//         randomZone2 = zone;
+//     } else if (level === 2) {
+//         // Level 2: Zones are adjacent
+//         randomZone1 = pickRandomZone();
+//         randomZone2 = pickAdjacentZone(randomZone1);
+//     } else if (level >= 3) {
+//         // Level 3: Zones are random
+//         randomZone1 = pickRandomZone();
+//         randomZone2 = pickRandomZone();
+//     }
+
+//     updateRandomZone1(randomZone1);
+//     updateRandomZone2(randomZone2);
+// }
+
+function determineZonesForLevel(difficulty) {
+    // Reset zones
+    randomZone1 = '';
+    randomZone2 = '';
+    randomZone3 = '';
+    randomZone4 = '';
+
+    if (difficulty === 'easy') {
+        // Easy: 1 zone required
         const zone = pickRandomZone();
         randomZone1 = zone;
-        randomZone2 = zone;
-    } else if (level === 2) {
-        // Level 2: Zones are adjacent
+        //randomZone2 = zone;
+    } else if (difficulty === 'medium') {
+        // Medium: 2 zones required
         randomZone1 = pickRandomZone();
         randomZone2 = pickAdjacentZone(randomZone1);
-    } else if (level >= 3) {
-        // Level 3: Zones are random
+    } else if (difficulty === 'hard') {
+        // Hard: 3 zones required
         randomZone1 = pickRandomZone();
         randomZone2 = pickRandomZone();
+        while (randomZone2 === randomZone1) {
+            randomZone2 = pickRandomZone(); // Ensure zones are different
+        }
+        randomZone3 = pickRandomZone();
+        while (randomZone3 === randomZone1 || randomZone3 === randomZone2) {
+            randomZone3 = pickRandomZone(); // Ensure zones are unique
+        }
+    } else if (difficulty === 'expert') {
+        // Expert: 4 zones required
+        const usedZones = [];
+        while (usedZones.length < 4) {
+            const zone = pickRandomZone();
+            if (!usedZones.includes(zone)) {
+                usedZones.push(zone);
+            }
+        }
+        randomZone1 = usedZones[0];
+        randomZone2 = usedZones[1];
+        randomZone3 = usedZones[2];
+        randomZone4 = usedZones[3];
     }
 
+    // Update the UI with the determined zones
     updateRandomZone1(randomZone1);
     updateRandomZone2(randomZone2);
+    updateRandomZone3(randomZone3);
+    updateRandomZone4(randomZone4);
+
+    console.log(`Difficulty: ${difficulty}`);
+    console.log(`Zones: ${randomZone1}, ${randomZone2}, ${randomZone3}, ${randomZone4}`);
 }
 
 // Functions to update HTML elements
@@ -67,6 +129,22 @@ function updateRandomZone2(value) {
     const randomZone2Display = document.getElementById('randomZone2Display');
     if (randomZone2Display) {
         randomZone2Display.textContent = `Random Zone (Lower Arm): ${value}`;
+    }
+}
+
+function updateRandomZone3(value) {
+    randomZone3 = value;
+    const randomZone3Display = document.getElementById('randomZone3Display');
+    if (randomZone3Display) {
+        randomZone3Display.textContent = `Random Zone 3 (Upper Arm): ${value}`;
+    }
+}
+
+function updateRandomZone4(value) {
+    randomZone4 = value;
+    const randomZone4Display = document.getElementById('randomZone4Display');
+    if (randomZone4Display) {
+        randomZone4Display.textContent = `Random Zone 4 (Lower Arm): ${value}`;
     }
 }
 
@@ -475,14 +553,26 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
                 if (lowerArmZone.innerText === randomZone2 && upperArmZone.innerText === randomZone1) {
                     updateScore(score + 1);
                  //   alert('Success! Both links are in their correct zones. Score +1');
-                 showResultModal(true, 'Success! Both links are in their correct zones. Score +1');
+
+
+
+                
+//const pendulumLength = document.getElementById('pendulumLength').textContent;
+//const pendulumWidth = document.getElementById('pendulumWidth').textContent;
+//const playerScore = document.getElementById('playerScore').textContent;
+//const playerLevel = document.getElementById('playerLevel').textContent;
+//const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').textContent;
+
+
+
+                 showResultModal(true, 'Success! Both links are in their correct zones. Score +1', playerName, playerDifficultyLevel);
 
                 } else {
                     var mismatchMessage = `Mismatch!
                      Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
                     Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`;
             //         alert(`);
-            showResultModal(false, mismatchMessage);
+            showResultModal(false, mismatchMessage, playerName, playerDifficultyLevel);
 
                 }
 
@@ -627,13 +717,27 @@ function detectCircleFromTrail(trail, tolerance = 5, minDistance = 50) {
 
 var Simulation = Simulation || {};
 
-Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerScore, websitePlayerLevel) => {
+Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerScore=0, websitePlayerLevel=1, websitePendulumWidth=25, websitePendulumLength=100, websitePlayerDifficultyLevel='easy', websitePlayerName='Guest') => {
     const { Engine, Events, Render, Runner, Body, Composite, Composites, Constraint, MouseConstraint, Mouse, Bodies, Vector } = Matter;
 
     // Initialize the game
-    determineZonesForLevel();
+    determineZonesForLevel(websitePlayerDifficultyLevel);
+   // alert(`websitePlayerScore is ${websitePlayerScore}`)
     updateScore(websitePlayerScore === null ? 0 : websitePlayerScore);
     updateLevel(websitePlayerLevel === null ? 1 : websitePlayerLevel);    
+    length = websitePendulumLength;
+    width = websitePendulumWidth;
+    playerName = websitePlayerName;
+    playerDifficultyLevel = websitePlayerDifficultyLevel;
+    alert(`Debug Values:
+        Player Score: ${websitePlayerScore === null ? 0 : websitePlayerScore}
+        Player Level: ${websitePlayerLevel === null ? 1 : websitePlayerLevel}
+        websitePlayerName: ${websitePlayerName} 
+        Difficulty Level: ${websitePlayerDifficultyLevel}
+        Pendulum Length: ${websitePendulumLength}
+        Pendulum Width: ${websitePendulumWidth}`)
+        ;
+        
 
     console.log("centerX = " + centerX);
     console.log("centerY = " + centerY);
@@ -788,10 +892,15 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
     // const length = 150; // Change from 200 to whatever length you want
     // const width = 25;   // This is the width of each link
 
-    const length = 100;
-    const width = 25;
+    //const length = 100;
+    //const width = 25;
 
-    const pendulum = Composites.stack(300, 160, 2, 1, -20, 0, (x, y) =>
+
+
+    //const length = 100;
+    //const width = 25;
+    // const numberOfLinks = 3;
+    const pendulum = Composites.stack(300, 160, numberOfLinks, 1, -20, 0, (x, y) =>
         Bodies.rectangle(x, y, length, width, {
             collisionFilter: { group },
             frictionAir: 0,
@@ -838,6 +947,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
     Composite.add(pendulum, Constraint.create({
         bodyB: pendulum.bodies[0],
         pointB: { x: -length * 0.42, y: 0 },
+       // pointB: { x: 19, y: 0 },  // Fixed smaller value
         pointA: { x: gridCenterX, y: gridCenterY },
         stiffness: 0.9,
         length: 0,
