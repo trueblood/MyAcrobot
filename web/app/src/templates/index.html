@@ -29,7 +29,9 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script type="text/javascript">
-        var socket = io();
+        // var socket = io();
+        // var socket = io('http://localhost:80', { transports: ['websocket'] }); // this worked for local docker container
+        var socket = io('https://localhost', { transports: ['websocket'] });
         var savedMessages = []; // Array to store all messages
 
         socket.on('connect', function () {

@@ -24,6 +24,12 @@ docker run -p 8080:8080 aws_docker_file
 
 #docker images - to list all images
 
+# important docker commands to remove all images
+docker stop $(docker ps -a -q)
+docker rm -f $(docker ps -a -q)
+docker rmi -f $(docker images -q)
+docker system prune -a --volumes # complete cleanup
+
 ****************************************************
 
 #AWS Steps

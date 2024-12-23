@@ -937,10 +937,13 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
     //const length = 100;
     //const width = 25;
     // const numberOfLinks = 3;
+   // const pendulum = Composites.stack(300, 160, 2, 1, -20, 0, (x, y) =>
+
     const pendulum = Composites.stack(300, 160, numberOfLinks, 1, -20, 0, (x, y) =>
         Bodies.rectangle(x, y, length, width, {
             collisionFilter: { group },
-            frictionAir: airFriction,
+         frictionAir: airFriction,
+        //frictionAir: 0,
             chamfer: 5,
             render: {
                 fillStyle: 'transparent',
@@ -983,7 +986,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
 
     Composite.add(pendulum, Constraint.create({
         bodyB: pendulum.bodies[0],
-        //pointB: { x: -length * 0.42, y: 0 },
+        pointB: { x: -length * 0.42, y: 0 },
         // pointB: { x: 19, y: 0 },  // Fixed smaller value
         pointA: { x: gridCenterX, y: gridCenterY },
         stiffness: 0.9,
@@ -1276,6 +1279,17 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
     const stepInterval = 1000 / 60; // 60 FPS step duration
     // const pauseDuration = 5000; // Pause for 5 seconds
     const pauseDuration = 50; // Pause for 5 seconds
+
+    currentControl = 'upperArm'; // Switch to upper arm
+    //   console.log('Switched control to upper arm');
+       // Fill the selected arm with lighter red
+       upperArm.render.fillStyle = '#ff6666'; // Lighter red
+       upperArm.render.strokeStyle = '#1a1a1a';
+       // Reset the other arm
+       lowerArm.render.fillStyle = 'transparent';
+       lowerArm.render.strokeStyle = '#1a1a1a';
+       // Update the zone display on the webpage
+       updateOutputMessageForCurrentlySelectedLink('Currently controlling: Upper Arm');
 
     while (true) {
         Engine.update(engine, stepInterval);

@@ -25,6 +25,8 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 import torch
 import torch.nn as nn
+from flask_cors import CORS
+
 
 class DQN(nn.Module):
     def __init__(self, input_dim, output_dim):
@@ -40,7 +42,9 @@ class DQN(nn.Module):
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+#socketio = SocketIO(app)
+CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
+socketio = SocketIO(app, cors_allowed_origins="*")  # Enable CORS for SocketIO
 
 @socketio.on('connect')
 def handle_connect():
@@ -112,8 +116,14 @@ def home():
 def index():
     return render_template('testsocket.html')
 
+# if __name__ == '__main__':
+#   #  print("\nServer running!")
+#   #  print("WebSocket URL: http://localhost:8078/testsocket")
+#   #  print("Click the URL above to open in your browser\n")
+#     socketio.run(app, host='0.0.0.0', port=8080)
+    
 if __name__ == '__main__':
-    print("\nServer running!")
-    print("WebSocket URL: http://localhost:8078/testsocket")
-    print("Click the URL above to open in your browser\n")
-    socketio.run(app, host='0.0.0.0', port=8078)
+    socketio.run(app, host='0.0.0.0', port=443, ssl_context=('/app/certs/fullchain.pem', '/app/certs/privkey.pem'))
+
+# if __name__ == '__main__':
+#    socketio.run(app, host='0.0.0.0', port=80)
