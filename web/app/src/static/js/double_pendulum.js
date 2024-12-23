@@ -23,6 +23,7 @@ let numberOfLinks = 2;
 let playerDifficultyLevel = 'easy';
 let playerName = "Guest";
 let airFriction = 0;
+const links = [];
 
 
 // Function to pick a random zone
@@ -121,7 +122,7 @@ function updateRandomZone1(value) {
     randomZone1 = value;
     const randomZone1Display = document.getElementById('randomZone1Display');
     if (randomZone1Display) {
-        randomZone1Display.textContent = `Random Zone (Upper Arm): ${value}`;
+        randomZone1Display.textContent = `${value}`;
     }
 }
 
@@ -129,7 +130,7 @@ function updateRandomZone2(value) {
     randomZone2 = value;
     const randomZone2Display = document.getElementById('randomZone2Display');
     if (randomZone2Display) {
-        randomZone2Display.textContent = `Random Zone (Lower Arm): ${value}`;
+        randomZone2Display.textContent = `${value}`;
     }
 }
 
@@ -137,7 +138,7 @@ function updateRandomZone3(value) {
     randomZone3 = value;
     const randomZone3Display = document.getElementById('randomZone3Display');
     if (randomZone3Display) {
-        randomZone3Display.textContent = `Random Zone 3 (Upper Arm): ${value}`;
+        randomZone3Display.textContent = `${value}`;
     }
 }
 
@@ -145,7 +146,7 @@ function updateRandomZone4(value) {
     randomZone4 = value;
     const randomZone4Display = document.getElementById('randomZone4Display');
     if (randomZone4Display) {
-        randomZone4Display.textContent = `Random Zone 4 (Lower Arm): ${value}`;
+        randomZone4Display.textContent = `${value}`;
     }
 }
 
@@ -540,40 +541,71 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
             //     currentLink.innerText = `Currently controlling: Upper Arm`;
             // }
         } else if (key === 'c') {
+            const randomZones = [];
+                // Get the zone display elements
+                const randomZone1Display = document.getElementById('randomZone1Display');
+                const randomZone2Display = document.getElementById('randomZone2Display');
+                const randomZone3Display = document.getElementById('randomZone3Display');
+                const randomZone4Display = document.getElementById('randomZone4Display');
+                
+                // Add the values to the array if they exist and have text content
+                if (randomZone1Display && randomZone1Display.textContent.trim()) {
+                    randomZones.push(randomZone1Display.textContent.trim());
+                }
+                if (randomZone2Display && randomZone2Display.textContent.trim()) {
+                    randomZones.push(randomZone2Display.textContent.trim());
+                }
+                if (randomZone3Display && randomZone3Display.textContent.trim()) {
+                    randomZones.push(randomZone3Display.textContent.trim());
+                }
+                if (randomZone4Display && randomZone4Display.textContent.trim()) {
+                    randomZones.push(randomZone4Display.textContent.trim());
+                }
+                
+                // Show the array length in an alert box
+             //   alert(`Number of Random Zones: ${randomZones.length}\nValues: ${randomZones.join(', ')}`);
+
+
             // Call removeChain if required (keeping your original functionality)
             removeChain(engine, chainComposite);
 
             // Add a 1.5-second delay using setTimeout
             setTimeout(() => {
-                // Update the zone display on the webpage
-                const lowerArmZone = document.getElementById('lowerArmZoneOutput');
-                // Update the zone display on the webpage
-                const upperArmZone = document.getElementById('upperArmZoneOutput');
-               // alert(`Lower Arm Zone: ${lowerArmZone.innerText}, Upper Arm Zone: ${upperArmZone.innerText}`);
-
-                if (lowerArmZone.innerText === randomZone2 && upperArmZone.innerText === randomZone1) {
-                    updateScore(score + 1);
-                 //   alert('Success! Both links are in their correct zones. Score +1');
+             
 
 
-
+                // Populate targetZones with the zones we need to match
+                links.forEach((link, index) => {
+                    const zoneValueElement = document.getElementById(`armZone${index}Output`); // Corrected element ID
+                    if (zoneValueElement) {     //armZone1Output
+    
+                        const zoneValue = zoneValueElement.textContent.trim();
                 
-//const pendulumLength = document.getElementById('pendulumLength').textContent;
-//const pendulumWidth = document.getElementById('pendulumWidth').textContent;
-//const playerScore = document.getElementById('playerScore').textContent;
-//const playerLevel = document.getElementById('playerLevel').textContent;
-//const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').textContent;
-
-
-
-                 showResultModal(true, 'Success! Both links are in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+                        // Find and remove matching zone from randomZones
+                        const matchingIndex = randomZones.indexOf(zoneValue);
+                        if (matchingIndex !== -1) {
+                            randomZones.splice(matchingIndex, 1); // Remove the matching zone
+                            alert(`Match found and removed: ${zoneValue}`);
+                        }
+                    }
+                })
+                
+                if (randomZones == 0) {
+   
+                    showResultModal(true, 'Success! Pendulum(s) landed in their correct zones. Score +1',  playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
 
                 } else {
-                    var mismatchMessage = `Mismatch!
-                     Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
-                    Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`;
-            //         alert(`);
-            showResultModal(false, mismatchMessage, playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+                    let mismatchDetails = 'Mismatch!\nExpected Zones:\n';
+                    randomZones.forEach((zone, index) => {
+                        mismatchDetails += `Zone ${index + 1}: ${zone}\n`;
+                    });
+                
+
+                    // var mismatchMessage = `Mismatch!
+                    //  Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
+                    // Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`;
+                    // //         alert(`);
+                    showResultModal(false, mismatchDetails, playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
 
                 }
 
@@ -718,19 +750,19 @@ function detectCircleFromTrail(trail, tolerance = 5, minDistance = 50) {
 
 var Simulation = Simulation || {};
 
-Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerScore=0, websitePlayerLevel=1, websitePendulumWidth=25, websitePendulumLength=100, websitePlayerDifficultyLevel='easy', websitePlayerName='Guest', pendulumNumberValue=2, airFrictionValue=0) => {
+Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerScore = 0, websitePlayerLevel = 1, websitePendulumWidth = 25, websitePendulumLength = 100, websitePlayerDifficultyLevel = 'easy', websitePlayerName = 'Guest', pendulumNumberValue = 2, airFrictionValue = 0) => {
     const { Engine, Events, Render, Runner, Body, Composite, Composites, Constraint, MouseConstraint, Mouse, Bodies, Vector } = Matter;
-    
+
     // Initialize the game
     determineZonesForLevel(websitePlayerDifficultyLevel);
-   // alert(`websitePlayerScore is ${websitePlayerScore}`)
+    // alert(`websitePlayerScore is ${websitePlayerScore}`)
     updateScore(websitePlayerScore === null ? 0 : websitePlayerScore);
-    updateLevel(websitePlayerLevel === null ? 1 : websitePlayerLevel);    
+    updateLevel(websitePlayerLevel === null ? 1 : websitePlayerLevel);
     length = websitePendulumLength;
     width = websitePendulumWidth;
     playerName = websitePlayerName;
     playerDifficultyLevel = websitePlayerDifficultyLevel;
-    numberOfLinks= pendulumNumberValue;
+    numberOfLinks = pendulumNumberValue;
     airFriction = airFrictionValue;
     alert(`Debug Values:
         Player Score: ${websitePlayerScore === null ? 0 : websitePlayerScore}
@@ -742,7 +774,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
         Pendulum Width: ${websitePendulumWidth}
          Airfriction Value: ${airFrictionValue}`)
         ;
-        
+
 
     console.log("centerX = " + centerX);
     console.log("centerY = " + centerY);
@@ -952,7 +984,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
     Composite.add(pendulum, Constraint.create({
         bodyB: pendulum.bodies[0],
         //pointB: { x: -length * 0.42, y: 0 },
-       // pointB: { x: 19, y: 0 },  // Fixed smaller value
+        // pointB: { x: 19, y: 0 },  // Fixed smaller value
         pointA: { x: gridCenterX, y: gridCenterY },
         stiffness: 0.9,
         length: 0,
@@ -961,15 +993,15 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
         }
     }));
 
-    const links = [];
+
     for (let i = 0; i < numberOfLinks; i++) {
         links.push(pendulum.bodies[i]);
     }
 
     // Show all the links in alert boxes
-// links.forEach((link, index) => {
-//     alert(`Link ${index + 1}:\nPosition: (${link.position.x.toFixed(2)}, ${link.position.y.toFixed(2)})\nAngle: ${link.angle.toFixed(2)} radians`);
-// });
+    // links.forEach((link, index) => {
+    //     alert(`Link ${index + 1}:\nPosition: (${link.position.x.toFixed(2)}, ${link.position.y.toFixed(2)})\nAngle: ${link.angle.toFixed(2)} radians`);
+    // });
 
     // so this where we add arm to control, lowerarm is the control now
     const lowerArm = pendulum.bodies[1];
@@ -1173,21 +1205,21 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
         const zone = getZone(lowerArmPos, render.options.width, render.options.height); // Call getZone
         const lowerArmZone = getZone(lowerArmPos, render.options.width, render.options.height); // Call getZone
         const upperArmZone = getZone(upperArmPos, render.options.width, render.options.height); // Call getZone
-     
-// Loop through links and get zone for each
-links.forEach((link, index) => {
-    const zone = getZone(link.position, render.options.width, render.options.height);
-    
-    // Get the zone value element using the naming convention from createArmZones
-    const zoneValueElement = document.getElementById(`armZone${index}Output`);
-    
-    
-    // Update the zone value if the element exists
-    if (zoneValueElement) {
-        zoneValueElement.textContent = `${zone}`;
-    }
-   // console.log(`Link position: (${link.position.x}, ${link.position.y}), Zone: ${zone}`);
-});
+
+        // Loop through links and get zone for each
+        links.forEach((link, index) => {
+            const zone = getZone(link.position, render.options.width, render.options.height);
+
+            // Get the zone value element using the naming convention from createArmZones
+            const zoneValueElement = document.getElementById(`armZone${index}Output`);
+
+
+            // Update the zone value if the element exists
+            if (zoneValueElement) {
+                zoneValueElement.textContent = `${zone}`;
+            }
+            // console.log(`Link position: (${link.position.x}, ${link.position.y}), Zone: ${zone}`);
+        });
 
         // Update the zone display on the webpage
         // const zoneOutput = document.getElementById('zoneOutput');
