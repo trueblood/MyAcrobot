@@ -212,7 +212,8 @@
                     const airFrictionSelect = document.getElementById('airFrictionSelect');
 const pendulumLengthSelect = document.getElementById('pendulumLengthSelect');
 const pendulumWidthSelect = document.getElementById('pendulumWidthSelect');
-const currentScoreElement = document.getElementById('currentScore');
+const currentScoreElement = document.getElementById('scoreDisplay');
+const currentScorePopUp = document.getElementById('currentScore');
 
                     
                     // Set modal content and styling
@@ -231,7 +232,8 @@ const currentScoreElement = document.getElementById('currentScore');
                         airFrictionSelect.value = airFriction;
                         pendulumLengthSelect.value = length;
                         pendulumWidthSelect.value = width;
-                    //    currentScoreElement = score;
+                        currentScoreElement.value = score;
+                        currentScorePopUp.textContent = score;
                     } else {
                         modalTitle.textContent = 'Mismatch!';
                         modalTitle.className = 'modal-title text-danger';
@@ -247,7 +249,8 @@ const currentScoreElement = document.getElementById('currentScore');
                         airFrictionSelect.value = airFriction;
                         pendulumLengthSelect.value = length;
                         pendulumWidthSelect.value = width;
-                     //   currentScoreElement = score;
+                        currentScoreElement.value = score;
+                        currentScorePopUp.textContent = score;
                     }
                 
                     // Create modal instance
@@ -573,12 +576,12 @@ const playerAirFriction = document.getElementById('airFriction').textContent;
                     const width = rect.width;
                     const height = rect.height;
 
-                    console.log(`Width: ${width}px, Height: ${height}px`);
+                   // console.log(`Width: ${width}px, Height: ${height}px`);
 
                     // Calculate the center of the canvas
                     const centerX = width / 2;
                     const centerY = height / 2;
-                    console.log(Simulation.doublePendulum);
+                  //  console.log(Simulation.doublePendulum);
                     const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY, scoreValue, levelValue, widthValue, lengthValue, playerDifficultyLevel, playerName, pendulumNumberValue, airFrictionValue);
 
 
@@ -1092,7 +1095,7 @@ const playerAirFriction = document.getElementById('airFriction').textContent;
                 aiState.textContent = 'OFF';
             }
 
-            console.log('AI State:', aiStateInput.value); // Optional: Log the state to the console
+         //   console.log('AI State:', aiStateInput.value); // Optional: Log the state to the console
         });
 
 
@@ -1140,7 +1143,7 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
     const continueButton = document.getElementById('continueButton');
     const difficultySelect = document.getElementById('difficultySelect'); // Difficulty dropdown
     const numberOfLinksSelect = document.getElementById('pendulumLinksSelect'); // Difficulty dropdown
-    const currentScore = document.getElementById('currentScore'); // Difficulty dropdown
+    const currentScore = document.getElementById('scoreDisplay'); // Difficulty dropdown
     const airFrictionSelect = document.getElementById('airFrictionSelect'); // Difficulty dropdown
     const pendulumLengthSelect = document.getElementById('pendulumLengthSelect'); // Difficulty dropdown
     const pendulumWidthSelect = document.getElementById('pendulumWidthSelect'); // Difficulty dropdown
@@ -1208,7 +1211,7 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
     document.cookie = `websiteDifficultyLevel=${selectedDifficulty}; path=/; max-age=31536000`; // Save difficulty level
     document.cookie = `websiteAirFriction=${airFriction}; path=/; max-age=31536000`; // Save difficulty level
 
-    console.log("Player name and score saved to cookies.");
+  //  console.log("Player name and score saved to cookies.");
             // Continue with the simulation
             location.reload();
         } else {
@@ -1245,7 +1248,7 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
                     //  console.log('Pendulum state changed:', this.value);
                     try {
                         const parsedState = JSON.parse(this.value);
-                        console.log('Parsed pendulum state:', parsedState);
+                    //    console.log('Parsed pendulum state:', parsedState);
 
                         // Set the state input value
                         const stateInput = document.getElementById('stateInput');
@@ -1297,7 +1300,7 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
                 });
 
                 // Log initial value
-                console.log('Initial pendulum state:', pendulumStateInput.value);
+              //  console.log('Initial pendulum state:', pendulumStateInput.value);
             } else {
                 console.error('Pendulum state input element not found');
             }
@@ -1322,8 +1325,8 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
                 const centerX = width / 2;
                 const centerY = height / 2;
 
-                console.log(`New dimensions - Width: ${width}px, Height: ${height}px`);
-                console.log(`New center - X: ${centerX}, Y: ${centerY}`);
+            //    console.log(`New dimensions - Width: ${width}px, Height: ${height}px`);
+            //    console.log(`New center - X: ${centerX}, Y: ${centerY}`);
 
                 // Clear existing pendulum
                 // First, remove the existing canvas if it exists

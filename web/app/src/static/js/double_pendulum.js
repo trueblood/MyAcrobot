@@ -113,8 +113,8 @@ function determineZonesForLevel(difficulty) {
     updateRandomZone3(randomZone3);
     updateRandomZone4(randomZone4);
 
-    console.log(`Difficulty: ${difficulty}`);
-    console.log(`Zones: ${randomZone1}, ${randomZone2}, ${randomZone3}, ${randomZone4}`);
+  //  console.log(`Difficulty: ${difficulty}`);
+//    console.log(`Zones: ${randomZone1}, ${randomZone2}, ${randomZone3}, ${randomZone4}`);
 }
 
 // Functions to update HTML elements
@@ -154,7 +154,7 @@ function updateScore(value) {
     score = value;
     const scoreDisplay = document.getElementById('scoreDisplay');
     if (scoreDisplay) {
-        scoreDisplay.textContent = `Score: ${value}`;
+        scoreDisplay.textContent = `${value}`;
     }
 }
 
@@ -196,7 +196,7 @@ function trackAlignment(upperArm, lowerArm) {
                 lowerArmPosition: { x: lowerArm.position.x, y: lowerArm.position.y }
             };
 
-            console.log('Alignment detected:', alignmentData);
+          //  console.log('Alignment detected:', alignmentData);
 
             // Update UI with alignment count
             const countDisplay = document.getElementById('alignmentCountDisplay');
@@ -249,7 +249,7 @@ function getBestActionFromModel(parsedValue) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log("in event listener");
+  //  console.log("in event listener");
     const hiddenInput = document.getElementById('savedMessagesHidden');
     // const hiddenInput = document.getElementById('hdnPendulumState');
     // console.log('Raw hidden input value:', hiddenInput.value);
@@ -372,12 +372,12 @@ function addTouchControl(pendulum, canvas) {
             // Apply force based on touch position
             if (touchX < centerX) {
                 const message = 'Touch detected: Left side - Applying left force';
-                console.log(message);
+             //   console.log(message);
                 updateOutputMessage(message); // Update index page
                 Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
             } else {
                 const message = 'Touch detected: Right side - Applying right force';
-                console.log(message);
+              //  console.log(message);
                 updateOutputMessage(message); // Update index page
                 Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
             }
@@ -394,7 +394,7 @@ function addTouchControl(pendulum, canvas) {
     function switchControl() {
         if (currentControl === 'lowerArm') {
             currentControl = 'upperArm';
-            console.log('Switched control to upper arm');
+        //    console.log('Switched control to upper arm');
             // Update rendering
             upperArm.render.fillStyle = '#ff6666'; // Highlight upper arm
             upperArm.render.strokeStyle = '#1a1a1a';
@@ -403,7 +403,7 @@ function addTouchControl(pendulum, canvas) {
             updateOutputMessageForCurrentlySelectedLink('Currently controlling: Upper Arm');
         } else {
             currentControl = 'lowerArm';
-            console.log('Switched control to lower arm');
+         //   console.log('Switched control to lower arm');
             // Update rendering
             lowerArm.render.fillStyle = '#ff6666'; // Highlight lower arm
             lowerArm.render.strokeStyle = '#1a1a1a';
@@ -469,13 +469,13 @@ function applyBestActionTorque(pendulum, bestAction) {
     const torqueMagnitude = 0.05; // Torque magnitude (N m)
 
     if (bestAction === 0) { // Apply -1 torque
-        console.log("Best Action: Apply -1 torque");
+      //  console.log("Best Action: Apply -1 torque");
         Matter.Body.applyForce(lowerArm, lowerArm.position, { x: -torqueMagnitude, y: 0 });
     } else if (bestAction === 1) { // Apply 0 torque
-        console.log("Best Action: Apply 0 torque");
+    //    console.log("Best Action: Apply 0 torque");
         // No force applied
     } else if (bestAction === 2) { // Apply 1 torque
-        console.log("Best Action: Apply 1 torque");
+   //     console.log("Best Action: Apply 1 torque");
         Matter.Body.applyForce(lowerArm, lowerArm.position, { x: torqueMagnitude, y: 0 });
     }
 }
@@ -495,23 +495,23 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
         // Start the while loop that sets pendulum state to null
         // Start the asynchronous loop in a separate function
         // handleKeyPress();
-        console.log(`Key pressed: ${event.key}`);
+     //  console.log(`Key pressed: ${event.key}`);
         const key = event.key;
         const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
 
         if (key === 'ArrowLeft') {
             const message = 'Arrow key pressed: Left - Applying left force';
-            console.log(message);
+       //     console.log(message);
             updateOutputMessage(message); // Update index page
             Matter.Body.applyForce(lowerArm, lowerArm.position, { x: -0.05, y: 0 });
         } else if (key === 'ArrowRight') {
             const message = 'Arrow key pressed: Right - Applying right force';
-            console.log(message);
+         //   console.log(message);
             updateOutputMessage(message); // Update index page
             Matter.Body.applyForce(lowerArm, lowerArm.position, { x: 0.05, y: 0 });
         } else if (key === 'a') {
             currentControl = 'lowerArm'; // Switch to lower arm
-            console.log('Switched control to lower arm');
+          //  console.log('Switched control to lower arm');
             // Fill the selected arm with lighter red
             lowerArm.render.fillStyle = '#ff6666'; // Lighter red
             lowerArm.render.strokeStyle = '#1a1a1a';
@@ -527,7 +527,7 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
             // }
         } else if (key === 's') {
             currentControl = 'upperArm'; // Switch to upper arm
-            console.log('Switched control to upper arm');
+         //   console.log('Switched control to upper arm');
             // Fill the selected arm with lighter red
             upperArm.render.fillStyle = '#ff6666'; // Lighter red
             upperArm.render.strokeStyle = '#1a1a1a';
@@ -591,7 +591,7 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
                 })
                 
                 if (randomZones == 0) {
-   
+                    score += 1;
                     showResultModal(true, 'Success! Pendulum(s) landed in their correct zones. Score +1',  playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
 
                 } else {
@@ -776,8 +776,8 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
         ;
 
 
-    console.log("centerX = " + centerX);
-    console.log("centerY = " + centerY);
+  //  console.log("centerX = " + centerX);
+  //  console.log("centerY = " + centerY);
 
     // Get the container element by ID
     const container = document.getElementById(containerId);
@@ -1053,9 +1053,9 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
         const alignmentInfo = checkPendulumsAlignment(upperArm, lowerArm);
         // updateAlignmentDisplay(alignmentInfo);
         if (alignmentInfo.isAligned) {
-            console.log('Pendulums are aligned!');
-            console.log('Upper arm angle:', alignmentInfo.upperDegrees.toFixed(2));
-            console.log('Lower arm angle:', alignmentInfo.lowerDegrees.toFixed(2));
+      //      console.log('Pendulums are aligned!');
+       //     console.log('Upper arm angle:', alignmentInfo.upperDegrees.toFixed(2));
+      //      console.log('Lower arm angle:', alignmentInfo.lowerDegrees.toFixed(2));
 
             // Optional: Update UI to show alignment
             const alignmentDisplay = document.getElementById('alignmentDisplay');
@@ -1069,7 +1069,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
             </div>
         `;
         } else {
-            console.log('Pendulums are not aligned.');
+         //   console.log('Pendulums are not aligned.');
             // Optional: Update UI to show non-alignment
             const alignmentDisplay = document.getElementById('alignmentDisplay');
             alignmentDisplay.innerHTML = `
@@ -1121,7 +1121,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
         // })));
         // Check for circles in the lower arm trail
         if (detectCircleFromTrail(trails.lowerArm)) {
-            console.log('Lower arm completed a circle!');
+          //  console.log('Lower arm completed a circle!');
             lowerArmCircleCount++;
             trails.lowerArm.length = 0; // Reset trail after detecting a circle
             // Update the lower arm circle count on the page
@@ -1133,7 +1133,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
 
         // Check for circles in the upper arm trail
         if (detectCircleFromTrail(trails.upperArm)) {
-            console.log('Upper arm completed a circle!');
+         //   console.log('Upper arm completed a circle!');
             upperArmCircleCount++;
             trails.upperArm.length = 0; // Reset trail after detecting a circle
             // Update the upper arm circle count on the page
@@ -1297,7 +1297,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
         //  console.log("Parsed Value for function:", parsedValue);
 
         const bestAction = getBestActionFromModel(parsedValue); // Replace with your AI logic
-        console.log("Best Action:", bestAction);
+        // console.log("Best Action:", bestAction);
 
         // Step 4: Apply torque based on the best action
         // Apply torque based on the best action
