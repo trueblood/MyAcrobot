@@ -31,8 +31,9 @@
     <script type="text/javascript">
         // var socket = io();
         // var socket = io('http://localhost:80', { transports: ['websocket'] }); // this worked for local docker container
-        var socket = io('https://localhost', { transports: ['websocket'] });
-// for webserver  var socket = io('http://107.20.21.85', { transports: ['websocket'] });
+      //  var socket = io('https://localhost', { transports: ['websocket'] });
+
+var socket = io('http://107.20.21.85', { transports: ['websocket'] }); // for webserver 
 
         var savedMessages = []; // Array to store all messages
 
