@@ -585,7 +585,7 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
                         const matchingIndex = randomZones.indexOf(zoneValue);
                         if (matchingIndex !== -1) {
                             randomZones.splice(matchingIndex, 1); // Remove the matching zone
-                            alert(`Match found and removed: ${zoneValue}`);
+                          //  alert(`Match found and removed: ${zoneValue}`);
                         }
                     }
                 })
@@ -665,19 +665,25 @@ function drawZoneLabels(context, canvasWidth, canvasHeight) {
 
     // Q1: Top-Right (Blue)
     context.fillStyle = 'blue';
-    context.fillText('Top-Right Quadrant (0° to 90°)', canvasWidth * 0.75 - 50, canvasHeight * 0.25 - 10);
+   // context.fillText('Top-Right Quadrant (0° to 90°)', canvasWidth * 0.75 - 50, canvasHeight * 0.25 - 10);
+   context.fillText('Top-Right Quad', canvasWidth * 0.75 - 50, canvasHeight * 0.25 - 10);
+
 
     // Q2: Top-Left (Orange)
     context.fillStyle = 'orange';
-    context.fillText('Top-Left Quadrant (90° to 180°)', canvasWidth * 0.25 - 50, canvasHeight * 0.25 - 10);
+    // context.fillText('Top-Left Quadrant (90° to 180°)', canvasWidth * 0.25 - 50, canvasHeight * 0.25 - 10);
+    context.fillText('Top-Left Quad', canvasWidth * 0.25 - 50, canvasHeight * 0.25 - 10);
 
     // Q3: Bottom-Left (Green)
     context.fillStyle = 'green';
-    context.fillText('Bottom-Left Quadrant (180° to 270°)', canvasWidth * 0.25 - 50, canvasHeight * 0.75 - 10);
+   // context.fillText('Bottom-Left Quadrant (180° to 270°)', canvasWidth * 0.25 - 50, canvasHeight * 0.75 - 10);
+    context.fillText('Bottom-Left Quad', canvasWidth * 0.25 - 50, canvasHeight * 0.75 - 10);
+
 
     // Q4: Bottom-Right (Red)
     context.fillStyle = 'red';
-    context.fillText('Bottom-Right (270° to 360°)', canvasWidth * 0.75 - 50, canvasHeight * 0.75 - 10);
+    //context.fillText('Bottom-Right (270° to 360°)', canvasWidth * 0.75 - 50, canvasHeight * 0.75 - 10);
+    context.fillText('Bottom-Right Quad', canvasWidth * 0.75 - 50, canvasHeight * 0.75 - 10);
 }
 
 function getZone(position, canvasWidth, canvasHeight) {

@@ -30,10 +30,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script type="text/javascript">
         // var socket = io();
-        // var socket = io('http://localhost:80', { transports: ['websocket'] }); // this worked for local docker container
-      //  var socket = io('https://localhost', { transports: ['websocket'] });
+     //   var socket = io('http://localhost:8080', { transports: ['websocket'] }); // this worked for local docker container
+        ///var socket = io('https://localhost', { transports: ['websocket'] });
 
-      var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
+           var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
 
         var savedMessages = []; // Array to store all messages
 
@@ -64,21 +64,21 @@
         function createArmZones(numberOfLinks) {
             const container = document.getElementById('armZonesContainer');
             container.innerHTML = ''; // Clear existing content
-        
+
             for (let i = 0; i < numberOfLinks; i++) {
                 const zoneDiv = document.createElement('div');
                 zoneDiv.id = `armZone${i}Output`;
                 zoneDiv.style.textAlign = 'center';
                 zoneDiv.style.fontSize = '18px';
                 zoneDiv.style.marginTop = '10px';
-        
+
                 zoneDiv.innerHTML = `
                     <span>Arm ${i + 1} Zone: </span>
                     <span id="armZone${i}Value">N/A</span>
                 `;
-        
+
                 container.appendChild(zoneDiv);
-                
+
                 // Add break element between zones
                 if (i < numberOfLinks - 1) {
                     const br = document.createElement('br');
@@ -86,7 +86,7 @@
                 }
             }
         }
-        
+
 
 
 
@@ -95,7 +95,7 @@
 
 <body id="page-top">
     <!-- Navigation-->
-    <nav class="navbar navbar-expand-lg bg-secondary" id="mainNav">
+    <!-- <nav class="navbar navbar-expand-lg bg-secondary" id="mainNav">
         <div class="container">
             <a class="navbar-brand" href="#page-top">MyAcrobot</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive">
@@ -108,37 +108,109 @@
                 </ul>
             </div>
         </div>
+    </nav>-->
+
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg bg-secondary text-uppercase fixed-top" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand" href="#page-top"><i class="fa-solid fa-robot"></i></a>
+            <!-- Random Zone Info with Goal -->
+            <div class="random-zone-info text-white ms-3">
+                <p id="randomZone1Display" class="mb-0"><span class="fw-bold">Goal:</span> Random Zone (Upper Arm): </p>
+                <p id="randomZone2Display" class="mb-0"><span class="fw-bold">Goal:</span> Random Zone (Lower Arm): </p>
+                <p id="randomZone3Display" class="mb-0 display-element"><span class="fw-bold">Goal:</span> Random Zone 3
+                    (Upper Arm): </p>
+                <p id="randomZone4Display" class="mb-0 display-element"><span class="fw-bold">Goal:</span> Random Zone 4
+                    (Lower Arm): </p>
+            </div>
+
+
+            <button class="navbar-toggler text-uppercase font-weight-bold bg-primary text-white rounded" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive"
+                aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto">
+                    <!-- AI Toggle Switch -->
+
+                    <!--  <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded"
+                            href="#portfolio">Portfolio</a></li>
+                    <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded"
+                            href="#about">About</a></li>
+                    <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded"
+                            href="#contact">Contact</a></li> -->
+                    <!-- New dropdown section for game info -->
+                    <li class="nav-item dropdown mx-0 mx-lg-1">
+                        <a class="nav-link dropdown-toggle py-3 px-0 px-lg-3 rounded" href="#" id="gameInfoDropdown"
+                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Game Info
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="gameInfoDropdown">
+                            <li><span class="dropdown-item-text"><strong>Player Name:</strong> <span
+                                        id="playerName">Guest</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Pendulum Number:</strong> <span
+                                        id="pendulumNumber">2</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Pendulum Length:</strong> <span
+                                        id="pendulumLength">0</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Pendulum Width:</strong> <span
+                                        id="pendulumWidth">0</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Air Friction:</strong> <span
+                                        id="airFriction">0</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Player Score:</strong> <span
+                                        id="playerScore">0</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Player Level:</strong> <span
+                                        id="playerLevel">0</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Difficulty Level:</strong> <span
+                                        id="playerDifficultyLevel">0</span></span></li>
+                            <!-- AI Toggle Switch -->
+                            <li class="dropdown-item">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="toggleSwitch">
+                                    <label class="form-check-label" for="toggleSwitch">AI Toggle Switch</label>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </nav>
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="toggleSwitch">
+        <label class="form-check-label" for="toggleSwitch">AI Toggle Switch</label>
+    </div>
     <!-- Double Pendulum -->
     <section class="page-section double_pendulum" id="double_pendulum">
         <div class="container">
-            <div id="yPositionOutput"></div>
+            <div id="yPositionOutput" style="display: none"></div>
             <br />
-            <div id="keyPressOut"></div>
+            <div id="keyPressOut" style="display: none"></div>
             <br />
-            <div id="lowerArmZoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px;">
+            <div id="lowerArmZoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px; display: none;">
                 <span>Lower Arm Zone: </span>
                 <span id="lowerArmZoneValue">N/A</span>
             </div>
             <br />
-            <div id="upperArmZoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px;">
+            <div id="upperArmZoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px; display: none;">
                 <span>Upper Arm Zone: </span>
                 <span id="upperArmZoneValue">N/A</span>
             </div>
-            <div id="armZonesContainer"></div>
-            
+            <div id="armZonesContainer" style="display: none"></div>
+
             <br />
-        <!--    <div id="zoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px;">
+            <!--    <div id="zoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px;">
                 Current Zone: N/A
             </div>-->
             <br />
-            <div id="currentLink" name="currentLink"></div>
-            <div id="alignmentDisplay" name="alignmentDisplay"></div>
-            <div id="alignmentCountDisplay" name="alignmentCountDisplay"></div>
-            <div id="notAlignedDisplay" name="notAlignedDisplay"></div>
-            <div id="circleData" style="margin-top: 20px; font-size: 16px;">
-                <div id="lowerArmCircleCount">Lower Arm Circles: 0</div>
-                <div id="upperArmCircleCount">Upper Arm Circles: 0</div>
+            <div id="currentLink" name="currentLink" style="display: none"></div>
+            <div id="alignmentDisplay" name="alignmentDisplay" style="display: none"></div>
+            <div id="alignmentCountDisplay" name="alignmentCountDisplay" style="display: none"></div>
+            <div id="notAlignedDisplay" name="notAlignedDisplay" style="display: none"></div>
+            <div id="circleData" style="margin-top: 20px; font-size: 16px;" style="display: none">
+                <div id="lowerArmCircleCount" style="display: none">Lower Arm Circles: 0</div>
+                <div id="upperArmCircleCount" style="display: none">Upper Arm Circles: 0</div>
             </div>
 
 
@@ -152,40 +224,38 @@
                     <label>Gravity: <input type="range" id="gravity" min="1" max="20" value="9.8"></label>
                 </div> -->
             <!-- Game Info -->
-            <div id="gameInfo">
+            <div id="gameInfo" style="display: none">
                 <h2>Game Info</h2>
-                <p id="levelDisplay">Level: 1</p>
-               <!-- <p id="randomZone1Display">Random Zone (Upper Arm): </p>-
+                <p id="levelDisplay" style="display: none">Level: 1</p>
+                <!-- <p id="randomZone1Display">Random Zone (Upper Arm): </p>-
                <p id="randomZone2Display">Random Zone (Lower Arm): </p>
             <p id="randomZone3Display" class="display-element">Random Zone 3 (Upper Arm): </p>
             <p id="randomZone4Display" class="display-element">Random Zone 4 (Lower Arm): </p> -->
-            
-                <p id="scoreDisplay">Score: 0</p>
+
+                <p id="scoreDisplay" style="display: none">Score: 0</p>
             </div>
 
-            <h3 class="mb-4">AI Toggle Switch with Click Event</h3>
+            <h3 class="mb-4" style="display: none">AI Toggle Switch with Click Event</h3>
 
-            <!-- AI Toggle Switch -->
-            <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="toggleSwitch">
-                <label class="form-check-label" for="toggleSwitch">AI Toggle Switch</label>
-            </div>
+
 
             <!-- Hidden Input to Store AI State -->
             <input type="hidden" id="aiStateInput" value="OFF">
 
             <!-- Display AI State -->
-            <p class="mt-3"><strong>AI State:</strong> <span id="aiState">OFF</span></p>
-
-            <h1>DQN Model Test</h1>
-            <input type="text" id="stateInput" placeholder="Enter state (e.g. [1,2,3,4,5,6])" style="width: 300px;">
-            <button onclick="sendState()">Send State</button>
-            <div id="messages"></div>
+            <div style="display: none">
+                <p class="mt-3"><strong>AI State:</strong> <span id="aiState">OFF</span></p>
+            </div>
+            <h1 style="display: none">DQN Model Test</h1>
+            <input type="text" id="stateInput" placeholder="Enter state (e.g. [1,2,3,4,5,6])"
+                style="width: 300px; display:none;">
+            <button onclick="sendState()" style="display: none">Send State</button>
+            <div id="messages" style="display: none"></div>
             <!-- Hidden input to store messages -->
             <input type="hidden" id="savedMessagesHidden" value="[]">
             <input type="hidden" id="hdnPendulumState" value="">
-            <hr/>
-            <div id="playerName">Guest</div>
+            <!--  <hr /> -->
+            <!--   <div id="playerName">Guest</div>
             <div id="pendulumNumber">2</div>
             <div id="pendulumLength">0</div>
             <div id="pendulumWidth">0</div>
@@ -194,17 +264,17 @@
             <div id="playerLevel">0</div>
             <div id="playerDifficultyLevel">0</div>
             <p id="goalZones">Goal Zones Go Here</p>
-            <p id="randomZone1Display">Random Zone (Upper Arm): </p>
-            <p id="randomZone2Display">Random Zone (Lower Arm): </p>
-         <p id="randomZone3Display" class="display-element">Random Zone 3 (Upper Arm): </p>
-         <p id="randomZone4Display" class="display-element">Random Zone 4 (Lower Arm): </p>
+                <p id="randomZone1Display">Random Zone (Upper Arm): </p>
+                <p id="randomZone2Display">Random Zone (Lower Arm): </p>
+                <p id="randomZone3Display" class="display-element">Random Zone 3 (Upper Arm): </p>
+                <p id="randomZone4Display" class="display-element">Random Zone 4 (Lower Arm): </p> -->
 
             <!-- Container for the pendulum canvas -->
             <div id="double_pendulum_canvas" style="width: 100%; height: 100vh; margin: 0 auto;"></div>
 
 
             <script>
-             //   showResultModal(true, 'Success! Both links are in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+                //   showResultModal(true, 'Success! Both links are in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
 
                 function showResultModal(isSuccess, message, webPlayerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction) {
                     const modalElement = document.getElementById('resultModal');
@@ -215,12 +285,12 @@
                     const difficultySelect = document.getElementById('difficultySelect');
                     const pendulumLinksSelect = document.getElementById('pendulumLinksSelect');
                     const airFrictionSelect = document.getElementById('airFrictionSelect');
-const pendulumLengthSelect = document.getElementById('pendulumLengthSelect');
-const pendulumWidthSelect = document.getElementById('pendulumWidthSelect');
-const currentScoreElement = document.getElementById('scoreDisplay');
-const currentScorePopUp = document.getElementById('currentScore');
+                    const pendulumLengthSelect = document.getElementById('pendulumLengthSelect');
+                    const pendulumWidthSelect = document.getElementById('pendulumWidthSelect');
+                    const currentScoreElement = document.getElementById('scoreDisplay');
+                    const currentScorePopUp = document.getElementById('currentScore');
 
-                    
+
                     // Set modal content and styling
                     if (isSuccess) {
                         modalTitle.textContent = 'Success!';
@@ -232,7 +302,7 @@ const currentScorePopUp = document.getElementById('currentScore');
                             </div>`;
                         continueButton.className = 'btn btn-success';
                         nameInput.value = webPlayerName;
-                        difficultySelect.value = playerDifficultyLevel; 
+                        difficultySelect.value = playerDifficultyLevel;
                         pendulumLinksSelect.value = numberOfLinks;
                         airFrictionSelect.value = airFriction;
                         pendulumLengthSelect.value = length;
@@ -249,7 +319,7 @@ const currentScorePopUp = document.getElementById('currentScore');
                             </div>`;
                         continueButton.className = 'btn btn-danger';
                         nameInput.value = webPlayerName;
-                        difficultySelect.value = playerDifficultyLevel; 
+                        difficultySelect.value = playerDifficultyLevel;
                         pendulumLinksSelect.value = numberOfLinks;
                         airFrictionSelect.value = airFriction;
                         pendulumLengthSelect.value = length;
@@ -257,23 +327,23 @@ const currentScorePopUp = document.getElementById('currentScore');
                         currentScoreElement.value = score;
                         currentScorePopUp.textContent = score;
                     }
-                
+
                     // Create modal instance
                     const modal = new bootstrap.Modal(modalElement);
-                    
+
                     // Handle continue button click with loading state
                     continueButton.onclick = () => {
                         continueButton.innerHTML = `
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                             Loading...`;
                         continueButton.disabled = true;
-                        
+
                         setTimeout(() => {
                             modal.hide();
                             location.reload();
                         }, 500);
                     };
-                
+
                     // Show modal with fade effect
                     modalElement.addEventListener('shown.bs.modal', () => {
                         if (isSuccess) {
@@ -284,7 +354,7 @@ const currentScorePopUp = document.getElementById('currentScore');
                             });
                         }
                     });
-                
+
                     modal.show();
                 }
 
@@ -436,69 +506,69 @@ const currentScorePopUp = document.getElementById('currentScore');
                         // }
                         // return null; // Return null if the cookie is not found
                         const decodedCookies = decodeURIComponent(document.cookie);
-                        const cookiesArray = decodedCookies.split(';');        
-                        
-                      //  if (cookiesArray[0] === '') {
-                      //      return alert('No cookies found!');
-                      //  }
+                        const cookiesArray = decodedCookies.split(';');
+
+                        //  if (cookiesArray[0] === '') {
+                        //      return alert('No cookies found!');
+                        //  }
                         for (const cookie of cookiesArray) {
                             const [name, value] = cookie.trim().split('=');
                             if (name === 'websitePlayerScore') {
                                 //alert(`alue  is ${value}`);
-                               // return value; // This will actually return from the function
-                               websitePlayerScore = value;
+                                // return value; // This will actually return from the function
+                                websitePlayerScore = value;
                             }
                             if (name === 'websitePlayerName') {
                                 //alert(`alue  is ${value}`);
-                               // return value; // This will actually return from the function
-                               websitePlayerName = value;
+                                // return value; // This will actually return from the function
+                                websitePlayerName = value;
                             }
                             if (name === 'websitePlayerLevel') {
                                 //alert(`alue  is ${value}`);
-                               // return value; // This will actually return from the function
-                               websitePlayerLevel = value;
+                                // return value; // This will actually return from the function
+                                websitePlayerLevel = value;
                             }
                             if (name === 'websitePendulumWidth') {
                                 //alert(`alue  is ${value}`);
-                               // return value; // This will actually return from the function
-                               websitePendulumWidth = value;
+                                // return value; // This will actually return from the function
+                                websitePendulumWidth = value;
                             }
                             if (name === 'websitePendulumLength') {
                                 //alert(`alue  is ${value}`);
-                               // return value; // This will actually return from the function
-                               websitePendulumLength = value;
+                                // return value; // This will actually return from the function
+                                websitePendulumLength = value;
                             }
                             if (name === 'websiteDifficultyLevel') {
                                 //alert(`alue  is ${value}`);
-                               // return value; // This will actually return from the function
-                               websiteDifficultyLevel = value;
+                                // return value; // This will actually return from the function
+                                websiteDifficultyLevel = value;
                             }
                             if (name === 'websitePendulumNumber') {
                                 //alert(`alue  is ${value}`);
-                               // return value; // This will actually return from the function
-                               websitePendulumNumber = value;
+                                // return value; // This will actually return from the function
+                                websitePendulumNumber = value;
                             }
                             if (name === 'websiteAirFriction') {
                                 //alert(`alue  is ${value}`);
-                               // return value; // This will actually return from the function
-                               websiteAirFriction = value;
+                                // return value; // This will actually return from the function
+                                websiteAirFriction = value;
                             }
                         }
-                      //  alert(cookieDisplay);
-                    
+                        //  alert(cookieDisplay);
+
                         // const decodedCookies = decodeURIComponent(document.cookie);
                         // const cookiesArray = decodedCookies.split(';');
                         // let cookieDisplay = 'Player Score Data:\n------------------\n';
-                        
+
                         // // Find the websitePlayerScore cookie
                         // const playerScoreCookie = cookiesArray.find(cookie => 
                         //     cookie.trim().startsWith(cookieName)
                         // );
-                    
+
                         // if (!playerScoreCookie) {
                         //     return alert('No player score data found!');
                         // }
-                    
+
                         // try {
                         //     // Try to parse JSON value
                         //     const parsedValue = JSON.parse(value);
@@ -513,9 +583,9 @@ const currentScorePopUp = document.getElementById('currentScore');
                         //     // If not JSON, show raw value
                         //     cookieDisplay += `Score: ${value}\n`;
                         // }
-                    
+
                         // alert(cookieDisplay);
-                    
+
                     }
 
 
@@ -524,29 +594,29 @@ const currentScorePopUp = document.getElementById('currentScore');
 
 
 
-                  getCookieValues();  
+                    getCookieValues();
                     document.getElementById('pendulumNumber').textContent = websitePendulumNumber;
-                  document.getElementById('playerName').textContent = websitePlayerName;
-                  document.getElementById('pendulumLength').textContent = websitePendulumLength;
-                  document.getElementById('pendulumWidth').textContent = websitePendulumWidth;
-                  document.getElementById('playerScore').textContent = websitePlayerScore;
-                  document.getElementById('playerLevel').textContent = websitePlayerLevel;
-                  document.getElementById('playerDifficultyLevel').textContent = websiteDifficultyLevel;
-                  document.getElementById('airFriction').textContent = websiteAirFriction;
+                    document.getElementById('playerName').textContent = websitePlayerName;
+                    document.getElementById('pendulumLength').textContent = websitePendulumLength;
+                    document.getElementById('pendulumWidth').textContent = websitePendulumWidth;
+                    document.getElementById('playerScore').textContent = websitePlayerScore;
+                    document.getElementById('playerLevel').textContent = websitePlayerLevel;
+                    document.getElementById('playerDifficultyLevel').textContent = websiteDifficultyLevel;
+                    document.getElementById('airFriction').textContent = websiteAirFriction;
 
-                  const pendulumNumber = document.getElementById('pendulumNumber').textContent;
-                  const playerName = document.getElementById('playerName').textContent;
-const pendulumLength = document.getElementById('pendulumLength').textContent;
-const pendulumWidth = document.getElementById('pendulumWidth').textContent;
-const playerScore = document.getElementById('playerScore').textContent;
-const playerLevel = document.getElementById('playerLevel').textContent;
-const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').textContent;
-const playerAirFriction = document.getElementById('airFriction').textContent;
+                    const pendulumNumber = document.getElementById('pendulumNumber').textContent;
+                    const playerName = document.getElementById('playerName').textContent;
+                    const pendulumLength = document.getElementById('pendulumLength').textContent;
+                    const pendulumWidth = document.getElementById('pendulumWidth').textContent;
+                    const playerScore = document.getElementById('playerScore').textContent;
+                    const playerLevel = document.getElementById('playerLevel').textContent;
+                    const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').textContent;
+                    const playerAirFriction = document.getElementById('airFriction').textContent;
 
-//alert(`playerDifficultyLevel is ${playerDifficultyLevel}`);
-//alert(`playerName is ${playerName}`);
+                    //alert(`playerDifficultyLevel is ${playerDifficultyLevel}`);
+                    //alert(`playerName is ${playerName}`);
 
-                  const lengthValue = parseInt(pendulumLength, 10);
+                    const lengthValue = parseInt(pendulumLength, 10);
                     const widthValue = parseInt(pendulumWidth, 10);
                     const scoreValue = parseInt(playerScore, 10);
                     const levelValue = parseInt(playerLevel, 10);
@@ -554,12 +624,12 @@ const playerAirFriction = document.getElementById('airFriction').textContent;
                     const airFrictionValue = parseInt(playerAirFriction);
 
 
-             //     alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
-              //    alert(`websitePlayerName is Tim ${websitePlayerName}`);
-              //    alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
-                 // alert("websitePlayerScore is ", websitePlayerScore);
-                 // let websitePlayerName = getCookieValue('websitePlayerName');  
-                 // let websitePlayerLevel = getCookieValue('websitePlayerLevel');  
+                    //     alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
+                    //    alert(`websitePlayerName is Tim ${websitePlayerName}`);
+                    //    alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
+                    // alert("websitePlayerScore is ", websitePlayerScore);
+                    // let websitePlayerName = getCookieValue('websitePlayerName');  
+                    // let websitePlayerLevel = getCookieValue('websitePlayerLevel');  
 
                     // Call the Simulation.doublePendulum function to run the simulation
                     // const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas');
@@ -581,12 +651,12 @@ const playerAirFriction = document.getElementById('airFriction').textContent;
                     const width = rect.width;
                     const height = rect.height;
 
-                   // console.log(`Width: ${width}px, Height: ${height}px`);
+                    // console.log(`Width: ${width}px, Height: ${height}px`);
 
                     // Calculate the center of the canvas
                     const centerX = width / 2;
                     const centerY = height / 2;
-                  //  console.log(Simulation.doublePendulum);
+                    //  console.log(Simulation.doublePendulum);
                     const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY, scoreValue, levelValue, widthValue, lengthValue, playerDifficultyLevel, playerName, pendulumNumberValue, airFrictionValue);
 
 
@@ -594,19 +664,19 @@ const playerAirFriction = document.getElementById('airFriction').textContent;
                     //const link1Input = document.getElementById('link1Length');
                     //const link2Input = document.getElementById('link2Length');
 
-                   // if (!link1Input || !link2Input) {
+                    // if (!link1Input || !link2Input) {
                     //    console.error("Slider elements with IDs 'link1Length' or 'link2Length' not found.");
-                     //   return;
-                   // }
+                    //   return;
+                    // }
 
                     // Add event listeners to update pendulum link lengths dynamically
-                  //  link1Input.addEventListener('input', () => {
-                        //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
-                  //  });
+                    //  link1Input.addEventListener('input', () => {
+                    //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
+                    //  });
 
-                //    link2Input.addEventListener('input', () => {
-                        //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
-                 //   });
+                    //    link2Input.addEventListener('input', () => {
+                    //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
+                    //   });
 
                 };
             </script>
@@ -1100,141 +1170,141 @@ const playerAirFriction = document.getElementById('airFriction').textContent;
                 aiState.textContent = 'OFF';
             }
 
-         //   console.log('AI State:', aiStateInput.value); // Optional: Log the state to the console
+            //   console.log('AI State:', aiStateInput.value); // Optional: Log the state to the console
         });
 
 
 
         document.addEventListener('DOMContentLoaded', function () {
 
-// Alternative using vanilla JavaScript
-//document.getElementById('myModal').addEventListener('shown.bs.modal', function () {
-//    const playerName = document.getElementById('playerName').textContent;
-//    if (playerName) {
-//        alert(`player name for popup is ${playerName}`);
-//        document.getElementById('nameInput').value = playerName;
-//    }
-//});
+            // Alternative using vanilla JavaScript
+            //document.getElementById('myModal').addEventListener('shown.bs.modal', function () {
+            //    const playerName = document.getElementById('playerName').textContent;
+            //    if (playerName) {
+            //        alert(`player name for popup is ${playerName}`);
+            //        document.getElementById('nameInput').value = playerName;
+            //    }
+            //});
 
 
-               
-
-// Add modal to document
-document.body.insertAdjacentHTML('beforeend', modalHTML);
 
 
-//document.getElementById('playerName').textContent = websitePlayerName;
-//document.getElementById('pendulumLength').textContent = websitePendulumLength;
-//document.getElementById('pendulumWidth').textContent = websitePendulumWidth;
-//document.getElementById('playerScore').textContent = websitePlayerScore;
-//document.getElementById('playerLevel').textContent = websitePlayerLevel;
-//document.getElementById('playerDifficultyLevel').textContent = websiteDifficultyLevel;
+            // Add modal to document
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-//const playerName = document.getElementById('playerName').textContent;
-//const pendulumLength = document.getElementById('pendulumLength').textContent;
-//const pendulumWidth = document.getElementById('pendulumWidth').textContent;
-//const playerScore = document.getElementById('playerScore').textContent;
-//const playerLevel = document.getElementById('playerLevel').textContent;
-//const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').textContent;
 
-    // Get elements
- //   const nameInput = document.getElementById('nameInput');
-  //const playerName = document.getElementById('playerName').textContent;
-   // if (playerName) {
-   //     alert(`player name for popup is  ${playerName}`);
-      //  document.getElementById('nameInput').value = playerName;
-   // }
-    const generateButton = document.getElementById('generateRandomName');
-    const continueButton = document.getElementById('continueButton');
-    const difficultySelect = document.getElementById('difficultySelect'); // Difficulty dropdown
-    const numberOfLinksSelect = document.getElementById('pendulumLinksSelect'); // Difficulty dropdown
-    const currentScore = document.getElementById('scoreDisplay'); // Difficulty dropdown
-    const airFrictionSelect = document.getElementById('airFrictionSelect'); // Difficulty dropdown
-    const pendulumLengthSelect = document.getElementById('pendulumLengthSelect'); // Difficulty dropdown
-    const pendulumWidthSelect = document.getElementById('pendulumWidthSelect'); // Difficulty dropdown
+            //document.getElementById('playerName').textContent = websitePlayerName;
+            //document.getElementById('pendulumLength').textContent = websitePendulumLength;
+            //document.getElementById('pendulumWidth').textContent = websitePendulumWidth;
+            //document.getElementById('playerScore').textContent = websitePlayerScore;
+            //document.getElementById('playerLevel').textContent = websitePlayerLevel;
+            //document.getElementById('playerDifficultyLevel').textContent = websiteDifficultyLevel;
 
-    
-    // Array of sample names for random generation
-    const sampleNames = [
-        "Alex Smith", "Jordan Lee", "Taylor Wong", 
-        "Sam Johnson", "Casey Brown", "Morgan Davis"
-    ];
+            //const playerName = document.getElementById('playerName').textContent;
+            //const pendulumLength = document.getElementById('pendulumLength').textContent;
+            //const pendulumWidth = document.getElementById('pendulumWidth').textContent;
+            //const playerScore = document.getElementById('playerScore').textContent;
+            //const playerLevel = document.getElementById('playerLevel').textContent;
+            //const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').textContent;
 
-    // Generate random name function
-    function generateRandomName() {
-          // Use chance.js to create a random name
-    //const randomName = chance.name(); // Generates a random full name
-    const randomName = chance.animal() + chance.integer({ min: 1, max: 99 }); // Combines a random word and number
+            // Get elements
+            //   const nameInput = document.getElementById('nameInput');
+            //const playerName = document.getElementById('playerName').textContent;
+            // if (playerName) {
+            //     alert(`player name for popup is  ${playerName}`);
+            //  document.getElementById('nameInput').value = playerName;
+            // }
+            const generateButton = document.getElementById('generateRandomName');
+            const continueButton = document.getElementById('continueButton');
+            const difficultySelect = document.getElementById('difficultySelect'); // Difficulty dropdown
+            const numberOfLinksSelect = document.getElementById('pendulumLinksSelect'); // Difficulty dropdown
+            const currentScore = document.getElementById('scoreDisplay'); // Difficulty dropdown
+            const airFrictionSelect = document.getElementById('airFrictionSelect'); // Difficulty dropdown
+            const pendulumLengthSelect = document.getElementById('pendulumLengthSelect'); // Difficulty dropdown
+            const pendulumWidthSelect = document.getElementById('pendulumWidthSelect'); // Difficulty dropdown
 
-    // Update the input field with the random name
 
-    const nameInput = document.querySelector("#nameInput");
-    nameInput.value = randomName;
-      
-        //  const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
-      //  nameInput.value = randomName;
-        // Add animation effect
-     //   nameInput.classList.add('highlight-animation');
-    //    setTimeout(() => nameInput.classList.remove('highlight-animation'), 500);
-    }
+            // Array of sample names for random generation
+            const sampleNames = [
+                "Alex Smith", "Jordan Lee", "Taylor Wong",
+                "Sam Johnson", "Casey Brown", "Morgan Davis"
+            ];
 
-    // Add click handler for random name generation
-    generateButton.addEventListener('click', generateRandomName);
+            // Generate random name function
+            function generateRandomName() {
+                // Use chance.js to create a random name
+                //const randomName = chance.name(); // Generates a random full name
+                const randomName = chance.animal() + chance.integer({ min: 1, max: 99 }); // Combines a random word and number
 
-    // Handle continue button click
-    continueButton.addEventListener('click', function() {
-        const name = nameInput.value.trim();
-        const selectedDifficulty = difficultySelect.value; // Get the selected difficulty value
-        const numberOfLinks = numberOfLinksSelect.value;
-        const curScore = currentScore.value;
-        const airFriction = airFrictionSelect.value;
-        const pendLength = pendulumLengthSelect.value;
-        const pendWidth = pendulumWidthSelect.value;
-       // alert("selectedDifficulty is ", selectedDifficulty);
+                // Update the input field with the random name
 
-        if (name) {
+                const nameInput = document.querySelector("#nameInput");
+                nameInput.value = randomName;
 
-            // Store the name
-           // localStorage.setItem('playerName', name);
-               // Clear existing cookies first
-               document.cookie = `websitePendulumNumber=; path=/; max-age=0`; 
-               document.cookie = `websitePendulumWidth=; path=/; max-age=0`; 
-               document.cookie = `websitePendulumLength=; path=/; max-age=0`; 
-    document.cookie = `websitePlayerName=; path=/; max-age=0`; // Clear the player name cookie
-    document.cookie = `websitePlayerScore=; path=/; max-age=0`; // Clear the player score cookie
-    document.cookie = `websitePlayerLevel=; path=/; max-age=0`; // Clear the player level cookie
-    document.cookie = `websiteDifficultyLevel=; path=/; max-age=0`; // Clear difficulty level cookie
-    document.cookie = `websiteAirFriction=; path=/; max-age=0`; // Clear difficulty level cookie
+                //  const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
+                //  nameInput.value = randomName;
+                // Add animation effect
+                //   nameInput.classList.add('highlight-animation');
+                //    setTimeout(() => nameInput.classList.remove('highlight-animation'), 500);
+            }
 
-    // Store name and score in cookies
-    document.cookie = `websitePendulumNumber=${numberOfLinks}; path=/; max-age=31536000`; // Save for 1 year
-    document.cookie = `websitePendulumLength=${pendLength}; path=/; max-age=31536000`; // Save for 1 year
-    document.cookie = `websitePendulumWidth=${pendWidth}; path=/; max-age=31536000`; // Save for 1 year
-    document.cookie = `websitePlayerName=${encodeURIComponent(name)}; path=/; max-age=31536000`; // Save for 1 year
-    document.cookie = `websitePlayerScore=${curScore}; path=/; max-age=31536000`; // Save for 1 year
-    document.cookie = `websitePlayerLevel=${level}; path=/; max-age=31536000`; // Save for 1 year
-    document.cookie = `websiteDifficultyLevel=${selectedDifficulty}; path=/; max-age=31536000`; // Save difficulty level
-    document.cookie = `websiteAirFriction=${airFriction}; path=/; max-age=31536000`; // Save difficulty level
+            // Add click handler for random name generation
+            generateButton.addEventListener('click', generateRandomName);
 
-  //  console.log("Player name and score saved to cookies.");
-            // Continue with the simulation
-            location.reload();
-        } else {
-            // Show validation error
-            nameInput.classList.add('is-invalid');
-            document.getElementById('nameHelp').innerHTML = `
+            // Handle continue button click
+            continueButton.addEventListener('click', function () {
+                const name = nameInput.value.trim();
+                const selectedDifficulty = difficultySelect.value; // Get the selected difficulty value
+                const numberOfLinks = numberOfLinksSelect.value;
+                const curScore = currentScore.value;
+                const airFriction = airFrictionSelect.value;
+                const pendLength = pendulumLengthSelect.value;
+                const pendWidth = pendulumWidthSelect.value;
+                // alert("selectedDifficulty is ", selectedDifficulty);
+
+                if (name) {
+
+                    // Store the name
+                    // localStorage.setItem('playerName', name);
+                    // Clear existing cookies first
+                    document.cookie = `websitePendulumNumber=; path=/; max-age=0`;
+                    document.cookie = `websitePendulumWidth=; path=/; max-age=0`;
+                    document.cookie = `websitePendulumLength=; path=/; max-age=0`;
+                    document.cookie = `websitePlayerName=; path=/; max-age=0`; // Clear the player name cookie
+                    document.cookie = `websitePlayerScore=; path=/; max-age=0`; // Clear the player score cookie
+                    document.cookie = `websitePlayerLevel=; path=/; max-age=0`; // Clear the player level cookie
+                    document.cookie = `websiteDifficultyLevel=; path=/; max-age=0`; // Clear difficulty level cookie
+                    document.cookie = `websiteAirFriction=; path=/; max-age=0`; // Clear difficulty level cookie
+
+                    // Store name and score in cookies
+                    document.cookie = `websitePendulumNumber=${numberOfLinks}; path=/; max-age=31536000`; // Save for 1 year
+                    document.cookie = `websitePendulumLength=${pendLength}; path=/; max-age=31536000`; // Save for 1 year
+                    document.cookie = `websitePendulumWidth=${pendWidth}; path=/; max-age=31536000`; // Save for 1 year
+                    document.cookie = `websitePlayerName=${encodeURIComponent(name)}; path=/; max-age=31536000`; // Save for 1 year
+                    document.cookie = `websitePlayerScore=${curScore}; path=/; max-age=31536000`; // Save for 1 year
+                    document.cookie = `websitePlayerLevel=${level}; path=/; max-age=31536000`; // Save for 1 year
+                    document.cookie = `websiteDifficultyLevel=${selectedDifficulty}; path=/; max-age=31536000`; // Save difficulty level
+                    document.cookie = `websiteAirFriction=${airFriction}; path=/; max-age=31536000`; // Save difficulty level
+
+                    //  console.log("Player name and score saved to cookies.");
+                    // Continue with the simulation
+                    location.reload();
+                } else {
+                    // Show validation error
+                    nameInput.classList.add('is-invalid');
+                    document.getElementById('nameHelp').innerHTML = `
                 <span class="text-danger">Please enter a name to continue</span>`;
-        }
-    });
+                }
+            });
 
-    // Add input validation
-    nameInput.addEventListener('input', function() {
-        if (this.value.trim()) {
-            this.classList.remove('is-invalid');
-            document.getElementById('nameHelp').innerHTML = 
-                'Please enter your name or generate a random one';
-        }
-    });
+            // Add input validation
+            nameInput.addEventListener('input', function () {
+                if (this.value.trim()) {
+                    this.classList.remove('is-invalid');
+                    document.getElementById('nameHelp').innerHTML =
+                        'Please enter your name or generate a random one';
+                }
+            });
 
 
             // Your code here
@@ -1253,7 +1323,7 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
                     //  console.log('Pendulum state changed:', this.value);
                     try {
                         const parsedState = JSON.parse(this.value);
-                    //    console.log('Parsed pendulum state:', parsedState);
+                        //    console.log('Parsed pendulum state:', parsedState);
 
                         // Set the state input value
                         const stateInput = document.getElementById('stateInput');
@@ -1305,7 +1375,7 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
                 });
 
                 // Log initial value
-              //  console.log('Initial pendulum state:', pendulumStateInput.value);
+                //  console.log('Initial pendulum state:', pendulumStateInput.value);
             } else {
                 console.error('Pendulum state input element not found');
             }
@@ -1316,8 +1386,8 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
 
 
                 //alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
-               // alert(`websitePlayerName is Tim ${websitePlayerName}`);
-               // alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
+                // alert(`websitePlayerName is Tim ${websitePlayerName}`);
+                // alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
                 // Get the canvas div
                 const canvasDiv = document.getElementById("double_pendulum_canvas");
 
@@ -1330,8 +1400,8 @@ document.body.insertAdjacentHTML('beforeend', modalHTML);
                 const centerX = width / 2;
                 const centerY = height / 2;
 
-            //    console.log(`New dimensions - Width: ${width}px, Height: ${height}px`);
-            //    console.log(`New center - X: ${centerX}, Y: ${centerY}`);
+                //    console.log(`New dimensions - Width: ${width}px, Height: ${height}px`);
+                //    console.log(`New center - X: ${centerX}, Y: ${centerY}`);
 
                 // Clear existing pendulum
                 // First, remove the existing canvas if it exists
