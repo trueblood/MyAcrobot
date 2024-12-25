@@ -764,16 +764,16 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
     playerDifficultyLevel = websitePlayerDifficultyLevel;
     numberOfLinks = pendulumNumberValue;
     airFriction = airFrictionValue;
-    alert(`Debug Values:
-        Player Score: ${websitePlayerScore === null ? 0 : websitePlayerScore}
-        Player Level: ${websitePlayerLevel === null ? 1 : websitePlayerLevel}
-        websitePlayerName: ${websitePlayerName} 
-        Difficulty Level: ${websitePlayerDifficultyLevel}
-        Number of Pendulum Links: ${pendulumNumberValue}
-        Pendulum Length: ${websitePendulumLength}
-        Pendulum Width: ${websitePendulumWidth}
-         Airfriction Value: ${airFrictionValue}`)
-        ;
+    // alert(`Debug Values:
+    //     Player Score: ${websitePlayerScore === null ? 0 : websitePlayerScore}
+    //     Player Level: ${websitePlayerLevel === null ? 1 : websitePlayerLevel}
+    //     websitePlayerName: ${websitePlayerName} 
+    //     Difficulty Level: ${websitePlayerDifficultyLevel}
+    //     Number of Pendulum Links: ${pendulumNumberValue}
+    //     Pendulum Length: ${websitePendulumLength}
+    //     Pendulum Width: ${websitePendulumWidth}
+    //      Airfriction Value: ${airFrictionValue}`)
+    //     ;
 
 
   //  console.log("centerX = " + centerX);
