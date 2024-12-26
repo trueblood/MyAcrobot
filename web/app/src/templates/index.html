@@ -30,10 +30,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script type="text/javascript">
         // var socket = io();
-      //  var socket = io('http://localhost:8080', { transports: ['websocket'] }); // this worked for local docker container
+        //  var socket = io('http://localhost:8080', { transports: ['websocket'] }); // this worked for local docker container
         ///var socket = io('https://localhost', { transports: ['websocket'] });
 
-           var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
+        var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
 
         var savedMessages = []; // Array to store all messages
 
@@ -115,7 +115,7 @@
         <div class="container">
             <a class="navbar-brand" href="#page-top"><i class="fa-solid fa-robot"></i></a>
             <!-- Random Zone Info with Goal -->
-            <div class="random-zone-info text-white ms-3">
+            <div id="goalZone" class="random-zone-info text-white ms-3">
                 <p id="randomZone1Display" class="mb-0"><span class="fw-bold">Goal:</span> Random Zone (Upper Arm): </p>
                 <p id="randomZone2Display" class="mb-0"><span class="fw-bold">Goal:</span> Random Zone (Lower Arm): </p>
                 <p id="randomZone3Display" class="mb-0 display-element"><span class="fw-bold">Goal:</span> Random Zone 3
@@ -123,7 +123,10 @@
                 <p id="randomZone4Display" class="mb-0 display-element"><span class="fw-bold">Goal:</span> Random Zone 4
                     (Lower Arm): </p>
             </div>
-
+            <div id="countDownTimer" class="text-white ms-3" style="display: none;">
+                <span>Time Until Landing</span>
+                <p id="displayCountDown">2</p>
+            </div>
 
             <button class="navbar-toggler text-uppercase font-weight-bold bg-primary text-white rounded" type="button"
                 data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive"
@@ -186,7 +189,7 @@
         <div class="container">
 
 
-            
+
             <!-- Container for the pendulum canvas -->
             <div id="double_pendulum_canvas" style="width: 100%; height: 100vh; margin: 0 auto;"></div>
 
@@ -1164,11 +1167,11 @@
         // Add click event listener
         toggleSwitch.addEventListener('click', function () {
             if (toggleSwitch.checked) {
-               // alert('AI has been turned ON');
+                // alert('AI has been turned ON');
                 aiStateInput.value = 'ON';
                 aiState.textContent = 'ON';
             } else {
-             //   alert('AI has been turned OFF');
+                //   alert('AI has been turned OFF');
                 aiStateInput.value = 'OFF';
                 aiState.textContent = 'OFF';
             }
@@ -1264,8 +1267,15 @@
                 const pendLength = pendulumLengthSelect.value;
                 const pendWidth = pendulumWidthSelect.value;
                 // alert("selectedDifficulty is ", selectedDifficulty);
+                const countDownTimer = document.getElementById('countDownTimer');
+                const countDown = document.getElementById('displayCountDown');
+                const goalZone = document.getElementById('goalZone')
 
                 if (name) {
+                    goalZone.style.display = 'block';
+                    countDown.innerText = '2';
+                    // Show the `countDownTimer` when the countdown starts
+                    countDownTimer.style.display = 'none';
 
                     // Store the name
                     // localStorage.setItem('playerName', name);
