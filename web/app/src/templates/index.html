@@ -33,7 +33,7 @@
         //var socket = io('http://localhost:8080', { transports: ['websocket'] }); // this worked for local docker container
         // var socket = io('https://localhost', { transports: ['websocket'] });
 
-        var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
+         var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
 
         var savedMessages = []; // Array to store all messages
 
@@ -209,6 +209,18 @@
                 <span>Time Until Landing</span>
                 <p id="displayCountDown">2</p>
             </div>
+
+
+
+            <div id="circleData" class=" text-white ms-3 nav-link py-3 px-0 px-lg-3 rounded" style="display: block">
+                <div id="upperArmCircleCount"  style="display: block">Over bar count: 0</div>
+            </div>
+
+            <div id="alignmentDisplay" class=" text-white ms-3 nav-link py-3 px-0 px-lg-3 rounded" >
+                <div id="alignmentDisplay" name="alignmentDisplay" style="display: block"></div>
+
+            </div>
+
 
             <button class="navbar-toggler text-uppercase font-weight-bold bg-primary text-white rounded" type="button"
                 data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive"
@@ -736,13 +748,13 @@
         Current Zone: N/A
     </div>-->
     <br />
-    <div id="currentLink" name="currentLink" style="display: none"></div>
-    <div id="alignmentDisplay" name="alignmentDisplay" style="display: none"></div>
+    <div id="currentLink" name="currentLink" style ="display: none"></div>
+   <!-- <div id="alignmentDisplay" name="alignmentDisplay" style="display: none"></div> -->
     <div id="alignmentCountDisplay" name="alignmentCountDisplay" style="display: none"></div>
     <div id="notAlignedDisplay" name="notAlignedDisplay" style="display: none"></div>
     <div id="circleData" style="margin-top: 20px; font-size: 16px;" style="display: none">
         <div id="lowerArmCircleCount" style="display: none">Lower Arm Circles: 0</div>
-        <div id="upperArmCircleCount" style="display: none">Upper Arm Circles: 0</div>
+     <!-- <div id="upperArmCircleCount" style="display: none">Upper Arm Circles: 0</div> -->  
     </div>
 
 

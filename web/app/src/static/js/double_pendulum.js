@@ -220,7 +220,7 @@ function checkPendulumsAlignment(upperArm, lowerArm) {
     const lowerDegrees = (lowerAngle * 180 / Math.PI);
 
     // Define tolerance for "straightness" (in degrees)
-    const tolerance = 5; // adjust this value as needed
+    const tolerance = 20; // adjust this value as needed
 
     // Check if angles are aligned (either both vertical or both horizontal)
     const angleDifference = Math.abs(upperDegrees - lowerDegrees);
@@ -1188,6 +1188,23 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
         // Check alignment
         const alignmentInfo = checkPendulumsAlignment(upperArm, lowerArm);
         // updateAlignmentDisplay(alignmentInfo);
+        // if (alignmentInfo.isAligned) {
+        //     //      console.log('Pendulums are aligned!');
+        //     //     console.log('Upper arm angle:', alignmentInfo.upperDegrees.toFixed(2));
+        //     //      console.log('Lower arm angle:', alignmentInfo.lowerDegrees.toFixed(2));
+
+        //     // Optional: Update UI to show alignment
+        //     const alignmentDisplay = document.getElementById('alignmentDisplay');
+        //     alignmentDisplay.innerHTML = `
+        //     <div style="color: green;">
+        //         Pendulums Aligned!
+        //         <br>
+        //         Upper: ${alignmentInfo.upperDegrees.toFixed(2)}°
+        //         <br>
+        //         Lower: ${alignmentInfo.lowerDegrees.toFixed(2)}°
+        //     </div>
+        // `;
+
         if (alignmentInfo.isAligned) {
             //      console.log('Pendulums are aligned!');
             //     console.log('Upper arm angle:', alignmentInfo.upperDegrees.toFixed(2));
@@ -1197,20 +1214,17 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
             const alignmentDisplay = document.getElementById('alignmentDisplay');
             alignmentDisplay.innerHTML = `
             <div style="color: green;">
-                Pendulums Aligned!
-                <br>
-                Upper: ${alignmentInfo.upperDegrees.toFixed(2)}°
-                <br>
-                Lower: ${alignmentInfo.lowerDegrees.toFixed(2)}°
+                Aligned!
             </div>
         `;
+
         } else {
             //   console.log('Pendulums are not aligned.');
             // Optional: Update UI to show non-alignment
             const alignmentDisplay = document.getElementById('alignmentDisplay');
             alignmentDisplay.innerHTML = `
             <div style="color: red;">
-                Pendulums Not Aligned
+                Not Aligned!
             </div>
         `;
         }
@@ -1275,7 +1289,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
             // Update the upper arm circle count on the page
             const upperArmCircleElement = document.getElementById('upperArmCircleCount');
             if (upperArmCircleElement) {
-                upperArmCircleElement.textContent = `Upper Arm Circles: ${upperArmCircleCount}`;
+                upperArmCircleElement.textContent = `Over Bar Count: ${upperArmCircleCount}`;
             }
         }
 
