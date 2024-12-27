@@ -271,6 +271,12 @@
                     </a>
                 </li>
 
+                <li class="nav-item mx-0 mx-lg-1">
+                    <a class="nav-link py-3 px-0 px-lg-3 rounded" href="#" onclick="location.reload();">
+                        New Game
+                    </a>
+                </li>
+
 
                                             <!-- AI Toggle Switch -->
                                             <li class="nav-item mx-0 mx-lg-1">
@@ -515,7 +521,7 @@
                     </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Quit</button>
+                                <button type="button" class="btn btn-secondary" onclick="location.reload();" data-bs-dismiss="modal">Quit</button>
                                 <button type="button" class="btn btn-primary" id="continueButton">Continue</button>
                             </div>
                         </div>
@@ -526,6 +532,8 @@
 
                 // Initialize the double pendulum example after the page loads
                 window.onload = () => {
+
+
 
                     let websitePlayerScore = 0;
                     let websitePlayerName = "Guest";
@@ -721,6 +729,20 @@
                     //    link2Input.addEventListener('input', () => {
                     //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
                     //   });
+
+// After creating the modal, add this event listener
+const modal = new bootstrap.Modal(document.getElementById('resultModal'));
+const modalElement = document.getElementById('resultModal');
+
+// Handle the X button click
+modalElement.querySelector('.btn-close').addEventListener('click', () => {
+    location.reload();
+});
+
+// Handle clicking outside the modal (optional)
+modalElement.addEventListener('hidden.bs.modal', () => {
+    location.reload();
+});
 
                 };
             </script>

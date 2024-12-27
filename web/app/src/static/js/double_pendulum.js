@@ -220,7 +220,7 @@ function checkPendulumsAlignment(upperArm, lowerArm) {
     const lowerDegrees = (lowerAngle * 180 / Math.PI);
 
     // Define tolerance for "straightness" (in degrees)
-    const tolerance = 20; // adjust this value as needed
+    const tolerance = 30; // adjust this value as needed
 
     // Check if angles are aligned (either both vertical or both horizontal)
     const angleDifference = Math.abs(upperDegrees - lowerDegrees);
@@ -1214,7 +1214,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
             const alignmentDisplay = document.getElementById('alignmentDisplay');
             alignmentDisplay.innerHTML = `
             <div style="color: green;">
-                Aligned!
+                Pend Aligned!
             </div>
         `;
 
