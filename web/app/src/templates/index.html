@@ -30,8 +30,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script type="text/javascript">
         // var socket = io();
-        //  var socket = io('http://localhost:8080', { transports: ['websocket'] }); // this worked for local docker container
-        ///var socket = io('https://localhost', { transports: ['websocket'] });
+        //var socket = io('http://localhost:8080', { transports: ['websocket'] }); // this worked for local docker container
+        // var socket = io('https://localhost', { transports: ['websocket'] });
 
         var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
 
@@ -87,6 +87,88 @@
             }
         }
 
+
+
+
+    </script>
+    <script>
+        // Utility function to detect if the user is on mobile or desktop
+        function isMobileDevice() {
+            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        }
+
+        // Create modal content dynamically based on platform
+        function createModalContent() {
+            const onMobile = isMobileDevice();
+
+            // Instruction updates based on device type
+            const torqueInstruction = onMobile
+                ? "Use <strong>left or right taps</strong> to apply torque to the pendulums."
+                : "Use <strong>right and left arrow keys</strong>, or <strong>mouse clicks</strong> to apply torque to the pendulums.";
+            const alignInstruction = onMobile
+                ? "Press and hold to align Trent’s pendulums (torso and legs). For increased points, focus on precise alignment."
+                : "Click and hold to align Trent’s pendulums (torso and legs). For increased points, focus on precise alignment.";
+            const releaseInstruction = onMobile
+                ? "To release Trent from the bar and initiate the flip, use <strong>a two-finger touch</strong> at the same time. Many players use their thumbs for this action."
+                : "To release Trent from the bar and initiate the flip, press the <strong>letter C</strong>.";
+
+            return `
+    <div class="modal fade" id="instructionsModal" tabindex="-1" aria-labelledby="instructionsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="instructionsModalLabel">Welcome to MyAcrobot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Welcome, Coach Ed Burch! Your goal is to guide the AI gymnast Trent Dimas to win an Olympic gold medal, just like in the 1992 Olympics in Barcelona, Spain. The AI (Trent), a reinforcement learning AI, is learning to flip over the bar 
+                        (the 90-degree mark on the grid, visible on the y-axis) and land within a target zone with the coach's direction on when to let go of the high bar.
+                    </p>
+                    <p>
+                        Here's how to play:
+                    </p>
+                    <ul>
+                        <li>${torqueInstruction}</li>
+                        <li>${alignInstruction}</li>
+                        <li>${releaseInstruction}</li>
+                        <li>
+                            Ensure Trent lands at least one pendulum in the randomly chosen goal quadrant within the 2-second timer.
+                        </li>
+                        <li>
+                            Pause the AI at any time for coaching. During this pause, environment state data is saved to a SQLite database to improve the AI's learning.
+                        </li>
+                        <li>
+                            Experiment with environmental settings to challenge the AI or turn off the AI to take full control.
+                        </li>
+                    </ul>
+                    <p>
+                        This game showcases a <strong>symbiotic relationship</strong> between humans and AI. It’s a partnership where both learn and grow together, 
+                        breaking the stigma of AI replacing human jobs.
+                    </p>
+                    <p>
+                        Your task: Help Trent land in the target zone and improve his skills as you play!
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Let's Start!</button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+        }
+
+        // Function to show the modal
+        function showInstructionsModal() {
+            const instructionsModalContent = createModalContent();
+
+            // Add the modal to the body
+            document.body.insertAdjacentHTML('beforeend', instructionsModalContent);
+
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('instructionsModal'));
+            modal.show();
+        }
 
 
 
@@ -167,15 +249,32 @@
                                         id="playerLevel">0</span></span></li>
                             <li><span class="dropdown-item-text"><strong>Difficulty Level:</strong> <span
                                         id="playerDifficultyLevel">0</span></span></li>
-                            <!-- AI Toggle Switch -->
-                            <li class="dropdown-item">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="toggleSwitch">
-                                    <label class="form-check-label" for="toggleSwitch">AI Toggle Switch</label>
-                                </div>
-                            </li>
+
                         </ul>
                     </li>
+                                    <!-- Instructions Link -->
+                <li class="nav-item mx-0 mx-lg-1">
+                    <a class="nav-link py-3 px-0 px-lg-3 rounded" href="#" id="instructionsLink" onclick="showInstructionsModal();">
+                        Instructions
+                    </a>
+                </li>
+
+
+                                            <!-- AI Toggle Switch -->
+                                            <li class="nav-item mx-0 mx-lg-1">
+                                                <a class="nav-link py-3 px-0 px-lg-3 rounded d-flex align-items-center" href="#" onclick="toggleAI();">
+                                                    <input class="form-check-input me-2" type="checkbox" id="toggleSwitch">
+                                                    <label class="form-check-label mb-0" for="toggleSwitch">AI Toggle Switch</label>
+                                                </a>
+                                            </li>
+
+
+                                      <!--      <li class="nav-item mx-0 mx-lg-1">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="toggleSwitch">
+                                                    <label class="form-check-label nav-link py-3 px-0 px-lg-3 rounded d-flex align-items-center" for="toggleSwitch">AI Toggle Switch</label>
+                                                </div>
+                                            </li> -->
                 </ul>
             </div>
         </div>
@@ -266,17 +365,27 @@
                     };
 
                     // Show modal with fade effect
-                    modalElement.addEventListener('shown.bs.modal', () => {
-                        if (isSuccess) {
-                            confetti({
-                                particleCount: 100,
-                                spread: 70,
-                                origin: { y: 0.6 }
-                            });
-                        }
-                    });
+              //      modalElement.addEventListener('shown.bs.modal', () => {
+              //          if (isSuccess) {
+              //              confetti({
+              //                  particleCount: 100,
+             //                   spread: 70,
+              //                  origin: { y: 0.6 }
+            //                });
+            //            }
+            //        });
 
-                    modal.show();
+            if (isSuccess) {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+                    setTimeout(() => {
+        
+                        modal.show();
+                    }, 1000);  // 1000 milliseconds = 1 second
                 }
 
                 // First, add this HTML to your page for the modal
@@ -429,9 +538,11 @@
                         const decodedCookies = decodeURIComponent(document.cookie);
                         const cookiesArray = decodedCookies.split(';');
 
-                        //  if (cookiesArray[0] === '') {
-                        //      return alert('No cookies found!');
-                        //  }
+                        if (cookiesArray[0] === '') {
+                            //return alert('No cookies found!');
+                            // Check for the "instructionsShown" cookie
+                            showInstructionsModal();
+                        }
                         for (const cookie of cookiesArray) {
                             const [name, value] = cookie.trim().split('=');
                             if (name === 'websitePlayerScore') {
@@ -1394,7 +1505,7 @@
             }
 
             // Add this to your script
-            window.addEventListener('resize', () => {
+          // window.addEventListener('resize', () => {
                 //getCookieValues();  
 
 
@@ -1402,31 +1513,31 @@
                 // alert(`websitePlayerName is Tim ${websitePlayerName}`);
                 // alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
                 // Get the canvas div
-                const canvasDiv = document.getElementById("double_pendulum_canvas");
+              //  const canvasDiv = document.getElementById("double_pendulum_canvas");
 
                 // Get updated dimensions
-                const rect = canvasDiv.getBoundingClientRect();
-                const width = rect.width;
-                const height = rect.height;
+              //  const rect = canvasDiv.getBoundingClientRect();
+             //   const width = rect.width;
+             //   const height = rect.height;
 
                 // Calculate new center points
-                const centerX = width / 2;
-                const centerY = height / 2;
+             //   const centerX = width / 2;
+              //  const centerY = height / 2;
 
                 //    console.log(`New dimensions - Width: ${width}px, Height: ${height}px`);
                 //    console.log(`New center - X: ${centerX}, Y: ${centerY}`);
 
                 // Clear existing pendulum
                 // First, remove the existing canvas if it exists
-                const existingCanvas = canvasDiv.querySelector('canvas');
-                if (existingCanvas) {
-                    existingCanvas.remove();
-                }
+            //    const existingCanvas = canvasDiv.querySelector('canvas');
+           //     if (existingCanvas) {
+            //        existingCanvas.remove();
+           //     }
 
                 // Reinitialize the pendulum with new dimensions
-                const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
+          //      const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
 
-            });
+          //  });
 
 
 
