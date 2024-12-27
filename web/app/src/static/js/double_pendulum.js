@@ -336,7 +336,7 @@ function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
 }
 
 // Function to add touch controls
-function addTouchControl(pendulum, canvas) {
+function addTouchControl(pendulum, canvas, engine, chainComposite) {
     const lowerArm = pendulum.bodies[1];
     const upperArm = pendulum.bodies[0];
     let isSwitching = false; // Prevent rapid toggling
@@ -1404,7 +1404,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
 
     // Call the function to add keyboard control
     addKeyboardControl(pendulum, engine, chainComposite);
-    addTouchControl(pendulum, render.canvas);
+    addTouchControl(pendulum, render.canvas, engine, chainComposite);
 
     // Stop the runner to implement manual stepping
     Runner.stop(runner);
