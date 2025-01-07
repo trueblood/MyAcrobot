@@ -33,7 +33,9 @@
         //var socket = io('http://localhost:8080', { transports: ['websocket'] }); // this worked for local docker container
         // var socket = io('https://localhost', { transports: ['websocket'] });
 
-         var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
+        // var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
+       // var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
+         var socket = io('wss://myacrobot.weebette.ai', { transports: ['websocket'] });
 
         var savedMessages = []; // Array to store all messages
 
