@@ -336,93 +336,11 @@ function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
 }
 
 // Function to add touch controls
-function addTouchControl(pendulum, canvas, engine, chainComposite) {
-    const lowerArm = pendulum.bodies[1];
-    const upperArm = pendulum.bodies[0];
-    let isSwitching = false; // Prevent rapid toggling
-    let lastTapTime = 0; // For detecting double-tap
-
-    // Add touchstart and touchmove event listeners to the canvas
-    canvas.addEventListener('touchstart', handleTouch);
-    canvas.addEventListener('touchmove', handleTouch);
-    canvas.addEventListener('touchend', handleTouchEnd);
-
-    function handleTouch(event) {
-        event.preventDefault(); // Prevent default touch behavior (e.g., scrolling)
-
-        // Detect multi-touch
-        const touches = event.touches;
-        const touchCount = touches.length;
-        const currentTime = new Date().getTime();
-        const timeDifference = currentTime - lastTapTime;
-
-        if (touchCount === 2 && !isSwitching) {
-            // Two-finger touch switches control between links
-            isSwitching = true;
-            switchControl();
-        } else if (touchCount === 1 && timeDifference < 300) {
-            // Double-tap releases the pendulum links
-            removeChain(engine, chainComposite);
-        }
-
-        // Update lastTapTime for double-tap detection
-        lastTapTime = currentTime;
-
-        // For single touch, apply forces
-        if (touchCount === 1) {
-            const touch = touches[0];
-            const canvasRect = canvas.getBoundingClientRect();
-            const touchX = touch.clientX - canvasRect.left;
-            const centerX = canvasRect.width / 2;
-
-            const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
-
-            // Apply force based on touch position
-            if (touchX < centerX) {
-                const message = 'Touch detected: Left side - Applying left force';
-                updateOutputMessage(message); // Update index page
-                Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
-            } else {
-                const message = 'Touch detected: Right side - Applying right force';
-                updateOutputMessage(message); // Update index page
-                Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
-            }
-        }
-    }
-
-    function handleTouchEnd(event) {
-        event.preventDefault();
-        if (event.touches.length === 0) {
-            isSwitching = false; // Reset switching state if all fingers are lifted
-        }
-    }
-
-    function switchControl() {
-        if (currentControl === 'lowerArm') {
-            currentControl = 'upperArm';
-            // Update rendering
-            upperArm.render.fillStyle = '#ff6666'; // Highlight upper arm
-            upperArm.render.strokeStyle = '#1a1a1a';
-            lowerArm.render.fillStyle = 'transparent';
-            lowerArm.render.strokeStyle = '#1a1a1a';
-            updateOutputMessageForCurrentlySelectedLink('Currently controlling: Upper Arm');
-        } else {
-            currentControl = 'lowerArm';
-            // Update rendering
-            lowerArm.render.fillStyle = '#ff6666'; // Highlight lower arm
-            lowerArm.render.strokeStyle = '#1a1a1a';
-            upperArm.render.fillStyle = 'transparent';
-            upperArm.render.strokeStyle = '#1a1a1a';
-            updateOutputMessageForCurrentlySelectedLink('Currently controlling: Lower Arm');
-        }
-    }
-}
-
-// Function to add touch controls
 // function addTouchControl(pendulum, canvas, engine, chainComposite) {
 //     const lowerArm = pendulum.bodies[1];
 //     const upperArm = pendulum.bodies[0];
 //     let isSwitching = false; // Prevent rapid toggling
+//     let lastTapTime = 0; // For detecting double-tap
 
 //     // Add touchstart and touchmove event listeners to the canvas
 //     canvas.addEventListener('touchstart', handleTouch);
@@ -435,113 +353,20 @@ function addTouchControl(pendulum, canvas, engine, chainComposite) {
 //         // Detect multi-touch
 //         const touches = event.touches;
 //         const touchCount = touches.length;
+//         const currentTime = new Date().getTime();
+//         const timeDifference = currentTime - lastTapTime;
 
 //         if (touchCount === 2 && !isSwitching) {
-//             const countDownTimer = document.getElementById('countDownTimer');
-//             const countDown = document.getElementById('displayCountDown');
-//             const goalZone = document.getElementById('goalZone')
-
-//             if (countDown) {
-//                 // Hide the `countDownTimer` initially
-//                 goalZone.style.display = 'none';
-
-//                 // Show the `countDownTimer` when the countdown starts
-//                 countDownTimer.style.display = 'block';
-//                 let countdownValue = 2; // Set the countdown start value (e.g., 3 seconds)
-
-//                 // Update the countdown element to show the current value
-//                 countDown.textContent = countdownValue;
-
-//                 const countdownInterval = setInterval(() => {
-//                     countdownValue--; // Decrease the countdown value
-//                     countDown.textContent = countdownValue; // Update the display with the current value
-
-//                     if (countdownValue <= 0) {
-//                         clearInterval(countdownInterval); // Stop the timer when it reaches 0
-//                         countDown.textContent = '0'; // Ensure it displays 0 explicitly
-//                     }
-//                 }, 1000); // 1-second interval
-//             }
-
-
-//             const randomZones = [];
-//             // Get the zone display elements
-//             const randomZone1Display = document.getElementById('randomZone1Display');
-//             const randomZone2Display = document.getElementById('randomZone2Display');
-//             const randomZone3Display = document.getElementById('randomZone3Display');
-//             const randomZone4Display = document.getElementById('randomZone4Display');
-
-//             // Add the values to the array if they exist and have text content
-//             if (randomZone1Display && randomZone1Display.textContent.trim()) {
-//                 randomZones.push(randomZone1Display.textContent.trim());
-//             }
-//             if (randomZone2Display && randomZone2Display.textContent.trim()) {
-//                 randomZones.push(randomZone2Display.textContent.trim());
-//             }
-//             if (randomZone3Display && randomZone3Display.textContent.trim()) {
-//                 randomZones.push(randomZone3Display.textContent.trim());
-//             }
-//             if (randomZone4Display && randomZone4Display.textContent.trim()) {
-//                 randomZones.push(randomZone4Display.textContent.trim());
-//             }
-
-//             // Show the array length in an alert box
-//             //   alert(`Number of Random Zones: ${randomZones.length}\nValues: ${randomZones.join(', ')}`);
-
-
-//             // Call removeChain if required (keeping your original functionality)
+//             // Two-finger touch switches control between links
+//             isSwitching = true;
+//             switchControl();
+//         } else if (touchCount === 1 && timeDifference < 300) {
+//             // Double-tap releases the pendulum links
 //             removeChain(engine, chainComposite);
-
-//             // Add a 1.5-second delay using setTimeout
-//             setTimeout(() => {
-
-
-
-//                 // Populate targetZones with the zones we need to match
-//                 links.forEach((link, index) => {
-//                     const zoneValueElement = document.getElementById(`armZone${index}Output`); // Corrected element ID
-//                     if (zoneValueElement) {     //armZone1Output
-
-//                         const zoneValue = zoneValueElement.textContent.trim();
-
-//                         // Find and remove matching zone from randomZones
-//                         const matchingIndex = randomZones.indexOf(zoneValue);
-//                         if (matchingIndex !== -1) {
-//                             randomZones.splice(matchingIndex, 1); // Remove the matching zone
-//                             //  alert(`Match found and removed: ${zoneValue}`);
-//                         }
-//                     }
-//                 })
-
-//                 if (randomZones == 0) {
-//                     score += 1;
-//                     showResultModal(true, 'Success! Pendulum(s) landed in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
-
-//                 } else {
-//                     let mismatchDetails = 'Mismatch!\nExpected Zones:\n';
-//                     randomZones.forEach((zone, index) => {
-//                         mismatchDetails += `Zone ${index + 1}: ${zone}\n`;
-//                     });
-
-
-//                     // var mismatchMessage = `Mismatch!
-//                     //  Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
-//                     // Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`;
-//                     // //         alert(`);
-//                     showResultModal(false, mismatchDetails, playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
-
-//                 }
-
-//                 // Progression logic: Increase level after every 5 successful scores
-//                 if (score > 0 && score % 5 === 0) {
-//                     updateLevel(level + 1);
-//                 }
-//             }, 2000); // 1.5-second delay
-
-//             // Determine zones based on the current level
-//             determineZonesForLevel();
-            
 //         }
+
+//         // Update lastTapTime for double-tap detection
+//         lastTapTime = currentTime;
 
 //         // For single touch, apply forces
 //         if (touchCount === 1) {
@@ -555,12 +380,10 @@ function addTouchControl(pendulum, canvas, engine, chainComposite) {
 //             // Apply force based on touch position
 //             if (touchX < centerX) {
 //                 const message = 'Touch detected: Left side - Applying left force';
-//                 //   console.log(message);
 //                 updateOutputMessage(message); // Update index page
 //                 Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
 //             } else {
 //                 const message = 'Touch detected: Right side - Applying right force';
-//                 //  console.log(message);
 //                 updateOutputMessage(message); // Update index page
 //                 Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
 //             }
@@ -577,7 +400,6 @@ function addTouchControl(pendulum, canvas, engine, chainComposite) {
 //     function switchControl() {
 //         if (currentControl === 'lowerArm') {
 //             currentControl = 'upperArm';
-//             //    console.log('Switched control to upper arm');
 //             // Update rendering
 //             upperArm.render.fillStyle = '#ff6666'; // Highlight upper arm
 //             upperArm.render.strokeStyle = '#1a1a1a';
@@ -586,7 +408,6 @@ function addTouchControl(pendulum, canvas, engine, chainComposite) {
 //             updateOutputMessageForCurrentlySelectedLink('Currently controlling: Upper Arm');
 //         } else {
 //             currentControl = 'lowerArm';
-//             //   console.log('Switched control to lower arm');
 //             // Update rendering
 //             lowerArm.render.fillStyle = '#ff6666'; // Highlight lower arm
 //             lowerArm.render.strokeStyle = '#1a1a1a';
@@ -596,6 +417,199 @@ function addTouchControl(pendulum, canvas, engine, chainComposite) {
 //         }
 //     }
 // }
+
+// Function to add touch controls
+function addTouchControl(pendulum, canvas, engine, chainComposite) {
+    const lowerArm = pendulum.bodies[1];
+    const upperArm = pendulum.bodies[0];
+    let isSwitching = false; // Prevent rapid toggling
+    let lastTapTime = 0; // To track time of the last tap
+    let isDoubleTapped = false; // To track double-tap status
+
+    // Add touchstart and touchmove event listeners to the canvas
+    canvas.addEventListener('touchstart', handleTouch);
+    canvas.addEventListener('touchmove', handleTouch);
+    canvas.addEventListener('touchend', handleTouchEnd);
+
+    function handleTouch(event) {
+        event.preventDefault(); // Prevent default touch behavior (e.g., scrolling)
+
+        const currentTime = new Date().getTime();
+        const timeSinceLastTap = currentTime - lastTapTime;
+
+        if (timeSinceLastTap < 300 && event.touches.length === 1) { // Detect double-tap
+            isDoubleTapped = true; // Set the double-tap flag to true
+            setTimeout(() => {
+                isDoubleTapped = false; // Reset the flag after a short duration
+            }, 500); // Keep the double-tap flag active for 500ms
+        }
+
+        lastTapTime = currentTime; // Update last tap time
+
+        // Detect multi-touch
+        const touches = event.touches;
+        const touchCount = touches.length;
+        
+        if (touchCount === 2 && !isSwitching && isDoubleTapped) {
+            const countDownTimer = document.getElementById('countDownTimer');
+            const countDown = document.getElementById('displayCountDown');
+            const goalZone = document.getElementById('goalZone')
+
+            if (countDown) {
+                // Hide the `countDownTimer` initially
+                goalZone.style.display = 'none';
+
+                // Show the `countDownTimer` when the countdown starts
+                countDownTimer.style.display = 'block';
+                let countdownValue = 2; // Set the countdown start value (e.g., 3 seconds)
+
+                // Update the countdown element to show the current value
+                countDown.textContent = countdownValue;
+
+                const countdownInterval = setInterval(() => {
+                    countdownValue--; // Decrease the countdown value
+                    countDown.textContent = countdownValue; // Update the display with the current value
+
+                    if (countdownValue <= 0) {
+                        clearInterval(countdownInterval); // Stop the timer when it reaches 0
+                        countDown.textContent = '0'; // Ensure it displays 0 explicitly
+                    }
+                }, 1000); // 1-second interval
+            }
+
+
+            const randomZones = [];
+            // Get the zone display elements
+            const randomZone1Display = document.getElementById('randomZone1Display');
+            const randomZone2Display = document.getElementById('randomZone2Display');
+            const randomZone3Display = document.getElementById('randomZone3Display');
+            const randomZone4Display = document.getElementById('randomZone4Display');
+
+            // Add the values to the array if they exist and have text content
+            if (randomZone1Display && randomZone1Display.textContent.trim()) {
+                randomZones.push(randomZone1Display.textContent.trim());
+            }
+            if (randomZone2Display && randomZone2Display.textContent.trim()) {
+                randomZones.push(randomZone2Display.textContent.trim());
+            }
+            if (randomZone3Display && randomZone3Display.textContent.trim()) {
+                randomZones.push(randomZone3Display.textContent.trim());
+            }
+            if (randomZone4Display && randomZone4Display.textContent.trim()) {
+                randomZones.push(randomZone4Display.textContent.trim());
+            }
+
+            // Show the array length in an alert box
+            //   alert(`Number of Random Zones: ${randomZones.length}\nValues: ${randomZones.join(', ')}`);
+
+
+            // Call removeChain if required (keeping your original functionality)
+            removeChain(engine, chainComposite);
+
+            // Add a 1.5-second delay using setTimeout
+            setTimeout(() => {
+
+
+
+                // Populate targetZones with the zones we need to match
+                links.forEach((link, index) => {
+                    const zoneValueElement = document.getElementById(`armZone${index}Output`); // Corrected element ID
+                    if (zoneValueElement) {     //armZone1Output
+
+                        const zoneValue = zoneValueElement.textContent.trim();
+
+                        // Find and remove matching zone from randomZones
+                        const matchingIndex = randomZones.indexOf(zoneValue);
+                        if (matchingIndex !== -1) {
+                            randomZones.splice(matchingIndex, 1); // Remove the matching zone
+                            //  alert(`Match found and removed: ${zoneValue}`);
+                        }
+                    }
+                })
+
+                if (randomZones == 0) {
+                    score += 1;
+                    showResultModal(true, 'Success! Pendulum(s) landed in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+
+                } else {
+                    let mismatchDetails = 'Mismatch!\nExpected Zones:\n';
+                    randomZones.forEach((zone, index) => {
+                        mismatchDetails += `Zone ${index + 1}: ${zone}\n`;
+                    });
+
+
+                    // var mismatchMessage = `Mismatch!
+                    //  Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
+                    // Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`;
+                    // //         alert(`);
+                    showResultModal(false, mismatchDetails, playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+
+                }
+
+                // Progression logic: Increase level after every 5 successful scores
+                if (score > 0 && score % 5 === 0) {
+                    updateLevel(level + 1);
+                }
+            }, 2000); // 1.5-second delay
+
+            // Determine zones based on the current level
+            determineZonesForLevel();
+            
+        }
+
+        // // For single touch, apply forces
+        // if (touchCount === 1) {
+        //     const touch = touches[0];
+        //     const canvasRect = canvas.getBoundingClientRect();
+        //     const touchX = touch.clientX - canvasRect.left;
+        //     const centerX = canvasRect.width / 2;
+
+        //     const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
+
+        //     // Apply force based on touch position
+        //     if (touchX < centerX) {
+        //         const message = 'Touch detected: Left side - Applying left force';
+        //         //   console.log(message);
+        //         updateOutputMessage(message); // Update index page
+        //         Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
+        //     } else {
+        //         const message = 'Touch detected: Right side - Applying right force';
+        //         //  console.log(message);
+        //         updateOutputMessage(message); // Update index page
+        //         Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
+        //     }
+        // }
+    }
+
+    function handleTouchEnd(event) {
+        event.preventDefault();
+        if (event.touches.length === 0) {
+            isSwitching = false; // Reset switching state if all fingers are lifted
+        }
+    }
+
+    function switchControl() {
+        if (currentControl === 'lowerArm') {
+            currentControl = 'upperArm';
+            //    console.log('Switched control to upper arm');
+            // Update rendering
+            upperArm.render.fillStyle = '#ff6666'; // Highlight upper arm
+            upperArm.render.strokeStyle = '#1a1a1a';
+            lowerArm.render.fillStyle = 'transparent';
+            lowerArm.render.strokeStyle = '#1a1a1a';
+            updateOutputMessageForCurrentlySelectedLink('Currently controlling: Upper Arm');
+        } else {
+            currentControl = 'lowerArm';
+            //   console.log('Switched control to lower arm');
+            // Update rendering
+            lowerArm.render.fillStyle = '#ff6666'; // Highlight lower arm
+            lowerArm.render.strokeStyle = '#1a1a1a';
+            upperArm.render.fillStyle = 'transparent';
+            upperArm.render.strokeStyle = '#1a1a1a';
+            updateOutputMessageForCurrentlySelectedLink('Currently controlling: Lower Arm');
+        }
+    }
+}
 
 // Function to update output on the index page
 function updateOutputMessage(message) {
