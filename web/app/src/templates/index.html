@@ -30,12 +30,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script type="text/javascript">
         // var socket = io();
-     //   var socket = io('http://localhost:8080', { transports: ['websocket'] }); // this worked for local docker container
+        //   var socket = io('http://localhost:8080', { transports: ['websocket'] }); // this worked for local docker container
         // var socket = io('https://localhost', { transports: ['websocket'] });
 
         // var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
         // var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
-         var socket = io('wss://myacrobot.weebette.ai', { transports: ['websocket'] });
+        var socket = io('wss://myacrobot.weebette.ai', { transports: ['websocket'] });
 
         var savedMessages = []; // Array to store all messages
 
@@ -177,7 +177,22 @@
 
             // Show the modal
             const modal = new bootstrap.Modal(document.getElementById('instructionsModal'));
+            isInstructionModelOpen = true;
+            //alert("isInstructionModelOpen", isInstructionModelOpen);
             modal.show();
+
+            const instructionsModal = document.getElementById('instructionsModal');
+
+            if (instructionsModal) {
+                // Option 1: Use a flag variable to track if we've added the listener
+                if (!instructionsModal.hasModalListener) {
+                    instructionsModal.addEventListener('hide.bs.modal', function () {
+                        isInstructionModelOpen = false;
+                     //   alert(`isInstructionModelOpen changed to: ${isInstructionModelOpen}`);
+                    });
+                    instructionsModal.hasModalListener = true;  // Mark that we've added the listener
+                }
+            }            
         }
 
 
@@ -548,6 +563,9 @@
 
 
 
+                    
+
+                    let isInstructionModelOpen = false;
                     let websitePlayerScore = 0;
                     let websitePlayerName = "Guest";
                     let websitePlayerLevel = 1;
@@ -756,7 +774,6 @@
                     modalElement.addEventListener('hidden.bs.modal', () => {
                         location.reload();
                     });
-
                 };
             </script>
     </section>
@@ -1348,8 +1365,6 @@
                 aiState.textContent = 'ON';
             }
 
-
-
             let lastTapTime = 0; // Timestamp of the last tap
             let lastTapPosition = { x: 0, y: 0 }; // Position of the last tap
             const DOUBLE_TAP_THRESHOLD = 300; // Time in milliseconds
@@ -1377,7 +1392,7 @@
 
                 if (
                     timeSinceLastTap < DOUBLE_TAP_THRESHOLD &&
-                    distanceSinceLastTap < DOUBLE_TAP_RADIUS
+                    distanceSinceLastTap < DOUBLE_TAP_RADIUS && !isInstructionModelOpen
                 ) {
                     // Check if the tap occurred on the navbar
                     const navBar = document.querySelector('.navbar');
@@ -1395,19 +1410,19 @@
                 }
 
 
-           //     if (
-           //         timeSinceLastTap < DOUBLE_TAP_THRESHOLD &&
-            //        distanceSinceLastTap < DOUBLE_TAP_RADIUS
-            //    ) {
-                    // Double-tap detected
-             //       hiddenElement.value = "true";
-                    // Optional: Reset the value after some time
-              //      setTimeout(() => {
-               //         hiddenElement.value = "false";
-               //     }, 1000); // Reset after 1 second
-                    //   console.log('Double-tap detected!');
-                    //  alert('Double-tap detected!'); // Replace with your custom action
-               // }
+                //     if (
+                //         timeSinceLastTap < DOUBLE_TAP_THRESHOLD &&
+                //        distanceSinceLastTap < DOUBLE_TAP_RADIUS
+                //    ) {
+                // Double-tap detected
+                //       hiddenElement.value = "true";
+                // Optional: Reset the value after some time
+                //      setTimeout(() => {
+                //         hiddenElement.value = "false";
+                //     }, 1000); // Reset after 1 second
+                //   console.log('Double-tap detected!');
+                //  alert('Double-tap detected!'); // Replace with your custom action
+                // }
 
                 // Update last tap details
                 lastTapTime = currentTime;
@@ -1419,7 +1434,6 @@
 
             // Event listener for mouse clicks (desktop)
             document.addEventListener('mousedown', handleDoubleTap);
-
             // Alternative using vanilla JavaScript
             //document.getElementById('myModal').addEventListener('shown.bs.modal', function () {
             //    const playerName = document.getElementById('playerName').textContent;
