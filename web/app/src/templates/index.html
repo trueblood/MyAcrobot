@@ -187,10 +187,10 @@
                 // Option 1: Use a flag variable to track if we've added the listener
                 if (!instructionsModal.hasModalListener) {
                     instructionsModal.addEventListener('hide.bs.modal', function () {
-                        isInstructionModelOpen = false;
+                        document.getElementById('isInstructionModelOpen').value = 'false';  // or 'false'
                      //   alert(`isInstructionModelOpen changed to: ${isInstructionModelOpen}`);
                     });
-                    instructionsModal.hasModalListener = true;  // Mark that we've added the listener
+                    document.getElementById('isInstructionModelOpen').value = 'true';  // or 'false'
                 }
             }            
         }
@@ -233,7 +233,7 @@
             </div>
             <div id="countDownTimer" class="text-white ms-3" style="display: none;">
                 <span>Time Until Landing</span>
-                <p id="displayCountDown">2</p>
+                <p id="displayCountDown">1</p>
             </div>
 
 
@@ -560,12 +560,6 @@
 
                 // Initialize the double pendulum example after the page loads
                 window.onload = () => {
-
-
-
-                    
-
-                    let isInstructionModelOpen = false;
                     let websitePlayerScore = 0;
                     let websitePlayerName = "Guest";
                     let websitePlayerLevel = 1;
@@ -851,6 +845,7 @@
     <input type="hidden" id="savedMessagesHidden" value="[]">
     <input type="hidden" id="hdnPendulumState" value="">
     <input type="hidden" id="doubleTapValue" value="false">
+    <input type="hidden" id="isInstructionModelOpen" value="false">
 
     <!--  <hr /> -->
     <!--   <div id="playerName">Guest</div>
@@ -1381,6 +1376,7 @@
                 const touch = event.touches ? event.touches[0] : event; // Get the touch or mouse event
                 const currentTapPosition = { x: touch.clientX, y: touch.clientY };
                 const hiddenElement = document.getElementById('doubleTapValue');
+                const isInstructionModelOpen = document.getElementById('isInstructionModelOpen').value === 'true';
 
                 const timeSinceLastTap = currentTime - lastTapTime;
                 const distanceSinceLastTap = getDistance(
