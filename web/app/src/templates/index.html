@@ -102,9 +102,48 @@
 
             scoresContainer.innerHTML = '';
             // Create a table element
-            const table = document.createElement('table');
-            table.style.width = '100%';
-            table.style.borderCollapse = 'collapse';
+                // Create and style the table
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'separate';
+    table.style.borderSpacing = '0';
+    table.style.backgroundColor = 'white';
+    table.style.borderRadius = '8px';
+    table.style.overflow = 'hidden';
+    table.style.boxShadow = '0 0 10px rgba(0,0,0,0.1)';
+
+    // Create header row
+    const headerRow = document.createElement('tr');
+    headerRow.style.backgroundColor = '#333';
+    headerRow.style.color = 'white';
+
+    // Create header cells
+    const rankHeader = document.createElement('th');
+    rankHeader.style.padding = '12px';
+    rankHeader.style.width = '60px';
+    rankHeader.style.textAlign = 'center';
+    rankHeader.textContent = '';
+
+    const nameHeader = document.createElement('th');
+    nameHeader.style.padding = '12px';
+    nameHeader.style.width = '150px';
+    nameHeader.style.textAlign = 'left';
+    nameHeader.textContent = 'Name';
+
+    const scoreHeader = document.createElement('th');
+    scoreHeader.style.padding = '12px';
+    scoreHeader.style.width = '100px';
+    scoreHeader.style.textAlign = 'right';
+    scoreHeader.textContent = 'Score';
+
+    // Append headers
+    headerRow.appendChild(rankHeader);
+    headerRow.appendChild(nameHeader);
+    headerRow.appendChild(scoreHeader);
+   table.appendChild(headerRow);
+          //  const table = document.createElement('table');
+          //  table.style.width = '100%';
+          //  table.style.borderCollapse = 'collapse';
 
             scores.forEach((score, index) => {
                 const row = document.createElement('tr');
