@@ -148,20 +148,47 @@
             scores.forEach((score, index) => {
                 const row = document.createElement('tr');
                 row.style.borderBottom = '1px solid #ddd';
+                row.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f8f8f8';
 
                 // Add the blank column with medal icons for top 3
-                const blankCell = document.createElement('td');
-                blankCell.style.width = '8px';
-                blankCell.style.textAlign = 'center';
+              //  const blankCell = document.createElement('td');
+              //  blankCell.style.width = '8px';
+            //    blankCell.style.textAlign = 'center';
                // blankCell.innerHTML = index < 3 ? medalIcons[index] :  index + 1; // Show medals for top 3
-                
+                    // Create index cell (formerly blankCell)
+    const indexCell = document.createElement('td');
+    indexCell.style.width = '40px';
+    indexCell.style.textAlign = 'center';
+    indexCell.style.padding = '12px';
+    indexCell.textContent = index + 1;  // Display index number starting from 1
+    indexCell.style.color = '#666';
+    indexCell.style.fontWeight = '500';
+
+  // Add name column
+  const nameCell = document.createElement('td');
+  nameCell.textContent = score.name;
+  nameCell.style.padding = '12px';
+  nameCell.style.textAlign = 'left';
+  nameCell.style.width = '150px';
+
+        // Add score column
+        const scoreCell = document.createElement('td');
+        scoreCell.textContent = score.score;
+        scoreCell.style.padding = '12px';
+        scoreCell.style.textAlign = 'right';
+        scoreCell.style.fontWeight = 'bold';
+        scoreCell.style.width = '100px';
+    
                 // Add the score details
-                const scoreCell = document.createElement('td');
-                scoreCell.textContent = `Name: ${score.name}, Score: ${score.score}`;
-                scoreCell.style.padding = '8px';
+          //      const scoreCell = document.createElement('td');
+           //     scoreCell.textContent = `Name: ${score.name}, Score: ${score.score}`;
+            //    scoreCell.style.padding = '8px';
 
                 // Append cells to the row
-                row.appendChild(blankCell);
+                row.appendChild(indexCell);
+                row.appendChild(nameCell);
+
+              //  row.appendChild(blankCell);    row.appendChild(nameCell);
                 row.appendChild(scoreCell);
 
                 // Append row to the table
