@@ -94,12 +94,20 @@
 
         function displayScores(scores) {
             const scoresContainer = document.getElementById('scoresContainer');
-            const medalIcons = [
-                '<i class="fas fa-medal" style="color: gold;"></i>',   // Gold for 1st
-                '<i class="fas fa-medal" style="color: silver;"></i>', // Silver for 2nd
-                '<i class="fas fa-medal" style="color: bronze;"></i>'  // Bronze for 3rd
-            ];
+        //    const medalIcons = [
+        //    '<i class="fas fa-medal" style="color: #FFD700;"></i>', // Gold
+        //    '<i class="fas fa-medal" style="color: #C0C0C0;"></i>', // Silver
+        //    '<i class="fas fa-medal" style="color: #CD7F32;"></i>'  // Bronze
+       // ];
+       const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
+// Create the medal icons using map
+const medalIcons = medalColors.map(color => {
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-medal';
+    icon.style.color = color;
+    return icon;
+});
             scoresContainer.innerHTML = '';
             // Create a table element
                 // Create and style the table
@@ -145,6 +153,8 @@
           //  table.style.width = '100%';
           //  table.style.borderCollapse = 'collapse';
 
+
+          
             scores.forEach((score, index) => {
                 const row = document.createElement('tr');
                 row.style.borderBottom = '1px solid #ddd';
@@ -160,7 +170,19 @@
     indexCell.style.width = '40px';
     indexCell.style.textAlign = 'center';
     indexCell.style.padding = '12px';
-    indexCell.textContent = index + 1;  // Display index number starting from 1
+    
+    //indexCell.textContent = index + 1;  // Display index number starting from 1
+    if (index < 3) {
+       // indexCell.textContent = medalIcons[index];
+           // Clear any existing content
+    indexCell.textContent = '';
+    // Append the medal icon element
+    indexCell.appendChild(medalIcons[index].cloneNode(true));
+    } else {
+        indexCell.textContent = index + 1;
+        indexCell.style.color = '#666';
+        indexCell.style.fontWeight = '500';
+    }
     indexCell.style.color = '#666';
     indexCell.style.fontWeight = '500';
 
