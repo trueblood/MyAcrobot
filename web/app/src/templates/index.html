@@ -30,17 +30,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script type="text/javascript">
         // var socket = io();
-        //var socket = io('http://localhost:8080', { transports: ['websocket'] }); // this worked for local docker container
+     //   var socket = io('http://localhost:8080', { transports: ['websocket'] }); // this worked for local docker container
         // var socket = io('https://localhost', { transports: ['websocket'] });
 
         // var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
-       // var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
+        // var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
          var socket = io('wss://myacrobot.weebette.ai', { transports: ['websocket'] });
 
         var savedMessages = []; // Array to store all messages
 
         socket.on('connect', function () {
             console.log('Connected to server');
+
+            // Set the state input value
+            const stateInput = document.getElementById('stateInput');
+            const aiStateInput = document.getElementById('aiStateInput');
+            if (aiStateInput.value == 'ON') {
+                if (stateInput) {
+                    stateInput.value = this.value;
+                    // Call sendState function
+                    sendState();
+                } else {
+                    console.error('stateInput element not found');
+                }
+            }
+
         });
 
         socket.on('message_from_server', function (msg) {
@@ -104,52 +118,46 @@
             const onMobile = isMobileDevice();
 
             // Instruction updates based on device type
-            const torqueInstruction = onMobile
-                ? "Use <strong>left or right taps</strong> to apply torque to the pendulums."
-                : "Use <strong>right and left arrow keys</strong>, or <strong>mouse clicks</strong> to apply torque to the pendulums.";
-            const alignInstruction = onMobile
-                ? "Press and hold to align Trent’s pendulums (torso and legs). For increased points, focus on precise alignment."
-                : "Click and hold to align Trent’s pendulums (torso and legs). For increased points, focus on precise alignment.";
+            const controlInstruction = onMobile
+                ? "Coach Trent (the double pendulum AI) by <strong>dragging</strong>, <strong>holding</strong>, and <strong>pulling</strong> in any direction to align his pendulums and give him the extra push needed to go completely over the bar."
+                : "Coach Trent (the double pendulum AI) by <strong>clicking</strong>, <strong>holding</strong>, and <strong>pulling</strong> with your mouse to align his pendulums and give him the precision push needed to go completely over the bar. Precision is key to scoring big!";
+
             const releaseInstruction = onMobile
-                ? "To release Trent from the bar and initiate the flip, use <strong>a two-finger touch</strong> at the same time. Many players use their thumbs for this action."
-                : "To release Trent from the bar and initiate the flip, press the <strong>letter C</strong>.";
+                ? "Release Trent by <strong>double tapping</strong> on the screen and start the landing timer."
+                : "Release Trent by <strong>double clicking</strong> on the screen and start the landing timer.";
 
             return `
     <div class="modal fade" id="instructionsModal" tabindex="-1" aria-labelledby="instructionsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="instructionsModalLabel">Welcome to MyAcrobot</h5>
+                    <h5 class="modal-title" id="instructionsModalLabel">MyAcrobot</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p>
-                        Welcome, Coach Ed Burch! Your goal is to guide the AI gymnast Trent Dimas to win an Olympic gold medal, just like in the 1992 Olympics in Barcelona, Spain. The AI (Trent), a reinforcement learning AI, is learning to flip over the bar 
-                        (the 90-degree mark on the grid, visible on the y-axis) and land within a target zone with the coach's direction on when to let go of the high bar.
-                    </p>
+                        Welcome, Coach Ed Burch! Your mission is to guide High Bar AI gymnast Trent Dimas to Olympic glory, just like the duo did in '92. As Trent masters a full swing over the high bar (90-degree mark on the y-axis), your coaching will determine the perfect moment to let go. Can the duo secure gold, silver, or bronze on the leaderboard? Let’s find out!
+                    </p>    
                     <p>
-                        Here's how to play:
+                       <strong>Here's how to play:</strong>
                     </p>
                     <ul>
-                        <li>${torqueInstruction}</li>
-                        <li>${alignInstruction}</li>
+                        <li>${controlInstruction}</li>
                         <li>${releaseInstruction}</li>
-                        <li>
-                            Ensure Trent lands at least one pendulum in the randomly chosen goal quadrant within the 2-second timer.
+                    </ul>
+                    <ul>
+                                            <p>
+                        <strong>Your Tasks:</strong>
+                    </p>
+                                            <li>
+                            Ensure Trent lands at least one pendulum in the randomly chosen <strong>quadrant goal zones</strong> within the 2-second timer.
                         </li>
                         <li>
-                            Pause the AI at any time for coaching. During this pause, environment state data is saved to a SQLite database to improve the AI's learning.
-                        </li>
-                        <li>
-                            Experiment with environmental settings to challenge the AI or turn off the AI to take full control.
+                            After a round, experiment with environmental settings to challenge the AI or turn off the AI to take full control.
                         </li>
                     </ul>
                     <p>
-                        This game showcases a <strong>symbiotic relationship</strong> between humans and AI. It’s a partnership where both learn and grow together, 
-                        breaking the stigma of AI replacing human jobs.
-                    </p>
-                    <p>
-                        Your task: Help Trent land in the target zone and improve his skills as you play!
+                        This game highlights a <strong>symbiotic relationship</strong> between humans and AI, working together to achieve greatness. It’s a partnership where both human ingenuity and AI learning shine, breaking the stigma of AI replacing human jobs.
                     </p>
                 </div>
                 <div class="modal-footer">
@@ -200,6 +208,7 @@
             <a class="navbar-brand" href="#page-top"><i class="fa-solid fa-robot"></i></a>
             <!-- Random Zone Info with Goal -->
             <div id="goalZone" class="random-zone-info text-white ms-3">
+                <p>Goal(s):</p>
                 <p id="randomZone1Display" class="mb-0"><span class="fw-bold">Goal:</span> Random Zone (Upper Arm): </p>
                 <p id="randomZone2Display" class="mb-0"><span class="fw-bold">Goal:</span> Random Zone (Lower Arm): </p>
                 <p id="randomZone3Display" class="mb-0 display-element"><span class="fw-bold">Goal:</span> Random Zone 3
@@ -215,10 +224,10 @@
 
 
             <div id="circleData" class=" text-white ms-3 nav-link py-3 px-0 px-lg-3 rounded" style="display: block">
-                <div id="upperArmCircleCount"  style="display: block">Over bar count: 0</div>
+                <div id="upperArmCircleCount" style="display: block">Over bar count: 0</div>
             </div>
 
-            <div id="alignmentDisplay" class=" text-white ms-3 nav-link py-3 px-0 px-lg-3 rounded" >
+            <div id="alignmentDisplay" class=" text-white ms-3 nav-link py-3 px-0 px-lg-3 rounded">
                 <div id="alignmentDisplay" name="alignmentDisplay" style="display: block"></div>
 
             </div>
@@ -266,30 +275,32 @@
 
                         </ul>
                     </li>
-                                    <!-- Instructions Link -->
-                <li class="nav-item mx-0 mx-lg-1">
-                    <a class="nav-link py-3 px-0 px-lg-3 rounded" href="#" id="instructionsLink" onclick="showInstructionsModal();">
-                        Instructions
-                    </a>
-                </li>
+                    <!-- Instructions Link -->
+                    <li class="nav-item mx-0 mx-lg-1">
+                        <a class="nav-link py-3 px-0 px-lg-3 rounded" href="#" id="instructionsLink"
+                            onclick="showInstructionsModal();">
+                            Instructions
+                        </a>
+                    </li>
 
-                <li class="nav-item mx-0 mx-lg-1">
-                    <a class="nav-link py-3 px-0 px-lg-3 rounded" href="#" onclick="location.reload();">
-                        New Game
-                    </a>
-                </li>
-
-
-                                            <!-- AI Toggle Switch -->
-                                            <li class="nav-item mx-0 mx-lg-1">
-                                                <a class="nav-link py-3 px-0 px-lg-3 rounded d-flex align-items-center" href="#" onclick="toggleAI();">
-                                                    <input class="form-check-input me-2" type="checkbox" id="toggleSwitch">
-                                                    <label class="form-check-label mb-0" for="toggleSwitch">AI Toggle Switch</label>
-                                                </a>
-                                            </li>
+                    <li class="nav-item mx-0 mx-lg-1">
+                        <a class="nav-link py-3 px-0 px-lg-3 rounded" href="#" onclick="location.reload();">
+                            New Game
+                        </a>
+                    </li>
 
 
-                                      <!--      <li class="nav-item mx-0 mx-lg-1">
+                    <!-- AI Toggle Switch -->
+                    <li class="nav-item mx-0 mx-lg-1">
+                        <a class="nav-link py-3 px-0 px-lg-3 rounded d-flex align-items-center" href="#"
+                            onclick="toggleAI();">
+                            <input class="form-check-input me-2" type="checkbox" id="toggleSwitch">
+                            <label class="form-check-label mb-0" for="toggleSwitch">AI Toggle Switch</label>
+                        </a>
+                    </li>
+
+
+                    <!--      <li class="nav-item mx-0 mx-lg-1">
                                                 <div class="form-check form-switch">
                                                     <input class="form-check-input" type="checkbox" id="toggleSwitch">
                                                     <label class="form-check-label nav-link py-3 px-0 px-lg-3 rounded d-flex align-items-center" for="toggleSwitch">AI Toggle Switch</label>
@@ -385,25 +396,25 @@
                     };
 
                     // Show modal with fade effect
-              //      modalElement.addEventListener('shown.bs.modal', () => {
-              //          if (isSuccess) {
-              //              confetti({
-              //                  particleCount: 100,
-             //                   spread: 70,
-              //                  origin: { y: 0.6 }
-            //                });
-            //            }
-            //        });
+                    //      modalElement.addEventListener('shown.bs.modal', () => {
+                    //          if (isSuccess) {
+                    //              confetti({
+                    //                  particleCount: 100,
+                    //                   spread: 70,
+                    //                  origin: { y: 0.6 }
+                    //                });
+                    //            }
+                    //        });
 
-            if (isSuccess) {
-                confetti({
-                    particleCount: 100,
-                    spread: 70,
-                    origin: { y: 0.6 }
-                });
-            }
+                    if (isSuccess) {
+                        confetti({
+                            particleCount: 100,
+                            spread: 70,
+                            origin: { y: 0.6 }
+                        });
+                    }
                     setTimeout(() => {
-        
+
                         modal.show();
                     }, 1000);  // 1000 milliseconds = 1 second
                 }
@@ -732,19 +743,19 @@
                     //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
                     //   });
 
-// After creating the modal, add this event listener
-const modal = new bootstrap.Modal(document.getElementById('resultModal'));
-const modalElement = document.getElementById('resultModal');
+                    // After creating the modal, add this event listener
+                    const modal = new bootstrap.Modal(document.getElementById('resultModal'));
+                    const modalElement = document.getElementById('resultModal');
 
-// Handle the X button click
-modalElement.querySelector('.btn-close').addEventListener('click', () => {
-    location.reload();
-});
+                    // Handle the X button click
+                    modalElement.querySelector('.btn-close').addEventListener('click', () => {
+                        location.reload();
+                    });
 
-// Handle clicking outside the modal (optional)
-modalElement.addEventListener('hidden.bs.modal', () => {
-    location.reload();
-});
+                    // Handle clicking outside the modal (optional)
+                    modalElement.addEventListener('hidden.bs.modal', () => {
+                        location.reload();
+                    });
 
                 };
             </script>
@@ -772,13 +783,13 @@ modalElement.addEventListener('hidden.bs.modal', () => {
         Current Zone: N/A
     </div>-->
     <br />
-    <div id="currentLink" name="currentLink" style ="display: none"></div>
-   <!-- <div id="alignmentDisplay" name="alignmentDisplay" style="display: none"></div> -->
+    <div id="currentLink" name="currentLink" style="display: none"></div>
+    <!-- <div id="alignmentDisplay" name="alignmentDisplay" style="display: none"></div> -->
     <div id="alignmentCountDisplay" name="alignmentCountDisplay" style="display: none"></div>
     <div id="notAlignedDisplay" name="notAlignedDisplay" style="display: none"></div>
     <div id="circleData" style="margin-top: 20px; font-size: 16px;" style="display: none">
         <div id="lowerArmCircleCount" style="display: none">Lower Arm Circles: 0</div>
-     <!-- <div id="upperArmCircleCount" style="display: none">Upper Arm Circles: 0</div> -->  
+        <!-- <div id="upperArmCircleCount" style="display: none">Upper Arm Circles: 0</div> -->
     </div>
 
 
@@ -822,6 +833,8 @@ modalElement.addEventListener('hidden.bs.modal', () => {
     <!-- Hidden input to store messages -->
     <input type="hidden" id="savedMessagesHidden" value="[]">
     <input type="hidden" id="hdnPendulumState" value="">
+    <input type="hidden" id="doubleTapValue" value="false">
+
     <!--  <hr /> -->
     <!--   <div id="playerName">Guest</div>
     <div id="pendulumNumber">2</div>
@@ -1326,9 +1339,86 @@ modalElement.addEventListener('hidden.bs.modal', () => {
             //   console.log('AI State:', aiStateInput.value); // Optional: Log the state to the console
         });
 
-
-
         document.addEventListener('DOMContentLoaded', function () {
+            const toggleSwitch = document.getElementById('toggleSwitch');
+            toggleSwitch.checked = true;
+            if (toggleSwitch.checked) {
+                // alert('AI has been turned ON');
+                aiStateInput.value = 'ON';
+                aiState.textContent = 'ON';
+            }
+
+
+
+            let lastTapTime = 0; // Timestamp of the last tap
+            let lastTapPosition = { x: 0, y: 0 }; // Position of the last tap
+            const DOUBLE_TAP_THRESHOLD = 300; // Time in milliseconds
+            const DOUBLE_TAP_RADIUS = 50; // Distance in pixels
+
+            // Helper function to calculate distance between two points
+            function getDistance(x1, y1, x2, y2) {
+                return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+            }
+
+            // Function to handle double-tap detection
+            function handleDoubleTap(event) {
+                const currentTime = new Date().getTime();
+                const touch = event.touches ? event.touches[0] : event; // Get the touch or mouse event
+                const currentTapPosition = { x: touch.clientX, y: touch.clientY };
+                const hiddenElement = document.getElementById('doubleTapValue');
+
+                const timeSinceLastTap = currentTime - lastTapTime;
+                const distanceSinceLastTap = getDistance(
+                    currentTapPosition.x,
+                    currentTapPosition.y,
+                    lastTapPosition.x,
+                    lastTapPosition.y
+                );
+
+                if (
+                    timeSinceLastTap < DOUBLE_TAP_THRESHOLD &&
+                    distanceSinceLastTap < DOUBLE_TAP_RADIUS
+                ) {
+                    // Check if the tap occurred on the navbar
+                    const navBar = document.querySelector('.navbar');
+                    const targetElement = event.target;
+
+                    // If the clicked element is not in the navbar, process the double tap
+                    if (!navBar.contains(targetElement)) {
+                        // Double-tap detected
+                        hiddenElement.value = "true";
+                        // Optional: Reset the value after some time
+                        setTimeout(() => {
+                            hiddenElement.value = "false";
+                        }, 1000); // Reset after 1 second
+                    }
+                }
+
+
+           //     if (
+           //         timeSinceLastTap < DOUBLE_TAP_THRESHOLD &&
+            //        distanceSinceLastTap < DOUBLE_TAP_RADIUS
+            //    ) {
+                    // Double-tap detected
+             //       hiddenElement.value = "true";
+                    // Optional: Reset the value after some time
+              //      setTimeout(() => {
+               //         hiddenElement.value = "false";
+               //     }, 1000); // Reset after 1 second
+                    //   console.log('Double-tap detected!');
+                    //  alert('Double-tap detected!'); // Replace with your custom action
+               // }
+
+                // Update last tap details
+                lastTapTime = currentTime;
+                lastTapPosition = currentTapPosition;
+            }
+
+            // Event listener for touch events (mobile)
+            document.addEventListener('touchstart', handleDoubleTap);
+
+            // Event listener for mouse clicks (desktop)
+            document.addEventListener('mousedown', handleDoubleTap);
 
             // Alternative using vanilla JavaScript
             //document.getElementById('myModal').addEventListener('shown.bs.modal', function () {
@@ -1541,39 +1631,40 @@ modalElement.addEventListener('hidden.bs.modal', () => {
             }
 
             // Add this to your script
-          // window.addEventListener('resize', () => {
-                //getCookieValues();  
+            // window.addEventListener('resize', () => {
+            //getCookieValues();  
 
 
-                //alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
-                // alert(`websitePlayerName is Tim ${websitePlayerName}`);
-                // alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
-                // Get the canvas div
-              //  const canvasDiv = document.getElementById("double_pendulum_canvas");
+            //alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
+            // alert(`websitePlayerName is Tim ${websitePlayerName}`);
+            // alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
+            // Get the canvas div
+            //  const canvasDiv = document.getElementById("double_pendulum_canvas");
 
-                // Get updated dimensions
-              //  const rect = canvasDiv.getBoundingClientRect();
-             //   const width = rect.width;
-             //   const height = rect.height;
+            // Get updated dimensions
+            //  const rect = canvasDiv.getBoundingClientRect();
+            //   const width = rect.width;
+            //   const height = rect.height;
 
-                // Calculate new center points
-             //   const centerX = width / 2;
-              //  const centerY = height / 2;
+            // Calculate new center points
+            //   const centerX = width / 2;
+            //  const centerY = height / 2;
 
-                //    console.log(`New dimensions - Width: ${width}px, Height: ${height}px`);
-                //    console.log(`New center - X: ${centerX}, Y: ${centerY}`);
+            //    console.log(`New dimensions - Width: ${width}px, Height: ${height}px`);
+            //    console.log(`New center - X: ${centerX}, Y: ${centerY}`);
 
-                // Clear existing pendulum
-                // First, remove the existing canvas if it exists
+            // Clear existing pendulum
+            // First, remove the existing canvas if it exists
             //    const existingCanvas = canvasDiv.querySelector('canvas');
-           //     if (existingCanvas) {
+            //     if (existingCanvas) {
             //        existingCanvas.remove();
-           //     }
+            //     }
 
-                // Reinitialize the pendulum with new dimensions
-          //      const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
+            // Reinitialize the pendulum with new dimensions
+            //      const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
 
-          //  });
+            //  });
+
 
 
 
