@@ -94,12 +94,55 @@
 
         function displayScores(scores) {
             const scoresContainer = document.getElementById('scoresContainer');
+            const medalIcons = [
+                '<i class="fas fa-medal" style="color: gold;"></i>',   // Gold for 1st
+                '<i class="fas fa-medal" style="color: silver;"></i>', // Silver for 2nd
+                '<i class="fas fa-medal" style="color: bronze;"></i>'  // Bronze for 3rd
+            ];
+
             scoresContainer.innerHTML = '';
-            scores.forEach(score => {
-                const scoreElement = document.createElement('div');
-                scoreElement.textContent = `Name: ${score.name}, Score: ${score.score}`;
-                scoresContainer.appendChild(scoreElement);
+            // Create a table element
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+
+            scores.forEach((score, index) => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #ddd';
+
+                // Add the blank column with medal icons for top 3
+                const blankCell = document.createElement('td');
+                blankCell.style.width = '8px';
+                blankCell.style.textAlign = 'center';
+               // blankCell.innerHTML = index < 3 ? medalIcons[index] :  index + 1; // Show medals for top 3
+                
+                // Add the score details
+                const scoreCell = document.createElement('td');
+                scoreCell.textContent = `Name: ${score.name}, Score: ${score.score}`;
+                scoreCell.style.padding = '8px';
+
+                // Append cells to the row
+                row.appendChild(blankCell);
+                row.appendChild(scoreCell);
+
+                // Append row to the table
+                table.appendChild(row);
+
+                //   const scoreElement = document.createElement('div');
+                //   scoreElement.textContent = `Name: ${score.name}, Score: ${score.score}`;
+                //   scoresContainer.appendChild(scoreElement);
             });
+            // Add the table to the container
+            scoresContainer.appendChild(table);
+
+
+            // Make the table scrollable if there are more than 7 rows
+            if (scores.length > 7) {
+                scoresContainer.style.maxHeight = '300px'; // Set the max height
+                scoresContainer.style.overflowY = 'scroll'; // Enable vertical scrolling
+                scoresContainer.style.border = '1px solid #ccc'; // Add a border to the container
+                scoresContainer.style.padding = '8px'; // Add some padding
+            }
         }
 
         function createArmZones(numberOfLinks) {
@@ -1601,7 +1644,7 @@
                         .catch((error) => {
                             console.error('Error:', error);
                         });
-                        location.reload();
+                    location.reload();
                 } else {
                     // Show validation error
                     nameInput.classList.add('is-invalid');
