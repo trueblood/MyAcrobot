@@ -21,11 +21,13 @@
 
 # if __name__ == '__main__':
 #     app.run(host='0.0.0.0', port=8080)
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
 import torch
 import torch.nn as nn
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+
 
 
 class DQN(nn.Module):
@@ -42,9 +44,21 @@ class DQN(nn.Module):
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///myacrobot.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 #socketio = SocketIO(app)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 socketio = SocketIO(app, cors_allowed_origins="*")  # Enable CORS for SocketIO
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+
+class Score(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    score = db.Column(db.Integer, nullable=False)
 
 @socketio.on('connect')
 def handle_connect():
@@ -116,13 +130,68 @@ def home():
 def index():
     return render_template('testsocket.html')
 
-# if __name__ == '__main__':
-#   #  print("\nServer running!")
-#   #  print("WebSocket URL: http://localhost:8078/testsocket")
-#   #  print("Click the URL above to open in your browser\n")
-#     socketio.run(app, host='0.0.0.0', port=8080)
+@app.route('/api/save-messages', methods=['POST'])
+def save_messages():
+    try:
+        data = request.get_json()
+        messages = data.get('messages')
+        
+        if not messages:
+            return jsonify({'error': 'No messages provided'}), 400
+        message = Message(content=messages)
+        db.session.add(message)
+        db.session.commit()
+        
+        # Here you can add code to save the messages to a database or file
+        # For example, saving to a SQLite database
+
+        # Example: Save messages to a file (you can replace this with database logic)
+     #   with open('saved_messages.txt', 'w') as f:
+     #       f.write(messages)
+        
+        return jsonify({'success': True, 'message': 'Messages saved successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/save-score', methods=['POST'])
+def save_score():
+    try:
+        data = request.get_json()
+        name = data.get('name')
+        curScore = data.get('curScore')
+        # if not name or not curScore:
+        #     return jsonify({'error': 'Name and score are required'}), 400
+        # with open('saved_scores.txt', 'a') as f:
+        #     f.write(f"Name: {name}, Score: {curScore}\n")
+        if not name or not curScore:
+            return jsonify({'error': 'Name and score are required'}), 400
+        score = Score(name=name, score=curScore)
+        db.session.add(score)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Score saved successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/get-scores', methods=['GET'])
+def get_scores():
+    try:
+        scores = Score.query.order_by(Score.score.desc()).all()
+        scores_list = [{'name': score.name, 'score': score.score} for score in scores]
+        return jsonify({'success': True, 'scores': scores_list}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+  #  print("\nServer running!")
+  #  print("WebSocket URL: http://localhost:8078/testsocket")
+  #  print("Click the URL above to open in your browser\n")
+#    with app.app_context():
+#        db.create_all()
+#    socketio.run(app, host='0.0.0.0', port=8081)
     
 if __name__ == '__main__':
+   # with app.app_context():
+   #     db.create_all()
     socketio.run(app, host='0.0.0.0', port=443, ssl_context=('/app/certs/fullchain.pem', '/app/certs/privkey.pem'))
 
 # if __name__ == '__main__':

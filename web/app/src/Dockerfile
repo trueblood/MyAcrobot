@@ -2,7 +2,6 @@
 # FROM python:3.13-slim
 FROM python:3.10-slim
 
-
 # Set the working directory in the container
 WORKDIR /app
 
@@ -14,6 +13,9 @@ COPY /ssl-certs /app/certs
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install SQLite
+RUN apt-get update && apt-get install -y sqlite3
 
 # Change port from 443 to 8080
 EXPOSE 443

@@ -452,10 +452,75 @@ function addTouchControl(pendulum, canvas, engine, chainComposite) {
         console.error('Hidden input element not found');
     }
 
+    // Add the touch state observer
+    const touchStateInput = document.getElementById('touchStateValue');
+    if (touchStateInput) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                    if (touchStateInput.value === 'true') {
+
+
+                        // Handle touch state true
+                        //  console.log('Touch detected');
+                        //  alert("touch detected");
+                        //  //
+                        //  document.getElementById('savedMessagesHidden').value
+                        //  so get taht value, then we need to pass that back to sql lite server we currently has a websocket conneciton should we setup an ajax call for tihs?
+                        //  savedMessagesHidden
+                        //  // Get the hidden input element
+                        //  const touchStatusInput = document.getElementById('touchStateStatus');
+                        //  touchStatusInput.value = 'true';
+
+
+                        // Get the hidden input element value
+                        const savedMessagesHidden = document.getElementById('savedMessagesHidden').value;
+
+                        // Send the data to the server using AJAX
+                        fetch('/api/save-messages', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                messages: savedMessagesHidden
+                            })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log('Success:', data);
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                            });
+
+                    }
+                }
+            });
+        });
+
+        observer.observe(touchStateInput, {
+            attributes: true,
+            attributeFilter: ['value'],
+        });
+    }
+
     function handleTouch(event) {
         event.preventDefault(); // Prevent default touch behavior (e.g., scrolling)
         const touches = event.touches;
         const touchCount = touches.length;
+
+        // Get the hidden input element
+        const touchStateInput = document.getElementById('touchStateValue');
+        if (touchStateInput) {
+            // Set the value to true when touch occurs
+            touchStateInput.value = 'true';
+            // Optional: Reset the value after a short delay
+            setTimeout(() => {
+                touchStateInput.value = 'false';
+            }, 100); // Adjust timeout as needed
+        }
+
 
         // const currentTime = new Date().getTime();
         //  const timeSinceLastTap = currentTime - lastTapTime;
@@ -473,7 +538,7 @@ function addTouchControl(pendulum, canvas, engine, chainComposite) {
 
 
     function handleDoubleTap() {
-      //  alert("double tapped");
+        //  alert("double tapped");
 
         const countDownTimer = document.getElementById('countDownTimer');
         const countDown = document.getElementById('displayCountDown');
@@ -1595,7 +1660,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
         await pauseSimulation(pauseDuration);
         //   await pauseSimulation(pauseDuration);
     }
-    
+
 
     return {
         engine,

@@ -77,6 +77,31 @@
             document.getElementById('savedMessagesHidden').value = JSON.stringify(savedMessages);
         }
 
+        function fetchScores() {
+            fetch('/api/get-scores')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayScores(data.scores);
+                    } else {
+                        console.error('Error fetching scores:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function displayScores(scores) {
+            const scoresContainer = document.getElementById('scoresContainer');
+            scoresContainer.innerHTML = '';
+            scores.forEach(score => {
+                const scoreElement = document.createElement('div');
+                scoreElement.textContent = `Name: ${score.name}, Score: ${score.score}`;
+                scoresContainer.appendChild(scoreElement);
+            });
+        }
+
         function createArmZones(numberOfLinks) {
             const container = document.getElementById('armZonesContainer');
             container.innerHTML = ''; // Clear existing content
@@ -188,11 +213,11 @@
                 if (!instructionsModal.hasModalListener) {
                     instructionsModal.addEventListener('hide.bs.modal', function () {
                         document.getElementById('isInstructionModelOpen').value = 'false';  // or 'false'
-                     //   alert(`isInstructionModelOpen changed to: ${isInstructionModelOpen}`);
+                        //   alert(`isInstructionModelOpen changed to: ${isInstructionModelOpen}`);
                     });
                     document.getElementById('isInstructionModelOpen').value = 'true';  // or 'false'
                 }
-            }            
+            }
         }
 
 
@@ -846,6 +871,10 @@
     <input type="hidden" id="hdnPendulumState" value="">
     <input type="hidden" id="doubleTapValue" value="false">
     <input type="hidden" id="isInstructionModelOpen" value="false">
+    <input type="hidden" id="touchStateValue" value="false">
+    <input type="hidden" id="touchStateStat" value="false">
+
+
 
     <!--  <hr /> -->
     <!--   <div id="playerName">Guest</div>
@@ -880,6 +909,9 @@
             <div class="row justify-content-center">
                 <!-- Portfolio Item 1-->
                 <div class="col-md-6 col-lg-4 mb-5">
+                    <div id="scoresContainer"></div>
+
+
                     <div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#portfolioModal1">
                         <div
                             class="portfolio-item-caption d-flex align-items-center justify-content-center h-100 w-100">
@@ -1364,6 +1396,8 @@
             let lastTapPosition = { x: 0, y: 0 }; // Position of the last tap
             const DOUBLE_TAP_THRESHOLD = 300; // Time in milliseconds
             const DOUBLE_TAP_RADIUS = 50; // Distance in pixels
+            fetchScores();
+
 
             // Helper function to calculate distance between two points
             function getDistance(x1, y1, x2, y2) {
@@ -1548,7 +1582,26 @@
 
                     //  console.log("Player name and score saved to cookies.");
                     // Continue with the simulation
-                    location.reload();
+                    // location.reload();
+                    // Send the data to the server using AJAX
+                    fetch('/api/save-score', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            curScore: curScore
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Success:', data);
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                        });
+                        location.reload();
                 } else {
                     // Show validation error
                     nameInput.classList.add('is-invalid');
