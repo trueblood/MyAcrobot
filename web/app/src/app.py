@@ -165,10 +165,28 @@ def save_score():
         #     f.write(f"Name: {name}, Score: {curScore}\n")
         if not name or not curScore:
             return jsonify({'error': 'Name and score are required'}), 400
-        score = Score(name=name, score=curScore)
-        db.session.add(score)
-        db.session.commit()
-        return jsonify({'success': True, 'message': 'Score saved successfully'}), 200
+       # Check if player with this name already exists
+        existing_score = Score.query.filter_by(name=name).first()
+
+        if existing_score:
+            # Update the existing score
+            existing_score.score = curScore
+            db.session.commit()
+            return jsonify({
+                'success': True, 
+                'message': 'Score updated successfully',
+                'updated': True
+            }), 200
+        else:
+            # Create new score record
+            new_score = Score(name=name, score=curScore)
+            db.session.add(new_score)
+            db.session.commit()
+            return jsonify({
+                'success': True, 
+                'message': 'New score saved successfully',
+                'updated': False
+            }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -181,18 +199,18 @@ def get_scores():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-if __name__ == '__main__':
-  #  print("\nServer running!")
-  #  print("WebSocket URL: http://localhost:8078/testsocket")
-  #  print("Click the URL above to open in your browser\n")
+#if __name__ == '__main__':
+#    print("\nServer running!")
+#    print("WebSocket URL: http://localhost:8078/testsocket")
+#    print("Click the URL above to open in your browser\n")
 #    with app.app_context():
 #        db.create_all()
 #    socketio.run(app, host='0.0.0.0', port=8081)
     
 if __name__ == '__main__':
-   # with app.app_context():
-   #     db.create_all()
-    socketio.run(app, host='0.0.0.0', port=443, ssl_context=('/app/certs/fullchain.pem', '/app/certs/privkey.pem'))
+   with app.app_context():
+       db.create_all()
+   socketio.run(app, host='0.0.0.0', port=443, ssl_context=('/app/certs/fullchain.pem', '/app/certs/privkey.pem'))
 
 # if __name__ == '__main__':
 #    socketio.run(app, host='0.0.0.0', port=80)
