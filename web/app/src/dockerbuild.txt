@@ -70,3 +70,42 @@ ssh -i "youtubedemo-key-pair.pem" ubuntu@ec2-54-197-23-79.compute-1.amazonaws.co
 
 # to copy the certs to the server
 scp -i "youtubedemo-key-pair.pem" -r /Users/squeebit/Documents/Projects/aws_docker_file/ssl-certs ubuntu@ec2-54-197-23-79.compute-1.amazonaws.com:/home/ubuntu/app/MyAcrobot/web/app/src  
+
+
+
+
+
+
+
+### This worked after i added the web socket stuff
+docker buildx build --platform linux/amd64 -t final_myacrobot:latest --load .
+docker images # to confirm container was created
+docker tag final_myacrobot:latest 445567114311.dkr.ecr.us-east-1.amazonaws.com/final_myacrobot:latest
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 445567114311.dkr.ecr.us-east-1.amazonaws.com
+docker push 445567114311.dkr.ecr.us-east-1.amazonaws.com/final_myacrobot:latest
+
+
+
+
+
+# for the new instance 
+scp -i "youtubedemo-key-pair.pem" -r /Users/squeebit/Documents/Projects/aws_docker_file/ssl-certs ubuntu@ec2-107-20-21-85.compute-1.amazonaws.com:/home/ubuntu/MyAcrobot/web/app/src
+docker build -t flask-websocket-app .
+docker run -d -p 443:443 -p 80:80 --name flask-websocket-app flask-websocket-app
+
+
+# i have to do this when running on server not locally
+docker exec -it 64de60d6547c bash
+cd /app/db
+sqlite3 myacrobot.db
+CREATE TABLE Message (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    content TEXT NOT NULL
+);
+
+CREATE TABLE Score (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    score INTEGER NOT NULL
+);
+.tables
