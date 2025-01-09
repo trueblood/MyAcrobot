@@ -1,27 +1,12 @@
-version: '3.8'
-
-services:
-  web:
-    build: .
-    ports:
-      - "443:443"
-      - "80:80" # For local testing
-    volumes:
-      - ./ssl-certs:/app/certs
-    environment:
-      - FLASK_ENV=production
-    restart: always
-version: '3.8'
-
 services:
   flask-app:
     build: .
     ports:
-      - "443:443"   # Map container's port 443 to host's port 443
-      - "80:80"     # Optional for local testing on HTTP
+      - "443:443"
+      - "80:80"
     volumes:
-      - db-data:/app/db    # Mount persistent storage for database
-      - ./ssl-certs:/app/certs  # Mount your SSL certificates
+      - db-data:/app   # Mounts /app to a persistent volume
+      - ./ssl-certs:/app/certs
     environment:
       FLASK_PORT: 443
       SSL_CERT_PATH: /app/certs/fullchain.pem
@@ -29,4 +14,4 @@ services:
     restart: always
 
 volumes:
-  db-data:
+  db-data:  # Define a named volume

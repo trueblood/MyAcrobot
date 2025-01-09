@@ -27,7 +27,7 @@ import torch
 import torch.nn as nn
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-
+from pathlib import Path
 
 
 class DQN(nn.Module):
@@ -44,9 +44,8 @@ class DQN(nn.Module):
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///myacrobot.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////app/db/myacrobot.db'
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///myacrobot.db'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////app/db/myacrobot.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 #socketio = SocketIO(app)
@@ -210,8 +209,14 @@ def get_scores():
 #    socketio.run(app, host='0.0.0.0', port=8081)
     
 if __name__ == '__main__':
-   with app.app_context():
-       db.create_all()
+    with app.app_context():
+    db_path = Path('myacrobot.db')
+    if not db_path.exists():
+        print("Database file not found. Creating database...")
+        db.create_all()
+        print("Database created successfully.")
+#    with app.app_context():
+#        db.create_all()
    socketio.run(app, host='0.0.0.0', port=443, ssl_context=('/app/certs/fullchain.pem', '/app/certs/privkey.pem'))
 
 # if __name__ == '__main__':
