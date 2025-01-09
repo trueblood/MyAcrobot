@@ -206,6 +206,35 @@ def get_scores():
         return jsonify({'success': True, 'scores': scores_list}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+def init_db():
+    with app.app_context():
+        try:
+            # Create tables using SQLAlchemy models
+            db.create_all()
+            
+            # Execute the SQL commands directly
+            db.session.execute("""
+                CREATE TABLE IF NOT EXISTS Message (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    content TEXT NOT NULL
+                );
+            """)
+            
+            db.session.execute("""
+                CREATE TABLE IF NOT EXISTS Score (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    score INTEGER NOT NULL
+                );
+            """)
+            
+            db.session.commit()
+            print("Database initialized successfully!")
+        except Exception as e:
+            print(f"Error initializing database: {str(e)}")
+            db.session.rollback()
+
 
 #if __name__ == '__main__':
 #    print("\nServer running!")
@@ -227,7 +256,8 @@ if __name__ == '__main__':
     with app.app_context():
         if not Path(f'{db_dir}/myacrobot.db').exists():
             print("Database file not found. Creating database...")
-            db.create_all()
+           # db.create_all()
+            init_db()
             print("Database created successfully!")
         # db_path = Path('myacrobot.db')
         # if not db_path.exists():
