@@ -69,7 +69,7 @@ def handle_connect():
 @socketio.on('message_from_client')
 def handle_message_from_client(message):
     try:
-        print(f"Message from client: {message}")
+      #  print(f"Message from client: {message}")
         
         # Extract state from the message
         state = message.get('state')
@@ -201,6 +201,14 @@ def get_scores():
         return jsonify({'error': str(e)}), 500
 
 #if __name__ == '__main__':
+#    print("\nServer running!")
+#    print("WebSocket URL: http://localhost:8078/testsocket")
+#    print("Click the URL above to open in your browser\n")
+#    with app.app_context():
+#        db.create_all()
+#    socketio.run(app, host='0.0.0.0', port=8081)
+    
+# if __name__ == '__main__':
 #    print("\nServer running!")
 #    print("WebSocket URL: http://localhost:8078/testsocket")
 #    print("Click the URL above to open in your browser\n")
