@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   flask-app:
     build: .
@@ -5,7 +7,7 @@ services:
       - "443:443"
       - "80:80"
     volumes:
-      - db-data:/app   # Mounts /app to a persistent volume
+      - db-data:/app/db  # Persist the /app/db directory
       - ./ssl-certs:/app/certs
     environment:
       FLASK_PORT: 443

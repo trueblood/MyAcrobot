@@ -28,7 +28,7 @@ import torch.nn as nn
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from pathlib import Path
-
+import os
 
 class DQN(nn.Module):
     def __init__(self, input_dim, output_dim):
@@ -44,13 +44,20 @@ class DQN(nn.Module):
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///myacrobot.db'
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////app/db/myacrobot.db'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///myacrobot.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////app/db/myacrobot.db'
+
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 #socketio = SocketIO(app)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 socketio = SocketIO(app, cors_allowed_origins="*")  # Enable CORS for SocketIO
+
+# Ensure /app/db directory exists
+db_dir = '/app/db'
+Path(db_dir).mkdir(parents=True, exist_ok=True)
+
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -218,11 +225,15 @@ def get_scores():
     
 if __name__ == '__main__':
     with app.app_context():
-        db_path = Path('myacrobot.db')
-        if not db_path.exists():
+        if not Path(f'{db_dir}/myacrobot.db').exists():
             print("Database file not found. Creating database...")
             db.create_all()
-            print("Database created successfully.")
+            print("Database created successfully!")
+        # db_path = Path('myacrobot.db')
+        # if not db_path.exists():
+        #     print("Database file not found. Creating database...")
+        #     db.create_all()
+        #     print("Database created successfully.")
 #    with app.app_context():
 #        db.create_all()
     socketio.run(app, host='0.0.0.0', port=443, ssl_context=('/app/certs/fullchain.pem', '/app/certs/privkey.pem'))
