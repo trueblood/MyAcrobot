@@ -210,14 +210,14 @@ def get_scores():
     
 if __name__ == '__main__':
     with app.app_context():
-    db_path = Path('myacrobot.db')
-    if not db_path.exists():
-        print("Database file not found. Creating database...")
-        db.create_all()
-        print("Database created successfully.")
+        db_path = Path('myacrobot.db')
+        if not db_path.exists():
+            print("Database file not found. Creating database...")
+            db.create_all()
+            print("Database created successfully.")
 #    with app.app_context():
 #        db.create_all()
-   socketio.run(app, host='0.0.0.0', port=443, ssl_context=('/app/certs/fullchain.pem', '/app/certs/privkey.pem'))
+    socketio.run(app, host='0.0.0.0', port=443, ssl_context=('/app/certs/fullchain.pem', '/app/certs/privkey.pem'))
 
 # if __name__ == '__main__':
 #    socketio.run(app, host='0.0.0.0', port=80)
