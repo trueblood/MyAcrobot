@@ -210,30 +210,39 @@ def get_scores():
 def init_db():
     with app.app_context():
         try:
-            # Create tables using SQLAlchemy models
-            db.create_all()
-            
-            # Execute the SQL commands directly
-            db.session.execute("""
-                CREATE TABLE IF NOT EXISTS Message (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    content TEXT NOT NULL
-                );
-            """)
-            
-            db.session.execute("""
-                CREATE TABLE IF NOT EXISTS Score (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    score INTEGER NOT NULL
-                );
-            """)
-            
-            db.session.commit()
-            print("Database initialized successfully!")
+            # Check if tables exist
+            inspector = db.inspect(db.engine)
+            existing_tables = inspector.get_table_names()
+
+            if 'message' not in existing_tables or 'score' not in existing_tables:
+                # Create tables using SQLAlchemy models
+                db.create_all()
+                
+                # Execute the SQL commands directly
+                db.session.execute("""
+                    CREATE TABLE IF NOT EXISTS Message (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        content TEXT NOT NULL
+                    );
+                """)
+                
+                db.session.execute("""
+                    CREATE TABLE IF NOT EXISTS Score (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        score INTEGER NOT NULL
+                    );
+                """)
+                
+                db.session.commit()
+                print("Database tables created successfully!")
+            else:
+                print("Database tables already exist!")
+                
         except Exception as e:
             print(f"Error initializing database: {str(e)}")
             db.session.rollback()
+
 
 
 #if __name__ == '__main__':
