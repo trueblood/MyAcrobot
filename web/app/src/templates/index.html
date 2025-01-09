@@ -1571,11 +1571,12 @@ const medalIcons = medalColors.map(color => {
                         .then(response => response.json())
                         .then(data => {
                             console.log('Success:', data);
+                            location.reload();
                         })
                         .catch((error) => {
                             console.error('Error:', error);
+                            location.reload();
                         });
-                    location.reload();
                 } else {
                     // Show validation error
                     nameInput.classList.add('is-invalid');
