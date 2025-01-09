@@ -1,6 +1,19 @@
 version: '3.8'
 
 services:
+  web:
+    build: .
+    ports:
+      - "443:443"
+      - "80:80" # For local testing
+    volumes:
+      - ./ssl-certs:/app/certs
+    environment:
+      - FLASK_ENV=production
+    restart: always
+version: '3.8'
+
+services:
   flask-app:
     build: .
     ports:
@@ -16,4 +29,4 @@ services:
     restart: always
 
 volumes:
-  db-data:  # Define a named volume for persistent storage
+  db-data:
