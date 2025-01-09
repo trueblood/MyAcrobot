@@ -15,10 +15,11 @@ COPY /ssl-certs /app/certs
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install SQLite
-RUN apt-get update && apt-get install -y sqlite3
+RUN apt-get update && apt-get install -y sqlite3 && rm -rf /var/lib/apt/lists/*
 
 # Change port from 443 to 8080
 EXPOSE 443
+EXPOSE 80
 # do port 80 for testing local
 
 # Updated Gunicorn command without SSL parameters, this is for local testing docker conatiner

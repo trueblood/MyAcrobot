@@ -78,7 +78,7 @@
         }
 
         function fetchScores() {
-            fetch('/api/get-scores')
+            fetch('https://myacrobot.weebette.ai/api/get-scores')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -1558,7 +1558,7 @@ const medalIcons = medalColors.map(color => {
                     // Continue with the simulation
                     // location.reload();
                     // Send the data to the server using AJAX
-                    fetch('/api/save-score', {
+                    fetch('https://myacrobot.weebette.ai/api/save-score', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

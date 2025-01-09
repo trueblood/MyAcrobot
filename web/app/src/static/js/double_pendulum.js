@@ -477,7 +477,7 @@ function addTouchControl(pendulum, canvas, engine, chainComposite) {
                         const savedMessagesHidden = document.getElementById('savedMessagesHidden').value;
 
                         // Send the data to the server using AJAX
-                        fetch('/api/save-messages', {
+                        fetch('https://myacrobot.weebette.ai/api/save-messages', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',

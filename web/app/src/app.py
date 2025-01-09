@@ -44,7 +44,9 @@ class DQN(nn.Module):
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///myacrobot.db'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///myacrobot.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////app/db/myacrobot.db'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 #socketio = SocketIO(app)
