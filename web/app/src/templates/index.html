@@ -8,7 +8,8 @@
     <meta name="author" content="" />
     <title>MyAcrobot</title>
     <!-- Favicon-->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle fill='%23000000' cx='256' cy='400' r='40'/><line x1='256' y1='80' x2='256' y2='360' stroke='%23000000' stroke-width='16'/></svg>" />
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle fill='%23000000' cx='256' cy='400' r='40'/><line x1='256' y1='80' x2='256' y2='360' stroke='%23000000' stroke-width='16'/></svg>" />
     <!-- Font Awesome icons (free version)-->
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <!-- Google fonts-->
@@ -94,123 +95,123 @@
 
         function displayScores(scores) {
             const scoresContainer = document.getElementById('scoresContainer');
-        //    const medalIcons = [
-        //    '<i class="fas fa-medal" style="color: #FFD700;"></i>', // Gold
-        //    '<i class="fas fa-medal" style="color: #C0C0C0;"></i>', // Silver
-        //    '<i class="fas fa-medal" style="color: #CD7F32;"></i>'  // Bronze
-       // ];
-       const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+            //    const medalIcons = [
+            //    '<i class="fas fa-medal" style="color: #FFD700;"></i>', // Gold
+            //    '<i class="fas fa-medal" style="color: #C0C0C0;"></i>', // Silver
+            //    '<i class="fas fa-medal" style="color: #CD7F32;"></i>'  // Bronze
+            // ];
+            const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
-// Create the medal icons using map
-const medalIcons = medalColors.map(color => {
-    const icon = document.createElement('i');
-    icon.className = 'fas fa-medal';
-    icon.style.color = color;
-    return icon;
-});
+            // Create the medal icons using map
+            const medalIcons = medalColors.map(color => {
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-medal';
+                icon.style.color = color;
+                return icon;
+            });
             scoresContainer.innerHTML = '';
             // Create a table element
-                // Create and style the table
-    const table = document.createElement('table');
-    table.style.width = '100%';
-    table.style.borderCollapse = 'separate';
-    table.style.borderSpacing = '0';
-    table.style.backgroundColor = 'white';
-    table.style.borderRadius = '8px';
-    table.style.overflow = 'hidden';
-    table.style.boxShadow = '0 0 10px rgba(0,0,0,0.1)';
+            // Create and style the table
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'separate';
+            table.style.borderSpacing = '0';
+            table.style.backgroundColor = 'white';
+            table.style.borderRadius = '8px';
+            table.style.overflow = 'hidden';
+            table.style.boxShadow = '0 0 10px rgba(0,0,0,0.1)';
 
-    // Create header row
-    const headerRow = document.createElement('tr');
-    headerRow.style.backgroundColor = '#333';
-    headerRow.style.color = 'white';
+            // Create header row
+            const headerRow = document.createElement('tr');
+            headerRow.style.backgroundColor = '#333';
+            headerRow.style.color = 'white';
 
-    // Create header cells
-    const rankHeader = document.createElement('th');
-    rankHeader.style.padding = '12px';
-    rankHeader.style.width = '60px';
-    rankHeader.style.textAlign = 'center';
-    rankHeader.textContent = '';
+            // Create header cells
+            const rankHeader = document.createElement('th');
+            rankHeader.style.padding = '12px';
+            rankHeader.style.width = '60px';
+            rankHeader.style.textAlign = 'center';
+            rankHeader.textContent = '';
 
-    const nameHeader = document.createElement('th');
-    nameHeader.style.padding = '12px';
-    nameHeader.style.width = '150px';
-    nameHeader.style.textAlign = 'left';
-    nameHeader.textContent = 'Name';
+            const nameHeader = document.createElement('th');
+            nameHeader.style.padding = '12px';
+            nameHeader.style.width = '150px';
+            nameHeader.style.textAlign = 'left';
+            nameHeader.textContent = 'Name';
 
-    const scoreHeader = document.createElement('th');
-    scoreHeader.style.padding = '12px';
-    scoreHeader.style.width = '100px';
-    scoreHeader.style.textAlign = 'right';
-    scoreHeader.textContent = 'Score';
+            const scoreHeader = document.createElement('th');
+            scoreHeader.style.padding = '12px';
+            scoreHeader.style.width = '100px';
+            scoreHeader.style.textAlign = 'right';
+            scoreHeader.textContent = 'Score';
 
-    // Append headers
-    headerRow.appendChild(rankHeader);
-    headerRow.appendChild(nameHeader);
-    headerRow.appendChild(scoreHeader);
-   table.appendChild(headerRow);
-          //  const table = document.createElement('table');
-          //  table.style.width = '100%';
-          //  table.style.borderCollapse = 'collapse';
+            // Append headers
+            headerRow.appendChild(rankHeader);
+            headerRow.appendChild(nameHeader);
+            headerRow.appendChild(scoreHeader);
+            table.appendChild(headerRow);
+            //  const table = document.createElement('table');
+            //  table.style.width = '100%';
+            //  table.style.borderCollapse = 'collapse';
 
 
-          
+
             scores.forEach((score, index) => {
                 const row = document.createElement('tr');
                 row.style.borderBottom = '1px solid #ddd';
                 row.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f8f8f8';
 
                 // Add the blank column with medal icons for top 3
-              //  const blankCell = document.createElement('td');
-              //  blankCell.style.width = '8px';
-            //    blankCell.style.textAlign = 'center';
-               // blankCell.innerHTML = index < 3 ? medalIcons[index] :  index + 1; // Show medals for top 3
-                    // Create index cell (formerly blankCell)
-    const indexCell = document.createElement('td');
-    indexCell.style.width = '40px';
-    indexCell.style.textAlign = 'center';
-    indexCell.style.padding = '12px';
-    
-    //indexCell.textContent = index + 1;  // Display index number starting from 1
-    if (index < 3) {
-       // indexCell.textContent = medalIcons[index];
-           // Clear any existing content
-    indexCell.textContent = '';
-    // Append the medal icon element
-    indexCell.appendChild(medalIcons[index].cloneNode(true));
-    } else {
-        indexCell.textContent = index + 1;
-        indexCell.style.color = '#666';
-        indexCell.style.fontWeight = '500';
-    }
-    indexCell.style.color = '#666';
-    indexCell.style.fontWeight = '500';
+                //  const blankCell = document.createElement('td');
+                //  blankCell.style.width = '8px';
+                //    blankCell.style.textAlign = 'center';
+                // blankCell.innerHTML = index < 3 ? medalIcons[index] :  index + 1; // Show medals for top 3
+                // Create index cell (formerly blankCell)
+                const indexCell = document.createElement('td');
+                indexCell.style.width = '40px';
+                indexCell.style.textAlign = 'center';
+                indexCell.style.padding = '12px';
 
-  // Add name column
-  const nameCell = document.createElement('td');
-  nameCell.textContent = score.name;
-  nameCell.style.padding = '12px';
-  nameCell.style.textAlign = 'left';
-  nameCell.style.width = '150px';
+                //indexCell.textContent = index + 1;  // Display index number starting from 1
+                if (index < 3) {
+                    // indexCell.textContent = medalIcons[index];
+                    // Clear any existing content
+                    indexCell.textContent = '';
+                    // Append the medal icon element
+                    indexCell.appendChild(medalIcons[index].cloneNode(true));
+                } else {
+                    indexCell.textContent = index + 1;
+                    indexCell.style.color = '#666';
+                    indexCell.style.fontWeight = '500';
+                }
+                indexCell.style.color = '#666';
+                indexCell.style.fontWeight = '500';
 
-        // Add score column
-        const scoreCell = document.createElement('td');
-        scoreCell.textContent = score.score;
-        scoreCell.style.padding = '12px';
-        scoreCell.style.textAlign = 'right';
-        scoreCell.style.fontWeight = 'bold';
-        scoreCell.style.width = '100px';
-    
+                // Add name column
+                const nameCell = document.createElement('td');
+                nameCell.textContent = score.name;
+                nameCell.style.padding = '12px';
+                nameCell.style.textAlign = 'left';
+                nameCell.style.width = '150px';
+
+                // Add score column
+                const scoreCell = document.createElement('td');
+                scoreCell.textContent = score.score;
+                scoreCell.style.padding = '12px';
+                scoreCell.style.textAlign = 'right';
+                scoreCell.style.fontWeight = 'bold';
+                scoreCell.style.width = '100px';
+
                 // Add the score details
-          //      const scoreCell = document.createElement('td');
-           //     scoreCell.textContent = `Name: ${score.name}, Score: ${score.score}`;
-            //    scoreCell.style.padding = '8px';
+                //      const scoreCell = document.createElement('td');
+                //     scoreCell.textContent = `Name: ${score.name}, Score: ${score.score}`;
+                //    scoreCell.style.padding = '8px';
 
                 // Append cells to the row
                 row.appendChild(indexCell);
                 row.appendChild(nameCell);
 
-              //  row.appendChild(blankCell);    row.appendChild(nameCell);
+                //  row.appendChild(blankCell);    row.appendChild(nameCell);
                 row.appendChild(scoreCell);
 
                 // Append row to the table
@@ -361,11 +362,11 @@ const medalIcons = medalColors.map(color => {
             document.cookie = `websitePlayerLevel=; path=/; max-age=0`; // Clear the player level cookie
             document.cookie = `websiteDifficultyLevel=; path=/; max-age=0`; // Clear difficulty level cookie
             document.cookie = `websiteAirFriction=; path=/; max-age=0`; // Clear difficulty level cookie
-    
+
             // Reload the page
             location.reload();
         }
-        
+
 
     </script>
 </head>
@@ -458,7 +459,8 @@ const medalIcons = medalColors.map(color => {
                             <li><span class="dropdown-item-text"><strong>Difficulty Level:</strong> <span
                                         id="playerDifficultyLevel">0</span></span></li>
                             <li><span class="dropdown-item-text">
-                                <div id="alignmentCountDisplay" name="alignmentCountDisplay"></div></span></li>
+                                    <div id="alignmentCountDisplay" name="alignmentCountDisplay"></div>
+                                </span></li>
                         </ul>
                     </li>
                     <!-- Instructions Link -->
@@ -474,7 +476,8 @@ const medalIcons = medalColors.map(color => {
                             New Game
                         </a>
                     </li>
-                    <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" href="#portfolio">Leaderboard</a></li>
+                    <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded"
+                            href="#portfolio">Leaderboard</a></li>
 
                     <!-- AI Toggle Switch -->
                     <li class="nav-item mx-0 mx-lg-1">
@@ -970,7 +973,7 @@ const medalIcons = medalColors.map(color => {
     <br />
     <div id="currentLink" name="currentLink" style="display: none"></div>
     <!-- <div id="alignmentDisplay" name="alignmentDisplay" style="display: none"></div> -->
-    
+
     <div id="notAlignedDisplay" name="notAlignedDisplay" style="display: none"></div>
     <div id="circleData" style="margin-top: 20px; font-size: 16px;" style="display: none">
         <div id="lowerArmCircleCount" style="display: none">Lower Arm Circles: 0</div>
@@ -1062,21 +1065,21 @@ const medalIcons = medalColors.map(color => {
 
 
 
-           
+
+                </div>
             </div>
-        </div>
     </section>
-    
+
     <!-- Contact Section-->
-    
+
     <!-- Footer-->
     <footer class="footer text-center">
         <div class="container">
             <div class="row">
                 <!-- Footer Location-->
                 <div class="col-lg-4 mb-5 mb-lg-0">
-                   <!-- <h4 class="text-uppercase mb-4">Location</h4>-->
-                  <!-- <p class="lead mb-0">
+                    <!-- <h4 class="text-uppercase mb-4">Location</h4>-->
+                    <!-- <p class="lead mb-0">
                         2215 John Daniel Drive
                         <br />
                         Clark, MO 65243
@@ -1086,16 +1089,18 @@ const medalIcons = medalColors.map(color => {
                 <div class="col-lg-4 mb-5 mb-lg-0">
                     <h4 class="text-uppercase mb-4">Around the Web</h4>
                     <a class="btn btn-outline-light btn-social mx-1" href="#!" style="display: none"><i
-                        class="fab fa-fw fa-facebook-f"></i></a>
-                <a class="btn btn-outline-light btn-social mx-1" href="#!" style="display: none"><i class="fab fa-fw fa-twitter"></i></a>
-                <a class="btn btn-outline-light btn-social mx-1" href="https://github.com/trueblood/MyAcrobot"><i class="fab fa-fw fa-github"></i></a>
-                <a class="btn btn-outline-light btn-social mx-1" href="#!" style="display: none"><i
-                        class="fab fa-fw fa-linkedin-in"></i></a>
+                            class="fab fa-fw fa-facebook-f"></i></a>
+                    <a class="btn btn-outline-light btn-social mx-1" href="#!" style="display: none"><i
+                            class="fab fa-fw fa-twitter"></i></a>
+                    <a class="btn btn-outline-light btn-social mx-1" href="https://github.com/trueblood/MyAcrobot"><i
+                            class="fab fa-fw fa-github"></i></a>
+                    <a class="btn btn-outline-light btn-social mx-1" href="#!" style="display: none"><i
+                            class="fab fa-fw fa-linkedin-in"></i></a>
 
                 </div>
                 <!-- Footer About Text-->
                 <div class="col-lg-4">
-                 <!--   <p class="lead mb-0">
+                    <!--   <p class="lead mb-0">
                         Freelance is a free to use, MIT licensed Bootstrap theme created by
                         <a href="http://startbootstrap.com">Start Bootstrap</a>
                         .
@@ -1301,6 +1306,22 @@ const medalIcons = medalColors.map(color => {
                 const countDown = document.getElementById('displayCountDown');
                 const goalZone = document.getElementById('goalZone')
 
+
+                // Function to show the mo
+
+                const instructionsModal = document.getElementById('resultModal');
+
+                if (instructionsModal) {
+                    // Option 1: Use a flag variable to track if we've added the listener
+                    if (!instructionsModal.hasModalListener) {
+                        instructionsModal.addEventListener('hide.bs.modal', function () {
+                            document.getElementById('isInstructionModelOpen').value = 'false';  // or 'false'
+                            //   alert(`isInstructionModelOpen changed to: ${isInstructionModelOpen}`);
+                        });
+                        document.getElementById('isInstructionModelOpen').value = 'true';  // or 'false'
+                    }
+                }
+
                 if (name) {
                     goalZone.style.display = 'block';
                     countDown.innerText = '2';
@@ -1328,7 +1349,7 @@ const medalIcons = medalColors.map(color => {
                     document.cookie = `websitePlayerLevel=${level}; path=/; max-age=31536000`; // Save for 1 year
                     document.cookie = `websiteDifficultyLevel=${selectedDifficulty}; path=/; max-age=31536000`; // Save difficulty level
                     document.cookie = `websiteAirFriction=${airFriction}; path=/; max-age=31536000`; // Save difficulty level
-                   // alert(`name and curScore before save is ${name} ${curScore}`);
+                    // alert(`name and curScore before save is ${name} ${curScore}`);
                     //  console.log("Player name and score saved to cookies.");
                     // Continue with the simulation
                     // location.reload();
