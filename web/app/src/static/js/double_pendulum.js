@@ -22,6 +22,7 @@ let numberOfLinks = 2;
 let playerDifficultyLevel = 'easy';
 let playerName = "Guest";
 let airFriction = 0;
+let playerAlignmentCount = 0;
 const links = [];
 
 
@@ -199,7 +200,7 @@ function trackAlignment(upperArm, lowerArm) {
 
             // Update UI with alignment count
             const countDisplay = document.getElementById('alignmentCountDisplay');
-            countDisplay.textContent = `Total Alignments: ${alignmentCount}`;
+            countDisplay.textContent = `Align Cnt: ${alignmentCount}`;
         }
     }
 }
@@ -219,7 +220,7 @@ function checkPendulumsAlignment(upperArm, lowerArm) {
     const lowerDegrees = (lowerAngle * 180 / Math.PI);
 
     // Define tolerance for "straightness" (in degrees)
-    const tolerance = 30; // adjust this value as needed
+    const tolerance = 35; // adjust this value as needed
 
     // Check if angles are aligned (either both vertical or both horizontal)
     const angleDifference = Math.abs(upperDegrees - lowerDegrees);
@@ -1475,7 +1476,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
             // Update the upper arm circle count on the page
             const upperArmCircleElement = document.getElementById('upperArmCircleCount');
             if (upperArmCircleElement) {
-                upperArmCircleElement.textContent = `Over Bar Count: ${upperArmCircleCount}`;
+                upperArmCircleElement.textContent = `Rotation# ${upperArmCircleCount}`;
             }
         }
 

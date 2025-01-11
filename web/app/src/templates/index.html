@@ -8,7 +8,7 @@
     <meta name="author" content="" />
     <title>MyAcrobot</title>
     <!-- Favicon-->
-    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle fill='%23000000' cx='256' cy='400' r='40'/><line x1='256' y1='80' x2='256' y2='360' stroke='%23000000' stroke-width='16'/></svg>" />
     <!-- Font Awesome icons (free version)-->
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <!-- Google fonts-->
@@ -275,24 +275,24 @@ const medalIcons = medalColors.map(color => {
 
             // Instruction updates based on device type
             const controlInstruction = onMobile
-                ? "Coach Trent (the double pendulum AI) by <strong>dragging</strong>, <strong>holding</strong>, and <strong>pulling</strong> in any direction to align his pendulums and give him the extra push needed to go completely over the bar."
-                : "Coach Trent (the double pendulum AI) by <strong>clicking</strong>, <strong>holding</strong>, and <strong>pulling</strong> with your mouse to align his pendulums and give him the precision push needed to go completely over the bar. Precision is key to scoring big!";
+                ? "Coach Trent (the double pendulum AI) by <strong>dragging</strong>, <strong>holding</strong>, and <strong>pulling</strong> in any direction to align his pendulums and give him the extra push needed to make a full rotation."
+                : "Coach Trent (the double pendulum AI) by <strong>clicking</strong>, <strong>holding</strong>, and <strong>pulling</strong> with your mouse to align his pendulums and give him the precision push needed to make a full rotation. Precision is key to scoring big!";
 
             const releaseInstruction = onMobile
-                ? "Release Trent by <strong>double tapping</strong> on the screen and start the landing timer."
-                : "Release Trent by <strong>double clicking</strong> on the screen and start the landing timer.";
+                ? "<strong>Dismount</strong> Trent by <strong>double tapping</strong> on the screen and start the landing timer."
+                : "<strong>Dismount</strong> Trent by <strong>double clicking</strong> on the screen and start the landing timer.";
 
             return `
     <div class="modal fade" id="instructionsModal" tabindex="-1" aria-labelledby="instructionsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="instructionsModalLabel">MyAcrobot</h5>
+                    <h5 class="modal-title" id="instructionsModalLabel">MyAcrobot - Physics-Driven AI Olympics</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p>
-                        Welcome, Coach Ed Burch! Your mission is to guide High Bar AI gymnast Trent Dimas to Olympic glory, just like the duo did in '92. As Trent masters a full swing over the high bar (90-degree mark on the y-axis), your coaching will determine the perfect moment to let go. Can the duo secure gold, silver, or bronze on the leaderboard? Let’s find out!
+                        Welcome, Coach Ed Burch! Your mission is to guide High Bar AI gymnast Trent Dimas to Olympic glory, just like the duo did in '92. As Trent masters a full rotation, your coaching will determine the perfect moment for him to let go. Can the duo secure gold, silver, or bronze on the leaderboard? Let’s find out!
                     </p>    
                     <p>
                        <strong>Here's how to play:</strong>
@@ -306,7 +306,7 @@ const medalIcons = medalColors.map(color => {
                         <strong>Your Tasks:</strong>
                     </p>
                                             <li>
-                            Ensure Trent lands at least one pendulum in the randomly chosen <strong>quadrant goal zones</strong> within the 2-second timer.
+                            Ensure Trent lands at least <strong>one pendulum</strong> in the <strong>randomly</strong> chosen <strong>quadrant</strong> goal zones within the 2-second timer.
                         </li>
                         <li>
                             After a round, experiment with environmental settings to challenge the AI or turn off the AI to take full control.
@@ -374,7 +374,7 @@ const medalIcons = medalColors.map(color => {
     <!-- Navigation-->
     <!-- <nav class="navbar navbar-expand-lg bg-secondary" id="mainNav">
         <div class="container">
-            <a class="navbar-brand" href="#page-top">MyAcrobot</a>
+            <a class="navbar-brand" href="#page-top">MyAcrobot - Physics-Driven AI Olympics</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive">
                 <i class="fas fa-bars"></i>
             </button>
@@ -409,7 +409,7 @@ const medalIcons = medalColors.map(color => {
 
 
             <div id="circleData" class=" text-white ms-3 nav-link py-3 px-0 px-lg-3 rounded" style="display: block">
-                <div id="upperArmCircleCount" style="display: block">Over bar count: 0</div>
+                <div id="upperArmCircleCount" style="display: block">Rotation# 0</div>
             </div>
 
             <div id="alignmentDisplay" class=" text-white ms-3 nav-link py-3 px-0 px-lg-3 rounded">
@@ -457,7 +457,8 @@ const medalIcons = medalColors.map(color => {
                                         id="playerLevel">0</span></span></li>
                             <li><span class="dropdown-item-text"><strong>Difficulty Level:</strong> <span
                                         id="playerDifficultyLevel">0</span></span></li>
-
+                            <li><span class="dropdown-item-text">
+                                <div id="alignmentCountDisplay" name="alignmentCountDisplay"></div></span></li>
                         </ul>
                     </li>
                     <!-- Instructions Link -->
@@ -545,6 +546,8 @@ const medalIcons = medalColors.map(color => {
                         pendulumWidthSelect.value = width;
                         currentScoreElement.value = score;
                         currentScorePopUp.textContent = score;
+                        document.cookie = `websitePlayerName=; path=/; max-age=0`; // Clear the player name cookie
+                        document.cookie = `websitePlayerName=${encodeURIComponent(webPlayerName)}; path=/; max-age=31536000`; // Save for 1 year
                     } else {
                         modalTitle.textContent = 'Mismatch!';
                         modalTitle.className = 'modal-title text-danger';
@@ -562,6 +565,8 @@ const medalIcons = medalColors.map(color => {
                         pendulumWidthSelect.value = width;
                         currentScoreElement.value = score;
                         currentScorePopUp.textContent = score;
+                        document.cookie = `websitePlayerName=; path=/; max-age=0`; // Clear the player name cookie
+                        document.cookie = `websitePlayerName=${encodeURIComponent(webPlayerName)}; path=/; max-age=31536000`; // Save for 1 year
                     }
 
                     // Create modal instance
@@ -719,7 +724,6 @@ const medalIcons = medalColors.map(color => {
                     </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" onclick="location.reload();" data-bs-dismiss="modal">Quit</button>
                                 <button type="button" class="btn btn-primary" id="continueButton">Continue</button>
                             </div>
                         </div>
@@ -966,7 +970,7 @@ const medalIcons = medalColors.map(color => {
     <br />
     <div id="currentLink" name="currentLink" style="display: none"></div>
     <!-- <div id="alignmentDisplay" name="alignmentDisplay" style="display: none"></div> -->
-    <div id="alignmentCountDisplay" name="alignmentCountDisplay" style="display: none"></div>
+    
     <div id="notAlignedDisplay" name="notAlignedDisplay" style="display: none"></div>
     <div id="circleData" style="margin-top: 20px; font-size: 16px;" style="display: none">
         <div id="lowerArmCircleCount" style="display: none">Lower Arm Circles: 0</div>
@@ -1091,7 +1095,6 @@ const medalIcons = medalColors.map(color => {
                 </div>
                 <!-- Footer About Text-->
                 <div class="col-lg-4">
-               <!--     <h4 class="text-uppercase mb-4">About Freelancer</h4>-->
                  <!--   <p class="lead mb-0">
                         Freelance is a free to use, MIT licensed Bootstrap theme created by
                         <a href="http://startbootstrap.com">Start Bootstrap</a>
@@ -1104,235 +1107,6 @@ const medalIcons = medalColors.map(color => {
     <!-- Copyright Section-->
     <div class="copyright py-4 text-center text-white">
         <div class="container"><small>Copyright &copy; weebette.ai 2025</small></div>
-    </div>
-    <!-- Portfolio Modals-->
-    <!-- Portfolio Modal 1-->
-    <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" aria-labelledby="portfolioModal1"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal"
-                        aria-label="Close"></button></div>
-                <div class="modal-body text-center pb-5">
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <!-- Portfolio Modal - Title-->
-                                <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Log Cabin</h2>
-                                <!-- Icon Divider-->
-                                <div class="divider-custom">
-                                    <div class="divider-custom-line"></div>
-                                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                                    <div class="divider-custom-line"></div>
-                                </div>
-                                <!-- Portfolio Modal - Image-->
-                                <img class="img-fluid rounded mb-5" src="/src/assets/img/portfolio/cabin.png"
-                                    alt="..." />
-                                <!-- Portfolio Modal - Text-->
-                                <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque
-                                    assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam
-                                    velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.
-                                </p>
-                                <button class="btn btn-primary" data-bs-dismiss="modal">
-                                    <i class="fas fa-xmark fa-fw"></i>
-                                    Close Window
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Portfolio Modal 2-->
-    <div class="portfolio-modal modal fade" id="portfolioModal2" tabindex="-1" aria-labelledby="portfolioModal2"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal"
-                        aria-label="Close"></button></div>
-                <div class="modal-body text-center pb-5">
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <!-- Portfolio Modal - Title-->
-                                <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Tasty Cake</h2>
-                                <!-- Icon Divider-->
-                                <div class="divider-custom">
-                                    <div class="divider-custom-line"></div>
-                                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                                    <div class="divider-custom-line"></div>
-                                </div>
-                                <!-- Portfolio Modal - Image-->
-                                <img class="img-fluid rounded mb-5" src="/src/assets/img/portfolio/cake.png"
-                                    alt="..." />
-                                <!-- Portfolio Modal - Text-->
-                                <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque
-                                    assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam
-                                    velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.
-                                </p>
-                                <button class="btn btn-primary" data-bs-dismiss="modal">
-                                    <i class="fas fa-xmark fa-fw"></i>
-                                    Close Window
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Portfolio Modal 3-->
-    <div class="portfolio-modal modal fade" id="portfolioModal3" tabindex="-1" aria-labelledby="portfolioModal3"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal"
-                        aria-label="Close"></button></div>
-                <div class="modal-body text-center pb-5">
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <!-- Portfolio Modal - Title-->
-                                <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Circus Tent</h2>
-                                <!-- Icon Divider-->
-                                <div class="divider-custom">
-                                    <div class="divider-custom-line"></div>
-                                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                                    <div class="divider-custom-line"></div>
-                                </div>
-                                <!-- Portfolio Modal - Image-->
-                                <img class="img-fluid rounded mb-5" src="/src/assets/img/portfolio/circus.png"
-                                    alt="..." />
-                                <!-- Portfolio Modal - Text-->
-                                <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque
-                                    assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam
-                                    velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.
-                                </p>
-                                <button class="btn btn-primary" data-bs-dismiss="modal">
-                                    <i class="fas fa-xmark fa-fw"></i>
-                                    Close Window
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Portfolio Modal 4-->
-    <div class="portfolio-modal modal fade" id="portfolioModal4" tabindex="-1" aria-labelledby="portfolioModal4"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal"
-                        aria-label="Close"></button></div>
-                <div class="modal-body text-center pb-5">
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <!-- Portfolio Modal - Title-->
-                                <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Controller</h2>
-                                <!-- Icon Divider-->
-                                <div class="divider-custom">
-                                    <div class="divider-custom-line"></div>
-                                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                                    <div class="divider-custom-line"></div>
-                                </div>
-                                <!-- Portfolio Modal - Image-->
-                                <img class="img-fluid rounded mb-5" src="/src/assets/img/portfolio/game.png"
-                                    alt="..." />
-                                <!-- Portfolio Modal - Text-->
-                                <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque
-                                    assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam
-                                    velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.
-                                </p>
-                                <button class="btn btn-primary" data-bs-dismiss="modal">
-                                    <i class="fas fa-xmark fa-fw"></i>
-                                    Close Window
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Portfolio Modal 5-->
-    <div class="portfolio-modal modal fade" id="portfolioModal5" tabindex="-1" aria-labelledby="portfolioModal5"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal"
-                        aria-label="Close"></button></div>
-                <div class="modal-body text-center pb-5">
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <!-- Portfolio Modal - Title-->
-                                <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Locked Safe</h2>
-                                <!-- Icon Divider-->
-                                <div class="divider-custom">
-                                    <div class="divider-custom-line"></div>
-                                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                                    <div class="divider-custom-line"></div>
-                                </div>
-                                <!-- Portfolio Modal - Image-->
-                                <img class="img-fluid rounded mb-5" src="/src/assets/img/portfolio/safe.png"
-                                    alt="..." />
-                                <!-- Portfolio Modal - Text-->
-                                <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque
-                                    assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam
-                                    velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.
-                                </p>
-                                <button class="btn btn-primary" data-bs-dismiss="modal">
-                                    <i class="fas fa-xmark fa-fw"></i>
-                                    Close Window
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Portfolio Modal 6-->
-    <div class="portfolio-modal modal fade" id="portfolioModal6" tabindex="-1" aria-labelledby="portfolioModal6"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal"
-                        aria-label="Close"></button></div>
-                <div class="modal-body text-center pb-5">
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <!-- Portfolio Modal - Title-->
-                                <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Submarine</h2>
-                                <!-- Icon Divider-->
-                                <div class="divider-custom">
-                                    <div class="divider-custom-line"></div>
-                                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                                    <div class="divider-custom-line"></div>
-                                </div>
-                                <!-- Portfolio Modal - Image-->
-                                <img class="img-fluid rounded mb-5" src="/src/assets/img/portfolio/submarine.png"
-                                    alt="..." />
-                                <!-- Portfolio Modal - Text-->
-                                <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque
-                                    assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam
-                                    velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.
-                                </p>
-                                <button class="btn btn-primary" data-bs-dismiss="modal">
-                                    <i class="fas fa-xmark fa-fw"></i>
-                                    Close Window
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
@@ -1495,7 +1269,8 @@ const medalIcons = medalColors.map(color => {
             function generateRandomName() {
                 // Use chance.js to create a random name
                 //const randomName = chance.name(); // Generates a random full name
-                const randomName = chance.animal() + chance.integer({ min: 1, max: 99 }); // Combines a random word and number
+                //const randomName = chance.animal() + chance.integer({ min: 1, max: 99 }); // Combines a random word and number
+                const randomName = `${chance.animal().replace(/\s+/g, '')}${chance.integer({ min: 1, max: 99 })}`; // Using template literal
 
                 // Update the input field with the random name
 
