@@ -529,7 +529,7 @@
                     const pendulumWidthSelect = document.getElementById('pendulumWidthSelect');
                     const currentScoreElement = document.getElementById('scoreDisplay');
                     const currentScorePopUp = document.getElementById('currentScore');
-
+                    document.getElementById('isInstructionModelOpen').value = 'true'; 
 
                     // Set modal content and styling
                     if (isSuccess) {
@@ -549,8 +549,6 @@
                         pendulumWidthSelect.value = width;
                         currentScoreElement.value = score;
                         currentScorePopUp.textContent = score;
-                        document.cookie = `websitePlayerName=; path=/; max-age=0`; // Clear the player name cookie
-                        document.cookie = `websitePlayerName=${encodeURIComponent(webPlayerName)}; path=/; max-age=31536000`; // Save for 1 year
                     } else {
                         modalTitle.textContent = 'Mismatch!';
                         modalTitle.className = 'modal-title text-danger';
@@ -568,8 +566,6 @@
                         pendulumWidthSelect.value = width;
                         currentScoreElement.value = score;
                         currentScorePopUp.textContent = score;
-                        document.cookie = `websitePlayerName=; path=/; max-age=0`; // Clear the player name cookie
-                        document.cookie = `websitePlayerName=${encodeURIComponent(webPlayerName)}; path=/; max-age=31536000`; // Save for 1 year
                     }
 
                     // Create modal instance
@@ -1282,11 +1278,6 @@
                 const nameInput = document.querySelector("#nameInput");
                 nameInput.value = randomName;
 
-
-                document.cookie = `websitePlayerName=; path=/; max-age=0`; // Clear the player name cookie
-                document.cookie = `websitePlayerName=${encodeURIComponent(randomName)}; path=/; max-age=31536000`; // Save for 1 year
-
-
                 //  const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
                 //  nameInput.value = randomName;
                 // Add animation effect
@@ -1310,22 +1301,6 @@
                 const countDownTimer = document.getElementById('countDownTimer');
                 const countDown = document.getElementById('displayCountDown');
                 const goalZone = document.getElementById('goalZone')
-
-
-                // Function to show the mo
-
-                const instructionsModal = document.getElementById('resultModal');
-
-                if (instructionsModal) {
-                    // Option 1: Use a flag variable to track if we've added the listener
-                    if (!instructionsModal.hasModalListener) {
-                        instructionsModal.addEventListener('hide.bs.modal', function () {
-                            document.getElementById('isInstructionModelOpen').value = 'false';  // or 'false'
-                            //   alert(`isInstructionModelOpen changed to: ${isInstructionModelOpen}`);
-                        });
-                        document.getElementById('isInstructionModelOpen').value = 'true';  // or 'false'
-                    }
-                }
 
                 if (name) {
                     goalZone.style.display = 'block';
