@@ -576,17 +576,17 @@
                     const modal = new bootstrap.Modal(modalElement);
 
                     // Handle continue button click with loading state
-                    continueButton.onclick = () => {
-                        continueButton.innerHTML = `
-                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            Loading...`;
-                        continueButton.disabled = true;
+         //           continueButton.onclick = () => {
+         //               continueButton.innerHTML = `
+         //                   <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+         //                   Loading...`;
+         //               continueButton.disabled = true;
 
-                        setTimeout(() => {
-                            modal.hide();
-                            location.reload();
-                        }, 500);
-                    };
+                   //     setTimeout(() => {
+                   //         modal.hide();
+                   //         location.reload();
+                  //      }, 500);
+                  //  };
 
                     // Show modal with fade effect
                     //      modalElement.addEventListener('shown.bs.modal', () => {
@@ -1281,6 +1281,11 @@
 
                 const nameInput = document.querySelector("#nameInput");
                 nameInput.value = randomName;
+
+
+                document.cookie = `websitePlayerName=; path=/; max-age=0`; // Clear the player name cookie
+                document.cookie = `websitePlayerName=${encodeURIComponent(randomName)}; path=/; max-age=31536000`; // Save for 1 year
+
 
                 //  const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
                 //  nameInput.value = randomName;
