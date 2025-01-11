@@ -551,7 +551,7 @@ function addTouchControl(pendulum, canvas, engine, chainComposite) {
 
             // Show the `countDownTimer` when the countdown starts
             countDownTimer.style.display = 'block';
-            let countdownValue = 2; // Set the countdown start value (e.g., 3 seconds)
+            let countdownValue = 1; // Set the countdown start value (e.g., 3 seconds)
 
             // Update the countdown element to show the current value
             countDown.textContent = countdownValue;
@@ -927,7 +927,7 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
                 if (score > 0 && score % 5 === 0) {
                     updateLevel(level + 1);
                 }
-            }, 2000); // 1.5-second delay
+            }, 1000); // 1.5-second delay
 
             // Determine zones based on the current level
             determineZonesForLevel();
