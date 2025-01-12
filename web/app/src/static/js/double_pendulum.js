@@ -618,10 +618,50 @@ function addTouchControl(pendulum, canvas, engine, chainComposite) {
             })
 
             if (randomZones == 0) {
-                score += 1;
-                showResultModal(true, 'Success! Pendulum(s) landed in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+                const alignmentCount = parseInt(document.getElementById('alignmentCountDisplay').innerHTML) || 0;
+                const rotationNumber = parseInt(document.getElementById('upperArmCircleCount').innerHTML.split('#')[1]) || 0;
+
+                const executionScore = 10.000;  // Perfect score
+
+                // Calculate deductions
+                const deductions = calculateDeductions(alignmentCount, rotationNumber);
+
+                // Final score calculation
+                let scoreIncrement = executionScore - deductions; // Only E-score now, no D-score (difficulty)
+                scoreIncrement = Math.round(scoreIncrement * 1000) / 1000;
+
+                // Add to total score
+                score += scoreIncrement;
+                score = Number(score.toFixed(3));
+
+                //      score += 1;
+                showResultModal(true, `Success! Pendulum(s) landed in their correct zones. Score + ${scoreIncrement.toFixed(3)}`, playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
 
             } else {
+                const numberOfLinksSelect = document.getElementById('pendulumLinksSelect'); // Difficulty dropdown
+                const numberOfLinks = parseInt(numberOfLinksSelect.value);
+
+                let mismatchDeduction;
+                switch (numberOfLinks) {
+                    case 2:
+                        mismatchDeduction = 0.5;
+                        break;
+                    case 3:
+                        mismatchDeduction = 1.0;
+                        break;
+                    case 4:
+                        mismatchDeduction = 1.5;
+                        break;
+                    case 5:
+                        mismatchDeduction = 2.0;
+                        break;
+                    case 6:
+                        mismatchDeduction = 2.5;
+                        break;
+                    default:
+                        mismatchDeduction = 0.5; // fallback value
+                }
+                score -= mismatchDeduction; // Deduct 1.0 from the score
                 let mismatchDetails = 'Mismatch!\nExpected Zones:\n';
                 randomZones.forEach((zone, index) => {
                     mismatchDetails += `Zone ${index + 1}: ${zone}\n`;
@@ -645,6 +685,56 @@ function addTouchControl(pendulum, canvas, engine, chainComposite) {
         // Determine zones based on the current level
         determineZonesForLevel();
 
+        // Helper functions
+        function calculateDifficulty(rotations, alignments) {
+            // Difficulty value (D-score) calculation
+            const baseSkillValue = 0.500;  // Base difficulty
+            const rotationDifficulty = rotations * 0.200;  // Each rotation adds difficulty
+            const connectionBonus = alignments * 0.100;    // Connection bonus, like in gymnastics
+
+            return baseSkillValue + rotationDifficulty + connectionBonus;
+        }
+
+        // Function to calculate deductions
+        function calculateDeductions(alignments, rotations) {
+            // Execution deductions (E-score starts at 10.000)
+            const maxDeduction = 10.000;  // Maximum deductions (score cannot drop below 0)
+            const rotationPenalty = 0.050;  // Penalty per rotation
+            const alignmentBonusFactor = 0.005;   // Bonus for alignments (scaled down)
+            const alignmentLongestBonusFactor = 0.002;  // Small reward for longest alignment duration
+
+            let deduction = 0.000; // Start with no deductions
+
+            // Add small penalties for rotations
+            if (rotations > 0) {
+                deduction += rotations * rotationPenalty;
+            }
+
+            // Imbalance between rotations and alignments
+            if (rotations > 0) {
+                const alignmentRatio = alignments / rotations;
+                if (alignmentRatio < 0.5) {
+                    deduction += 1.000; // Additional penalty for poor form
+                } else if (alignmentRatio < 0.8) {
+                    deduction += 0.500; // Moderate penalty for small form breaks
+                }
+            }
+
+            // Ensure deductions do not exceed the max allowed value
+            deduction = Math.min(deduction, maxDeduction);
+
+            // Apply alignment bonuses based on alignment count and longest alignment duration
+            const alignmentCountDisplay = parseInt(document.getElementById('alignmentCountDisplay').innerHTML) || 0;
+            const alignmentLongestDisplay = parseInt(document.getElementById('alignmentLongestDisplay').innerHTML) || 0;
+
+            const alignmentBonus = (alignmentCountDisplay * alignmentBonusFactor) +
+                (alignmentLongestDisplay * alignmentLongestBonusFactor);
+
+            // Adjust deduction with alignment bonuses
+            const finalScore = Math.max(10.000 - deduction + alignmentBonus, 0); // Final score capped at 10.000
+
+            return Math.round(finalScore * 1000) / 1000; // Round to three decimal places
+        }
     }
 
     // // For single touch, apply forces
@@ -909,6 +999,7 @@ function addKeyboardControl(pendulum, engine, chainComposite) {
                     showResultModal(true, 'Success! Pendulum(s) landed in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
 
                 } else {
+
                     let mismatchDetails = 'Mismatch!\nExpected Zones:\n';
                     randomZones.forEach((zone, index) => {
                         mismatchDetails += `Zone ${index + 1}: ${zone}\n`;
@@ -1396,8 +1487,26 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
             //      console.log('Pendulums are aligned!');
             //     console.log('Upper arm angle:', alignmentInfo.upperDegrees.toFixed(2));
             //      console.log('Lower arm angle:', alignmentInfo.lowerDegrees.toFixed(2));
+            // start a counter, then add to variable alignmentLongestDisplay and then do a check if that value is longer than the previous one then replace with teh new one. 
+            let startTime = {
+                seconds: Math.floor(Date.now() / 1000),
+                milliseconds: Date.now() % 1000
+            };
+            
+
 
             // Optional: Update UI to show alignment
+            const alignmentLongestDisplay = document.getElementById('alignmentLongestDisplay');
+            let alignmentLongest = alignmentLongestDisplay.value;
+
+            alert("alignmentLongestDisplay is " + alignmentLongest);
+            // Check if the current alignment duration exceeds the longest one
+       //     if (startTime > alignmentLongestDisplay) {
+       //         alignmentLongestDisplay = startTime;  // Update the longest alignment duration
+                // Update the alignmentLongestDisplay element
+        //        alignmentLongestDisplayElement.value= alignmentLongest;
+        //    }
+
             const alignmentDisplay = document.getElementById('alignmentDisplay');
             alignmentDisplay.innerHTML = `
             <div style="color: green;">
@@ -1411,7 +1520,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
             const alignmentDisplay = document.getElementById('alignmentDisplay');
             alignmentDisplay.innerHTML = `
             <div style="color: red;">
-                Not Aligned!
+                <span style="text-decoration: line-through; color: black;">Pend Aligned!</span>
             </div>
         `;
         }
