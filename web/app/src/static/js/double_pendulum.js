@@ -15,7 +15,7 @@ let randomZone1 = ''; // Random zone for the upper arm
 let randomZone2 = ''; // Random zone for the lower arm
 let randomZone3 = ''; // Random zone for the upper arm
 let randomZone4 = ''; // Random zone for the lower arm
-let score = 0; // Initialize the score
+let score = 10.0; // Initialize the score
 let length = 100;
 let width = 25;
 let numberOfLinks = 2;
@@ -618,21 +618,75 @@ function addTouchControl(pendulum, canvas, engine, chainComposite) {
             })
 
             if (randomZones == 0) {
-                score += 1;
-                showResultModal(true, 'Success! Pendulum(s) landed in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+                const rotationNumber = parseInt(document.getElementById('upperArmCircleCount').innerHTML.split('#')[1]) || 0;
+                
+                //const countDisplay = document.getElementById('alignmentCountDisplay').value;
+                //const countDisplay = document.getElementById('alignmentCountDisplay').textContent;
+                const countDisplay = parseInt(document.getElementById('alignmentCountDisplay').textContent.replace(/[^0-9]/g, '')) || 0;
+
+
+
+               // alert(`Alignment Count: ${countDisplay}, Rotation Number: ${rotationNumber}`);
+              //  alert("sore is before the calculation: " + score);
+
+
+
+                // Apply scoring logic
+                score -= rotationNumber * 0.5; // Penalty for rotations
+                score += countDisplay * 0.2; // Bonus for alignments
+
+                score = Math.max(0, score); // Ensure the score doesn't drop below 0
+              //  alert(`Final Score: ${score.toFixed(3)}`); // Display with 3 decimal places
+
+
+                //  score += 1;
+
+
+                //        
+                //        I tried to mimic gymnastics scoring the best I could in a physics 2D grid environment. You start with a score of 10.0, and the number of complete rotations acts as a penalty.
+                //        In gymnastics high bar events, it’s not required for the gymnast to make a complete rotation over the bar. So, I designed the scoring such that the longer it takes Trent to dismount from the bar—and the more rotations he completes—the higher the penalties. However, this penalty can be reduced by aligning the pendulums for longer periods. The number of alignments is factored into the score, adding positive points.
+                //f        The closer the player’s score is to 10.000, the higher they will rank on the leaderboard. In the next round, if the same player name is used, penalties can increase further if Trent lands in the incorrect goal quadrant.
+
+
+
+
+
+                showResultModal(true, 'Success! Pendulum(s) landed in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score.toFixed(3), length, width, airFriction);
 
             } else {
                 let mismatchDetails = 'Mismatch!\nExpected Zones:\n';
                 randomZones.forEach((zone, index) => {
                     mismatchDetails += `Zone ${index + 1}: ${zone}\n`;
                 });
-
+                // Calculate penalty based on difficulty level
+                let penalty = 0;
+              //  alert("playerDifficultyLevel: " + playerDifficultyLevel);
+                switch (playerDifficultyLevel) {
+                    case 'easy':
+                        penalty = 0.5;
+                        break;
+                    case 'medium':
+                        penalty = 1.0;
+                        break;
+                    case 'hard':
+                        penalty = 1.5;
+                        break;
+                    case 'expert':
+                        penalty = 2.0;
+                        break;
+                    default:
+                        penalty = 0.0; // No penalty for difficulty level below 2
+                }
+               // alert("penalty: " + penalty);
+              //  alert(`Final Score: ${score}`);
+                score = Math.max(0, score - penalty); // Ensure score doesn't drop below 0
+               // alert(`Final Score: ${score.toFixed(3)}`); // Display with 3 decimal placess
 
                 // var mismatchMessage = `Mismatch!
                 //  Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
                 // Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`;
                 // //         alert(`);
-                showResultModal(false, mismatchDetails, playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+                showResultModal(false, mismatchDetails, playerName, playerDifficultyLevel, numberOfLinks, score.toFixed(3), length, width, airFriction);
 
             }
 
@@ -1411,7 +1465,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
             const alignmentDisplay = document.getElementById('alignmentDisplay');
             alignmentDisplay.innerHTML = `
             <div style="color: red;">
-                Not Aligned!
+                <span style="text-decoration: line-through; color: black;">Pend Aligned!</span>
             </div>
         `;
         }

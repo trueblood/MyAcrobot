@@ -66,7 +66,7 @@ class Message(db.Model):
 class Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    score = db.Column(db.Integer, nullable=False)
+    score = db.Column(db.Float, nullable=False)
 
 @socketio.on('connect')
 def handle_connect():
@@ -230,7 +230,7 @@ def init_db():
                     CREATE TABLE IF NOT EXISTS Score (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         name TEXT NOT NULL,
-                        score INTEGER NOT NULL
+                        score FLOAT NOT NULL
                     );
                 """)
                 
@@ -245,9 +245,9 @@ def init_db():
 
 
 
-#if __name__ == '__main__':
+# if __name__ == '__main__':
 #    print("\nServer running!")
-#    print("WebSocket URL: http://localhost:8078/testsocket")
+#    print("WebSocket URL: http://localhost:8081/testsocket")
 #    print("Click the URL above to open in your browser\n")
 #    with app.app_context():
 #        db.create_all()
@@ -268,13 +268,6 @@ if __name__ == '__main__':
            # db.create_all()
             init_db()
             print("Database created successfully!")
-        # db_path = Path('myacrobot.db')
-        # if not db_path.exists():
-        #     print("Database file not found. Creating database...")
-        #     db.create_all()
-        #     print("Database created successfully.")
-#    with app.app_context():
-#        db.create_all()
     socketio.run(app, host='0.0.0.0', port=443, ssl_context=('/app/certs/fullchain.pem', '/app/certs/privkey.pem'))
 
 # if __name__ == '__main__':
