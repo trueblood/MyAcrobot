@@ -1,2 +1,7 @@
 flask
 gunicorn
+numpy
+flask_socketio
+torch
+flask-cors
+flask_sqlalchemy

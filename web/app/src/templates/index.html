@@ -1,569 +1,1493 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <meta name="description" content="" />
-        <meta name="author" content="" />
-        <title>MyAcrobot</title>
-        <!-- Favicon-->
-        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-        <!-- Font Awesome icons (free version)-->
-        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-        <!-- Google fonts-->
-        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
-        <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
-        <!-- Core theme CSS (includes Bootstrap)-->
-        <!-- <link rel="stylesheet" href="/src/css/styles.css" /> -->
-        <!-- <link rel="stylesheet" href="//web/app/src/css/layout_styles.css" /> -->
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/layout_styles.css') }}">
 
-        <!-- Matter.js library -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.min.js"></script>
-        <!-- Your custom JavaScript file -->
-        <script src="{{ url_for('static', filename='js/double_pendulum.js') }}"></script>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>MyAcrobot</title>
+    <!-- Favicon-->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle fill='%23000000' cx='256' cy='400' r='40'/><line x1='256' y1='80' x2='256' y2='360' stroke='%23000000' stroke-width='16'/></svg>" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet"
+        type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <!-- <link rel="stylesheet" href="/src/css/styles.css" /> -->
+    <!-- <link rel="stylesheet" href="//web/app/src/css/layout_styles.css" /> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout_styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Matter.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chance/1.1.11/chance.min.js"></script>
+
+    <!-- Your custom JavaScript file -->
+    <script src="{{ url_for('static', filename='js/double_pendulum.js') }}"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script type="text/javascript">
+        // var socket = io();
+        //   var socket = io('http://localhost:8080', { transports: ['websocket'] }); // this worked for local docker container
+        // var socket = io('https://localhost', { transports: ['websocket'] });
+
+        // var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
+        // var socket = io('wss://107.20.21.85', { transports: ['websocket'] }); // for web server
+        var socket = io('wss://myacrobot.weebette.ai', { transports: ['websocket'] });
+
+        var savedMessages = []; // Array to store all messages
+
+        socket.on('connect', function () {
+            console.log('Connected to server');
+
+            // Set the state input value
+            const stateInput = document.getElementById('stateInput');
+            const aiStateInput = document.getElementById('aiStateInput');
+            if (aiStateInput.value == 'ON') {
+                if (stateInput) {
+                    stateInput.value = this.value;
+                    // Call sendState function
+                    sendState();
+                } else {
+                    console.error('stateInput element not found');
+                }
+            }
+
+        });
+
+        socket.on('message_from_server', function (msg) {
+            //  console.log('Received:', msg);
+            // Save message to array
+            savedMessages = [];
+            savedMessages.push(msg);
+            // Update hidden input with stringified array
+            document.getElementById('savedMessagesHidden').value = JSON.stringify(savedMessages);
+            // document.getElementById('messages').innerHTML += '<br>' + JSON.stringify(msg);
+        });
+
+        function sendState() {
+            var state = document.getElementById('stateInput').value;
+            var messageData = { state: state };
+            socket.emit('message_from_client', { state: state });
+            savedMessages = [];
+            // Save sent message
+            savedMessages.push(messageData);
+            document.getElementById('savedMessagesHidden').value = JSON.stringify(savedMessages);
+        }
+
+        function fetchScores() {
+            fetch('https://myacrobot.weebette.ai/api/get-scores')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayScores(data.scores);
+                    } else {
+                        console.error('Error fetching scores:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function displayScores(scores) {
+            const scoresContainer = document.getElementById('scoresContainer');
+        //    const medalIcons = [
+        //    '<i class="fas fa-medal" style="color: #FFD700;"></i>', // Gold
+        //    '<i class="fas fa-medal" style="color: #C0C0C0;"></i>', // Silver
+        //    '<i class="fas fa-medal" style="color: #CD7F32;"></i>'  // Bronze
+       // ];
+       const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+
+// Create the medal icons using map
+const medalIcons = medalColors.map(color => {
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-medal';
+    icon.style.color = color;
+    return icon;
+});
+            scoresContainer.innerHTML = '';
+            // Create a table element
+                // Create and style the table
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'separate';
+    table.style.borderSpacing = '0';
+    table.style.backgroundColor = 'white';
+    table.style.borderRadius = '8px';
+    table.style.overflow = 'hidden';
+    table.style.boxShadow = '0 0 10px rgba(0,0,0,0.1)';
+
+    // Create header row
+    const headerRow = document.createElement('tr');
+    headerRow.style.backgroundColor = '#333';
+    headerRow.style.color = 'white';
+
+    // Create header cells
+    const rankHeader = document.createElement('th');
+    rankHeader.style.padding = '12px';
+    rankHeader.style.width = '60px';
+    rankHeader.style.textAlign = 'center';
+    rankHeader.textContent = '';
+
+    const nameHeader = document.createElement('th');
+    nameHeader.style.padding = '12px';
+    nameHeader.style.width = '150px';
+    nameHeader.style.textAlign = 'left';
+    nameHeader.textContent = 'Name';
+
+    const scoreHeader = document.createElement('th');
+    scoreHeader.style.padding = '12px';
+    scoreHeader.style.width = '100px';
+    scoreHeader.style.textAlign = 'right';
+    scoreHeader.textContent = 'Score';
+
+    // Append headers
+    headerRow.appendChild(rankHeader);
+    headerRow.appendChild(nameHeader);
+    headerRow.appendChild(scoreHeader);
+   table.appendChild(headerRow);
+          //  const table = document.createElement('table');
+          //  table.style.width = '100%';
+          //  table.style.borderCollapse = 'collapse';
 
 
-    </head>
-    <body id="page-top">
-        <!-- Navigation-->
-        <nav class="navbar navbar-expand-lg bg-secondary" id="mainNav">
-            <div class="container">
-                <a class="navbar-brand" href="#page-top">MyAcrobot</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarResponsive">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item"><a class="nav-link px-2" href="#about">Info</a></li>
-                        <li class="nav-item"><a class="nav-link px-2" href="#contact">About</a></li>
+          
+            scores.forEach((score, index) => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #ddd';
+                row.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f8f8f8';
+
+                // Add the blank column with medal icons for top 3
+              //  const blankCell = document.createElement('td');
+              //  blankCell.style.width = '8px';
+            //    blankCell.style.textAlign = 'center';
+               // blankCell.innerHTML = index < 3 ? medalIcons[index] :  index + 1; // Show medals for top 3
+                    // Create index cell (formerly blankCell)
+    const indexCell = document.createElement('td');
+    indexCell.style.width = '40px';
+    indexCell.style.textAlign = 'center';
+    indexCell.style.padding = '12px';
+    
+    //indexCell.textContent = index + 1;  // Display index number starting from 1
+    if (index < 3) {
+       // indexCell.textContent = medalIcons[index];
+           // Clear any existing content
+    indexCell.textContent = '';
+    // Append the medal icon element
+    indexCell.appendChild(medalIcons[index].cloneNode(true));
+    } else {
+        indexCell.textContent = index + 1;
+        indexCell.style.color = '#666';
+        indexCell.style.fontWeight = '500';
+    }
+    indexCell.style.color = '#666';
+    indexCell.style.fontWeight = '500';
+
+  // Add name column
+  const nameCell = document.createElement('td');
+  nameCell.textContent = score.name;
+  nameCell.style.padding = '12px';
+  nameCell.style.textAlign = 'left';
+  nameCell.style.width = '150px';
+
+        // Add score column
+        const scoreCell = document.createElement('td');
+        scoreCell.textContent = score.score;
+        scoreCell.style.padding = '12px';
+        scoreCell.style.textAlign = 'right';
+        scoreCell.style.fontWeight = 'bold';
+        scoreCell.style.width = '100px';
+    
+                // Add the score details
+          //      const scoreCell = document.createElement('td');
+           //     scoreCell.textContent = `Name: ${score.name}, Score: ${score.score}`;
+            //    scoreCell.style.padding = '8px';
+
+                // Append cells to the row
+                row.appendChild(indexCell);
+                row.appendChild(nameCell);
+
+              //  row.appendChild(blankCell);    row.appendChild(nameCell);
+                row.appendChild(scoreCell);
+
+                // Append row to the table
+                table.appendChild(row);
+
+                //   const scoreElement = document.createElement('div');
+                //   scoreElement.textContent = `Name: ${score.name}, Score: ${score.score}`;
+                //   scoresContainer.appendChild(scoreElement);
+            });
+            // Add the table to the container
+            scoresContainer.appendChild(table);
+
+
+            // Make the table scrollable if there are more than 7 rows
+            if (scores.length > 7) {
+                scoresContainer.style.maxHeight = '300px'; // Set the max height
+                scoresContainer.style.overflowY = 'scroll'; // Enable vertical scrolling
+                scoresContainer.style.border = '1px solid #ccc'; // Add a border to the container
+                scoresContainer.style.padding = '8px'; // Add some padding
+            }
+        }
+
+        function createArmZones(numberOfLinks) {
+            const container = document.getElementById('armZonesContainer');
+            container.innerHTML = ''; // Clear existing content
+
+            for (let i = 0; i < numberOfLinks; i++) {
+                const zoneDiv = document.createElement('div');
+                zoneDiv.id = `armZone${i}Output`;
+                zoneDiv.style.textAlign = 'center';
+                zoneDiv.style.fontSize = '18px';
+                zoneDiv.style.marginTop = '10px';
+
+                zoneDiv.innerHTML = `
+                    <span>Arm ${i + 1} Zone: </span>
+                    <span id="armZone${i}Value">N/A</span>
+                `;
+
+                container.appendChild(zoneDiv);
+
+                // Add break element between zones
+                if (i < numberOfLinks - 1) {
+                    const br = document.createElement('br');
+                    container.appendChild(br);
+                }
+            }
+        }
+
+
+
+
+    </script>
+    <script>
+        // Utility function to detect if the user is on mobile or desktop
+        function isMobileDevice() {
+            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        }
+
+        // Create modal content dynamically based on platform
+        function createModalContent() {
+            const onMobile = isMobileDevice();
+
+            // Instruction updates based on device type
+            const controlInstruction = onMobile
+                ? "Coach Trent (the double pendulum AI) by <strong>dragging</strong>, <strong>holding</strong>, and <strong>pulling</strong> in any direction to align his pendulums and give him the extra push needed to make a full rotation."
+                : "Coach Trent (the double pendulum AI) by <strong>clicking</strong>, <strong>holding</strong>, and <strong>pulling</strong> with your mouse to align his pendulums and give him the precision push needed to make a full rotation. Precision is key to scoring big!";
+
+            const releaseInstruction = onMobile
+                ? "<strong>Dismount</strong> Trent by <strong>double tapping</strong> on the screen and start the landing timer."
+                : "<strong>Dismount</strong> Trent by <strong>double clicking</strong> on the screen and start the landing timer.";
+
+            return `
+    <div class="modal fade" id="instructionsModal" tabindex="-1" aria-labelledby="instructionsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="instructionsModalLabel">MyAcrobot - Physics-Driven AI Olympics</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Welcome, Coach Ed Burch! Your mission is to guide High Bar AI gymnast Trent Dimas to Olympic glory, just like the duo did in '92. As Trent masters a full rotation, your coaching will determine the perfect moment for him to let go. Can the duo secure gold, silver, or bronze on the leaderboard? Let’s find out!
+                    </p>    
+                    <p>
+                       <strong>Here's how to play:</strong>
+                    </p>
+                    <ul>
+                        <li>${controlInstruction}</li>
+                        <li>${releaseInstruction}</li>
                     </ul>
+                    <ul>
+                                            <p>
+                        <strong>Your Tasks:</strong>
+                    </p>
+                                            <li>
+                            Ensure Trent lands at least <strong>one pendulum</strong> in the <strong>randomly</strong> chosen <strong>quadrant</strong> goal zones within the 1-second timer.
+                        </li>
+                        <li>
+                            After a round, experiment with environmental settings to challenge the AI or turn off the AI to take full control.
+                        </li>
+                    </ul>
+                    <p>
+                        This game highlights a <strong>symbiotic relationship</strong> between humans and AI, working together to achieve greatness. It’s a partnership where both human ingenuity and AI learning shine, breaking the stigma of AI replacing human jobs.
+                    </p>
                 </div>
-            </div>
-        </nav>
-        <!-- Double Pendulum -->
-        <section class="page-section double_pendulum" id="double_pendulum">
-            <div class="container">
-                <div id="yPositionOutput"></div>
-                <br/>
-                <div id="keyPressOut"></div>
-                <br/>
-                <div id="zoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px;">
-                    Current Zone: N/A
-                </div>
-                <br/>
-                <div id="currentLink" name="currentLink"></div>
-                
-                <div id="circleData" style="margin-top: 20px; font-size: 16px;">
-                    <div id="lowerArmCircleCount">Lower Arm Circles: 0</div>
-                    <div id="upperArmCircleCount">Upper Arm Circles: 0</div>
-                </div>
-
-                <div id="controls">
-                    <label>Link 1 Length: <input type="range" id="link1Length" min="50" max="300" value="150"></label>
-                    <label>Link 2 Length: <input type="range" id="link2Length" min="50" max="300" value="150"></label>
-                    <label>Mass of Link 1: <input type="range" id="mass1" min="1" max="10" value="5"></label>
-                    <label>Mass of Link 2: <input type="range" id="mass2" min="1" max="10" value="5"></label>
-                    <label>Damping: <input type="range" id="damping" min="0" max="1" step="0.01" value="0.05"></label>
-                    <label>Gravity: <input type="range" id="gravity" min="1" max="20" value="9.8"></label>
-                </div>
-                
-                
-                <!-- Container for the pendulum canvas -->
-                <div id="double_pendulum_canvas" style="width: 100%; height: 100vh; margin: 0 auto;"></div>
-
-                
-                <script>
-                    // Initialize the double pendulum example after the page loads
-                    window.onload = () => {
-                        // Call the Simulation.doublePendulum function to run the simulation
-                        // const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas');
-                        // Select the element
-                        const canvasDiv = document.getElementById("double_pendulum_canvas");
-
-                        // Check if the canvas element exists
-                        if (!canvasDiv) {
-                            console.error("Canvas element with ID 'double_pendulum_canvas' not found.");
-                            return;
-                        }
-
-                        // Get its size and position
-                        const rect = canvasDiv.getBoundingClientRect();
-
-                        // Access the width and height
-                        const width = rect.width;
-                        const height = rect.height;
-
-                        console.log(`Width: ${width}px, Height: ${height}px`);
-
-                        // Calculate the center of the canvas
-                        const centerX = width / 2;
-                        const centerY = height / 2;
-                        console.log(Simulation.doublePendulum);
-
-                        const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
-                        const link1Input = document.getElementById('link1Length');
-                        const link2Input = document.getElementById('link2Length');
-                
-                        if (!link1Input || !link2Input) {
-                            console.error("Slider elements with IDs 'link1Length' or 'link2Length' not found.");
-                            return;
-                        }
-                
-                        // Add event listeners to update pendulum link lengths dynamically
-                        link1Input.addEventListener('input', () => {
-                        //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
-                        });
-                
-                        link2Input.addEventListener('input', () => {
-                        //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
-                        });
-
-                    };
-                </script>
-        </section>
-    <hr/>
-
-
-
-
-
-        <!-- Portfolio Section-->
-        <section class="page-section portfolio" id="portfolio">
-            <div class="container">
-                <!-- Portfolio Section Heading-->
-                <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Portfolio</h2>
-                <!-- Icon Divider-->
-                <div class="divider-custom">
-                    <div class="divider-custom-line"></div>
-                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                    <div class="divider-custom-line"></div>
-                </div>
-                <!-- Portfolio Grid Items-->
-                <div class="row justify-content-center">
-                    <!-- Portfolio Item 1-->
-                    <div class="col-md-6 col-lg-4 mb-5">
-                        <div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#portfolioModal1">
-                            <div class="portfolio-item-caption d-flex align-items-center justify-content-center h-100 w-100">
-                                <div class="portfolio-item-caption-content text-center text-white"><i class="fas fa-plus fa-3x"></i></div>
-                            </div>
-                            <img class="img-fluid" src="/src/assets/img/portfolio/cabin.png" alt="..." />
-                        </div>
-                    </div>
-                    <!-- Portfolio Item 2-->
-                    <div class="col-md-6 col-lg-4 mb-5">
-                        <div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#portfolioModal2">
-                            <div class="portfolio-item-caption d-flex align-items-center justify-content-center h-100 w-100">
-                                <div class="portfolio-item-caption-content text-center text-white"><i class="fas fa-plus fa-3x"></i></div>
-                            </div>
-                            <img class="img-fluid" src="/src/assets/img/portfolio/cake.png" alt="..." />
-                        </div>
-                    </div>
-                    <!-- Portfolio Item 3-->
-                    <div class="col-md-6 col-lg-4 mb-5">
-                        <div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#portfolioModal3">
-                            <div class="portfolio-item-caption d-flex align-items-center justify-content-center h-100 w-100">
-                                <div class="portfolio-item-caption-content text-center text-white"><i class="fas fa-plus fa-3x"></i></div>
-                            </div>
-                            <img class="img-fluid" src="/src/assets/img/portfolio/circus.png" alt="..." />
-                        </div>
-                    </div>
-                    <!-- Portfolio Item 4-->
-                    <div class="col-md-6 col-lg-4 mb-5 mb-lg-0">
-                        <div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#portfolioModal4">
-                            <div class="portfolio-item-caption d-flex align-items-center justify-content-center h-100 w-100">
-                                <div class="portfolio-item-caption-content text-center text-white"><i class="fas fa-plus fa-3x"></i></div>
-                            </div>
-                            <img class="img-fluid" src="/src/assets/img/portfolio/game.png" alt="..." />
-                        </div>
-                    </div>
-                    <!-- Portfolio Item 5-->
-                    <div class="col-md-6 col-lg-4 mb-5 mb-md-0">
-                        <div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#portfolioModal5">
-                            <div class="portfolio-item-caption d-flex align-items-center justify-content-center h-100 w-100">
-                                <div class="portfolio-item-caption-content text-center text-white"><i class="fas fa-plus fa-3x"></i></div>
-                            </div>
-                            <img class="img-fluid" src="/src/assets/img/portfolio/safe.png" alt="..." />
-                        </div>
-                    </div>
-                    <!-- Portfolio Item 6-->
-                    <div class="col-md-6 col-lg-4">
-                        <div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#portfolioModal6">
-                            <div class="portfolio-item-caption d-flex align-items-center justify-content-center h-100 w-100">
-                                <div class="portfolio-item-caption-content text-center text-white"><i class="fas fa-plus fa-3x"></i></div>
-                            </div>
-                            <img class="img-fluid" src="/src/assets/img/portfolio/submarine.png" alt="..." />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- About Section-->
-        <section class="page-section bg-primary text-white mb-0" id="about">
-            <div class="container">
-                <!-- About Section Heading-->
-                <h2 class="page-section-heading text-center text-uppercase text-white">About</h2>
-                <!-- Icon Divider-->
-                <div class="divider-custom divider-light">
-                    <div class="divider-custom-line"></div>
-                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                    <div class="divider-custom-line"></div>
-                </div>
-                <!-- About Section Content-->
-                <div class="row">
-                    <div class="col-lg-4 ms-auto"><p class="lead">Freelancer is a free bootstrap theme created by Start Bootstrap. The download includes the complete source files including HTML, CSS, and JavaScript as well as optional SASS stylesheets for easy customization.</p></div>
-                    <div class="col-lg-4 me-auto"><p class="lead">You can create your own custom avatar for the masthead, change the icon in the dividers, and add your email address to the contact form to make it fully functional!</p></div>
-                </div>
-                <!-- About Section Button-->
-                <div class="text-center mt-4">
-                    <a class="btn btn-xl btn-outline-light" href="https://startbootstrap.com/theme/freelancer/">
-                        <i class="fas fa-download me-2"></i>
-                        Free Download!
-                    </a>
-                </div>
-            </div>
-        </section>
-        <!-- Contact Section-->
-        <section class="page-section" id="contact">
-            <div class="container">
-                <!-- Contact Section Heading-->
-                <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Contact Me</h2>
-                <!-- Icon Divider-->
-                <div class="divider-custom">
-                    <div class="divider-custom-line"></div>
-                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                    <div class="divider-custom-line"></div>
-                </div>
-                <!-- Contact Section Form-->
-                <div class="row justify-content-center">
-                    <div class="col-lg-8 col-xl-7">
-                        <!-- * * * * * * * * * * * * * * *-->
-                        <!-- * * SB Forms Contact Form * *-->
-                        <!-- * * * * * * * * * * * * * * *-->
-                        <!-- This form is pre-integrated with SB Forms.-->
-                        <!-- To make this form functional, sign up at-->
-                        <!-- https://startbootstrap.com/solution/contact-forms-->
-                        <!-- to get an API token!-->
-                        <form id="contactForm" data-sb-form-api-token="API_TOKEN">
-                            <!-- Name input-->
-                            <div class="form-floating mb-3">
-                                <input class="form-control" id="name" type="text" placeholder="Enter your name..." data-sb-validations="required" />
-                                <label for="name">Full name</label>
-                                <div class="invalid-feedback" data-sb-feedback="name:required">A name is required.</div>
-                            </div>
-                            <!-- Email address input-->
-                            <div class="form-floating mb-3">
-                                <input class="form-control" id="email" type="email" placeholder="name@example.com" data-sb-validations="required,email" />
-                                <label for="email">Email address</label>
-                                <div class="invalid-feedback" data-sb-feedback="email:required">An email is required.</div>
-                                <div class="invalid-feedback" data-sb-feedback="email:email">Email is not valid.</div>
-                            </div>
-                            <!-- Phone number input-->
-                            <div class="form-floating mb-3">
-                                <input class="form-control" id="phone" type="tel" placeholder="(123) 456-7890" data-sb-validations="required" />
-                                <label for="phone">Phone number</label>
-                                <div class="invalid-feedback" data-sb-feedback="phone:required">A phone number is required.</div>
-                            </div>
-                            <!-- Message input-->
-                            <div class="form-floating mb-3">
-                                <textarea class="form-control" id="message" type="text" placeholder="Enter your message here..." style="height: 10rem" data-sb-validations="required"></textarea>
-                                <label for="message">Message</label>
-                                <div class="invalid-feedback" data-sb-feedback="message:required">A message is required.</div>
-                            </div>
-                            <!-- Submit success message-->
-                            <!---->
-                            <!-- This is what your users will see when the form-->
-                            <!-- has successfully submitted-->
-                            <div class="d-none" id="submitSuccessMessage">
-                                <div class="text-center mb-3">
-                                    <div class="fw-bolder">Form submission successful!</div>
-                                    To activate this form, sign up at
-                                    <br />
-                                    <a href="https://startbootstrap.com/solution/contact-forms">https://startbootstrap.com/solution/contact-forms</a>
-                                </div>
-                            </div>
-                            <!-- Submit error message-->
-                            <!---->
-                            <!-- This is what your users will see when there is-->
-                            <!-- an error submitting the form-->
-                            <div class="d-none" id="submitErrorMessage"><div class="text-center text-danger mb-3">Error sending message!</div></div>
-                            <!-- Submit Button-->
-                            <button class="btn btn-primary btn-xl disabled" id="submitButton" type="submit">Send</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- Footer-->
-        <footer class="footer text-center">
-            <div class="container">
-                <div class="row">
-                    <!-- Footer Location-->
-                    <div class="col-lg-4 mb-5 mb-lg-0">
-                        <h4 class="text-uppercase mb-4">Location</h4>
-                        <p class="lead mb-0">
-                            2215 John Daniel Drive
-                            <br />
-                            Clark, MO 65243
-                        </p>
-                    </div>
-                    <!-- Footer Social Icons-->
-                    <div class="col-lg-4 mb-5 mb-lg-0">
-                        <h4 class="text-uppercase mb-4">Around the Web</h4>
-                        <a class="btn btn-outline-light btn-social mx-1" href="#!"><i class="fab fa-fw fa-facebook-f"></i></a>
-                        <a class="btn btn-outline-light btn-social mx-1" href="#!"><i class="fab fa-fw fa-twitter"></i></a>
-                        <a class="btn btn-outline-light btn-social mx-1" href="#!"><i class="fab fa-fw fa-linkedin-in"></i></a>
-                        <a class="btn btn-outline-light btn-social mx-1" href="#!"><i class="fab fa-fw fa-dribbble"></i></a>
-                    </div>
-                    <!-- Footer About Text-->
-                    <div class="col-lg-4">
-                        <h4 class="text-uppercase mb-4">About Freelancer</h4>
-                        <p class="lead mb-0">
-                            Freelance is a free to use, MIT licensed Bootstrap theme created by
-                            <a href="http://startbootstrap.com">Start Bootstrap</a>
-                            .
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </footer>
-        <!-- Copyright Section-->
-        <div class="copyright py-4 text-center text-white">
-            <div class="container"><small>Copyright &copy; Your Website 2023</small></div>
-        </div>
-        <!-- Portfolio Modals-->
-        <!-- Portfolio Modal 1-->
-        <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" aria-labelledby="portfolioModal1" aria-hidden="true">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                    <div class="modal-body text-center pb-5">
-                        <div class="container">
-                            <div class="row justify-content-center">
-                                <div class="col-lg-8">
-                                    <!-- Portfolio Modal - Title-->
-                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Log Cabin</h2>
-                                    <!-- Icon Divider-->
-                                    <div class="divider-custom">
-                                        <div class="divider-custom-line"></div>
-                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                                        <div class="divider-custom-line"></div>
-                                    </div>
-                                    <!-- Portfolio Modal - Image-->
-                                    <img class="img-fluid rounded mb-5" src="/src/assets/img/portfolio/cabin.png" alt="..." />
-                                    <!-- Portfolio Modal - Text-->
-                                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
-                                    <button class="btn btn-primary" data-bs-dismiss="modal">
-                                        <i class="fas fa-xmark fa-fw"></i>
-                                        Close Window
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Let's Start!</button>
                 </div>
             </div>
         </div>
-        <!-- Portfolio Modal 2-->
-        <div class="portfolio-modal modal fade" id="portfolioModal2" tabindex="-1" aria-labelledby="portfolioModal2" aria-hidden="true">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                    <div class="modal-body text-center pb-5">
-                        <div class="container">
-                            <div class="row justify-content-center">
-                                <div class="col-lg-8">
-                                    <!-- Portfolio Modal - Title-->
-                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Tasty Cake</h2>
-                                    <!-- Icon Divider-->
-                                    <div class="divider-custom">
-                                        <div class="divider-custom-line"></div>
-                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                                        <div class="divider-custom-line"></div>
-                                    </div>
-                                    <!-- Portfolio Modal - Image-->
-                                    <img class="img-fluid rounded mb-5" src="/src/assets/img/portfolio/cake.png" alt="..." />
-                                    <!-- Portfolio Modal - Text-->
-                                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
-                                    <button class="btn btn-primary" data-bs-dismiss="modal">
-                                        <i class="fas fa-xmark fa-fw"></i>
-                                        Close Window
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio Modal 3-->
-        <div class="portfolio-modal modal fade" id="portfolioModal3" tabindex="-1" aria-labelledby="portfolioModal3" aria-hidden="true">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                    <div class="modal-body text-center pb-5">
-                        <div class="container">
-                            <div class="row justify-content-center">
-                                <div class="col-lg-8">
-                                    <!-- Portfolio Modal - Title-->
-                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Circus Tent</h2>
-                                    <!-- Icon Divider-->
-                                    <div class="divider-custom">
-                                        <div class="divider-custom-line"></div>
-                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                                        <div class="divider-custom-line"></div>
-                                    </div>
-                                    <!-- Portfolio Modal - Image-->
-                                    <img class="img-fluid rounded mb-5" src="/src/assets/img/portfolio/circus.png" alt="..." />
-                                    <!-- Portfolio Modal - Text-->
-                                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
-                                    <button class="btn btn-primary" data-bs-dismiss="modal">
-                                        <i class="fas fa-xmark fa-fw"></i>
-                                        Close Window
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio Modal 4-->
-        <div class="portfolio-modal modal fade" id="portfolioModal4" tabindex="-1" aria-labelledby="portfolioModal4" aria-hidden="true">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                    <div class="modal-body text-center pb-5">
-                        <div class="container">
-                            <div class="row justify-content-center">
-                                <div class="col-lg-8">
-                                    <!-- Portfolio Modal - Title-->
-                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Controller</h2>
-                                    <!-- Icon Divider-->
-                                    <div class="divider-custom">
-                                        <div class="divider-custom-line"></div>
-                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                                        <div class="divider-custom-line"></div>
-                                    </div>
-                                    <!-- Portfolio Modal - Image-->
-                                    <img class="img-fluid rounded mb-5" src="/src/assets/img/portfolio/game.png" alt="..." />
-                                    <!-- Portfolio Modal - Text-->
-                                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
-                                    <button class="btn btn-primary" data-bs-dismiss="modal">
-                                        <i class="fas fa-xmark fa-fw"></i>
-                                        Close Window
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio Modal 5-->
-        <div class="portfolio-modal modal fade" id="portfolioModal5" tabindex="-1" aria-labelledby="portfolioModal5" aria-hidden="true">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                    <div class="modal-body text-center pb-5">
-                        <div class="container">
-                            <div class="row justify-content-center">
-                                <div class="col-lg-8">
-                                    <!-- Portfolio Modal - Title-->
-                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Locked Safe</h2>
-                                    <!-- Icon Divider-->
-                                    <div class="divider-custom">
-                                        <div class="divider-custom-line"></div>
-                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                                        <div class="divider-custom-line"></div>
-                                    </div>
-                                    <!-- Portfolio Modal - Image-->
-                                    <img class="img-fluid rounded mb-5" src="/src/assets/img/portfolio/safe.png" alt="..." />
-                                    <!-- Portfolio Modal - Text-->
-                                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
-                                    <button class="btn btn-primary" data-bs-dismiss="modal">
-                                        <i class="fas fa-xmark fa-fw"></i>
-                                        Close Window
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio Modal 6-->
-        <div class="portfolio-modal modal fade" id="portfolioModal6" tabindex="-1" aria-labelledby="portfolioModal6" aria-hidden="true">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                    <div class="modal-body text-center pb-5">
-                        <div class="container">
-                            <div class="row justify-content-center">
-                                <div class="col-lg-8">
-                                    <!-- Portfolio Modal - Title-->
-                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Submarine</h2>
-                                    <!-- Icon Divider-->
-                                    <div class="divider-custom">
-                                        <div class="divider-custom-line"></div>
-                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
-                                        <div class="divider-custom-line"></div>
-                                    </div>
-                                    <!-- Portfolio Modal - Image-->
-                                    <img class="img-fluid rounded mb-5" src="/src/assets/img/portfolio/submarine.png" alt="..." />
-                                    <!-- Portfolio Modal - Text-->
-                                    <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia neque assumenda ipsam nihil, molestias magnam, recusandae quos quis inventore quisquam velit asperiores, vitae? Reprehenderit soluta, eos quod consequuntur itaque. Nam.</p>
-                                    <button class="btn btn-primary" data-bs-dismiss="modal">
-                                        <i class="fas fa-xmark fa-fw"></i>
-                                        Close Window
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
-        <script type="text/javascript">
-            document.addEventListener('DOMContentLoaded', function() {
-                // Your code here
-                console.log('Document is ready!');
+    </div>`;
+        }
 
-                // Add this to your script
-                window.addEventListener('resize', () => {
-                    // Get the canvas div
-                    const canvasDiv = document.getElementById("double_pendulum_canvas");
-                    
-                    // Get updated dimensions
-                    const rect = canvasDiv.getBoundingClientRect();
-                    const width = rect.width;
-                    const height = rect.height;
-                    
-                    // Calculate new center points
-                    const centerX = width / 2;
-                    const centerY = height / 2;
-                    
-                    console.log(`New dimensions - Width: ${width}px, Height: ${height}px`);
-                    console.log(`New center - X: ${centerX}, Y: ${centerY}`);
+        // Function to show the modal
+        function showInstructionsModal() {
+            const instructionsModalContent = createModalContent();
 
-                    // Clear existing pendulum
-                    // First, remove the existing canvas if it exists
-                    const existingCanvas = canvasDiv.querySelector('canvas');
-                    if (existingCanvas) {
-                        existingCanvas.remove();
+            // Add the modal to the body
+            document.body.insertAdjacentHTML('beforeend', instructionsModalContent);
+
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('instructionsModal'));
+            isInstructionModelOpen = true;
+            //alert("isInstructionModelOpen", isInstructionModelOpen);
+            modal.show();
+
+            const instructionsModal = document.getElementById('instructionsModal');
+
+            if (instructionsModal) {
+                // Option 1: Use a flag variable to track if we've added the listener
+                if (!instructionsModal.hasModalListener) {
+                    instructionsModal.addEventListener('hide.bs.modal', function () {
+                        document.getElementById('isInstructionModelOpen').value = 'false';  // or 'false'
+                        //   alert(`isInstructionModelOpen changed to: ${isInstructionModelOpen}`);
+                    });
+                    document.getElementById('isInstructionModelOpen').value = 'true';  // or 'false'
+                }
+            }
+        }
+
+        function clearCookiesAndReload() {
+            // reset website cookies
+            document.cookie = `websitePendulumNumber=; path=/; max-age=0`;
+            document.cookie = `websitePendulumWidth=; path=/; max-age=0`;
+            document.cookie = `websitePendulumLength=; path=/; max-age=0`;
+            document.cookie = `websitePlayerName=; path=/; max-age=0`; // Clear the player name cookie
+            document.cookie = `websitePlayerScore=; path=/; max-age=0`; // Clear the player score cookie
+            document.cookie = `websitePlayerLevel=; path=/; max-age=0`; // Clear the player level cookie
+            document.cookie = `websiteDifficultyLevel=; path=/; max-age=0`; // Clear difficulty level cookie
+            document.cookie = `websiteAirFriction=; path=/; max-age=0`; // Clear difficulty level cookie
+    
+            // Reload the page
+            location.reload();
+        }
+        
+
+    </script>
+</head>
+
+<body id="page-top">
+    <!-- Navigation-->
+    <!-- <nav class="navbar navbar-expand-lg bg-secondary" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand" href="#page-top">MyAcrobot - Physics-Driven AI Olympics</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link px-2" href="#about">Info</a></li>
+                    <li class="nav-item"><a class="nav-link px-2" href="#contact">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>-->
+
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg bg-secondary text-uppercase fixed-top" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand" href="#page-top"><i class="fa-solid fa-robot"></i></a>
+            <!-- Random Zone Info with Goal -->
+            <div id="goalZone" class="random-zone-info text-white ms-3">
+                <p>Goal(s):</p>
+                <p id="randomZone1Display" class="mb-0"><span class="fw-bold">Goal:</span> Random Zone (Upper Arm): </p>
+                <p id="randomZone2Display" class="mb-0"><span class="fw-bold">Goal:</span> Random Zone (Lower Arm): </p>
+                <p id="randomZone3Display" class="mb-0 display-element"><span class="fw-bold">Goal:</span> Random Zone 3
+                    (Upper Arm): </p>
+                <p id="randomZone4Display" class="mb-0 display-element"><span class="fw-bold">Goal:</span> Random Zone 4
+                    (Lower Arm): </p>
+            </div>
+            <div id="countDownTimer" class="text-white ms-3" style="display: none;">
+                <span>Time Until Landing</span>
+                <p id="displayCountDown">1</p>
+            </div>
+
+
+
+            <div id="circleData" class=" text-white ms-3 nav-link py-3 px-0 px-lg-3 rounded" style="display: block">
+                <div id="upperArmCircleCount" style="display: block">Rotation# 0</div>
+            </div>
+
+            <div id="alignmentDisplay" class=" text-white ms-3 nav-link py-3 px-0 px-lg-3 rounded">
+                <div id="alignmentDisplay" name="alignmentDisplay" style="display: block"></div>
+
+            </div>
+
+
+            <button class="navbar-toggler text-uppercase font-weight-bold bg-primary text-white rounded" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive"
+                aria-expanded="false" aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto">
+                    <!-- AI Toggle Switch -->
+
+                    <!--  <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded"
+                            href="#portfolio">Portfolio</a></li>
+                    <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded"
+                            href="#about">About</a></li>
+                    <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded"
+                            href="#contact">Contact</a></li> -->
+                    <!-- New dropdown section for game info -->
+                    <li class="nav-item dropdown mx-0 mx-lg-1">
+                        <a class="nav-link dropdown-toggle py-3 px-0 px-lg-3 rounded" href="#" id="gameInfoDropdown"
+                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Game Info
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="gameInfoDropdown">
+                            <li><span class="dropdown-item-text"><strong>Player Name:</strong> <span
+                                        id="playerName">Guest</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Pendulum Number:</strong> <span
+                                        id="pendulumNumber">2</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Pendulum Length:</strong> <span
+                                        id="pendulumLength">0</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Pendulum Width:</strong> <span
+                                        id="pendulumWidth">0</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Air Friction:</strong> <span
+                                        id="airFriction">0</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Player Score:</strong> <span
+                                        id="playerScore">0</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Player Level:</strong> <span
+                                        id="playerLevel">0</span></span></li>
+                            <li><span class="dropdown-item-text"><strong>Difficulty Level:</strong> <span
+                                        id="playerDifficultyLevel">0</span></span></li>
+                            <li><span class="dropdown-item-text">
+                                    <div id="alignmentCountDisplay" name="alignmentCountDisplay"></div>
+                                </span></li>
+                        </ul>
+                    </li>
+                    <!-- Instructions Link -->
+                    <li class="nav-item mx-0 mx-lg-1">
+                        <a class="nav-link py-3 px-0 px-lg-3 rounded" href="#" id="instructionsLink"
+                            onclick="showInstructionsModal();">
+                            Instructions
+                        </a>
+                    </li>
+
+                    <li class="nav-item mx-0 mx-lg-1">
+                        <a class="nav-link py-3 px-0 px-lg-3 rounded" href="#" onclick="clearCookiesAndReload();">
+                            New Game
+                        </a>
+                    </li>
+                    <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded"
+                            href="#portfolio">Leaderboard</a></li>
+
+                    <!-- AI Toggle Switch -->
+                    <li class="nav-item mx-0 mx-lg-1">
+                        <a class="nav-link py-3 px-0 px-lg-3 rounded d-flex align-items-center" href="#"
+                            onclick="toggleAI();">
+                            <input class="form-check-input me-2" type="checkbox" id="toggleSwitch">
+                            <label class="form-check-label mb-0" for="toggleSwitch">AI Toggle Switch</label>
+                        </a>
+                    </li>
+
+
+                    <!--      <li class="nav-item mx-0 mx-lg-1">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="toggleSwitch">
+                                                    <label class="form-check-label nav-link py-3 px-0 px-lg-3 rounded d-flex align-items-center" for="toggleSwitch">AI Toggle Switch</label>
+                                                </div>
+                                            </li> -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="toggleSwitch">
+        <label class="form-check-label" for="toggleSwitch">AI Toggle Switch</label>
+    </div>
+    <!-- Double Pendulum -->
+    <section class="page-section double_pendulum" id="double_pendulum">
+        <div class="container">
+
+
+
+            <!-- Container for the pendulum canvas -->
+            <div id="double_pendulum_canvas" style="width: 100%; height: 100vh; margin: 0 auto;"></div>
+
+
+            <script>
+                //   showResultModal(true, 'Success! Both links are in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+
+                function showResultModal(isSuccess, message, webPlayerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction) {
+                    const modalElement = document.getElementById('resultModal');
+                    const modalMessage = document.getElementById('modalMessage');
+                    const modalTitle = document.getElementById('resultModalLabel');
+                    const continueButton = document.getElementById('continueButton');
+                    const nameInput = document.getElementById('nameInput');
+                    const difficultySelect = document.getElementById('difficultySelect');
+                    const pendulumLinksSelect = document.getElementById('pendulumLinksSelect');
+                    const airFrictionSelect = document.getElementById('airFrictionSelect');
+                    const pendulumLengthSelect = document.getElementById('pendulumLengthSelect');
+                    const pendulumWidthSelect = document.getElementById('pendulumWidthSelect');
+                    const currentScoreElement = document.getElementById('scoreDisplay');
+                    const currentScorePopUp = document.getElementById('currentScore');
+                    document.getElementById('isInstructionModelOpen').value = 'true'; 
+
+                    // Set modal content and styling
+                    if (isSuccess) {
+                        modalTitle.textContent = 'Success!';
+                        modalTitle.className = 'modal-title text-success';
+                        modalMessage.innerHTML = `
+                            <div class="alert alert-success fade show">
+                                <i class="fas fa-check-circle me-2"></i>
+                                ${message}
+                            </div>`;
+                        continueButton.className = 'btn btn-success';
+                        nameInput.value = webPlayerName;
+                        difficultySelect.value = playerDifficultyLevel;
+                        pendulumLinksSelect.value = numberOfLinks;
+                        airFrictionSelect.value = airFriction;
+                        pendulumLengthSelect.value = length;
+                        pendulumWidthSelect.value = width;
+                        currentScoreElement.value = score;
+                        currentScorePopUp.textContent = score;
+                    } else {
+                        modalTitle.textContent = 'Mismatch!';
+                        modalTitle.className = 'modal-title text-danger';
+                        modalMessage.innerHTML = `
+                            <div class="alert alert-danger fade show">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                ${message}
+                            </div>`;
+                        continueButton.className = 'btn btn-danger';
+                        nameInput.value = webPlayerName;
+                        difficultySelect.value = playerDifficultyLevel;
+                        pendulumLinksSelect.value = numberOfLinks;
+                        airFrictionSelect.value = airFriction;
+                        pendulumLengthSelect.value = length;
+                        pendulumWidthSelect.value = width;
+                        currentScoreElement.value = score;
+                        currentScorePopUp.textContent = score;
                     }
 
-                    // Reinitialize the pendulum with new dimensions
-                    const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
+                    // Create modal instance
+                    const modal = new bootstrap.Modal(modalElement);
+
+                    // Handle continue button click with loading state
+                    continueButton.onclick = () => {
+                        continueButton.innerHTML = `
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Loading...`;
+                        continueButton.disabled = true;
+
+                        
+
+                        setTimeout(() => {
+                            modal.hide();
+                            location.reload();
+                        }, 500);
+                    };
+
+                    // Show modal with fade effect
+                    //      modalElement.addEventListener('shown.bs.modal', () => {
+                    //          if (isSuccess) {
+                    //              confetti({
+                    //                  particleCount: 100,
+                    //                   spread: 70,
+                    //                  origin: { y: 0.6 }
+                    //                });
+                    //            }
+                    //        });
+
+                    if (isSuccess) {
+                        confetti({
+                            particleCount: 100,
+                            spread: 70,
+                            origin: { y: 0.6 }
+                        });
+                    }
+                    setTimeout(() => {
+
+                        modal.show();
+                    }, 1000);  // 1000 milliseconds = 1 second
+                }
+
+                // First, add this HTML to your page for the modal
+                const modalHTML = `
+                <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="resultModalLabel">Simulation Result</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                                    <!-- Current Score Section -->
+                    <div class="form-group text-center mb-4">
+                        <h4 id="currentScoreDisplay" class="text-success">
+                            Current Score: <span id="currentScore">0</span> 🎉
+                        </h4>
+                    </div>
+
+                                <div id="modalMessage" class="mb-3"></div>
+                                
+                                <!-- Name Input Section -->
+                                <div class="form-group">
+                                    <label for="nameInput" class="form-label">Enter Your Name:</label>
+                                    <div class="input-group">
+                                        <input type="text" 
+                                            class="form-control" 
+                                            id="nameInput" 
+                                            name="nameInput"
+                                            placeholder="Enter your name" 
+                                            required
+                                            aria-describedby="nameHelp">
+                                        <button class="btn btn-outline-secondary" 
+                                            type="button" 
+                                            id="generateRandomName">
+                                            <i class="fas fa-dice"></i> Random
+                                        </button>
+                                    </div>
+                                    <div id="nameHelp" class="form-text">
+                                        Please enter your name or generate a random one
+                                    </div>
+                                </div>
+
+
+                <!-- Difficulty Level Section -->
+                <div class="form-group mb-3">
+                    <label for="difficultySelect" class="form-label">Select Difficulty Level for the Next Round:</label>
+                    <select class="form-select" id="difficultySelect" aria-label="Difficulty Level">
+                        <option value="easy" selected>Easy (1 Quadrant Required)</option>
+                        <option value="medium">Medium (2 Quadrants Required)</option>
+                        <option value="hard">Hard (3 Quadrants Required)</option>
+                        <option value="expert">Expert (4 Quadrants Required)</option>
+                    </select>
+                    <div id="difficultyHelp" class="form-text">
+                        The difficulty level decides how many quadrants you’ll need to hit with the pendulums. 
+                        <strong>Easy peasy for 1 quadrant</strong>, but think twice before picking <strong>Expert!</strong>
+                    </div>
+                </div>
+                                                    <!-- Cute Separator -->
+                    <hr class="my-4">
+                    <h6 class="text-center text-primary">✨ Custom Pendulum Options 🎮 ✨</h6>
+                    <hr class="my-4">
+                                    <!-- Pendulum Links Section -->
+                    <div class="form-group mb-3">
+                        <label for="pendulumLinksSelect" class="form-label">Select Number of Pendulum Links:</label>
+                        <select class="form-select" id="pendulumLinksSelect" aria-label="Pendulum Links">
+                            <option value="2" selected>2 Links (Minimum for Easy)</option>
+                            <option value="3">3 Links</option>
+                            <option value="4">4 Links</option>
+                            <option value="5">5 Links</option>
+                            <option value="6">6 Links (Maximum)</option>
+                        </select>
+                        <div id="pendulumLinksHelp" class="form-text">
+                            Select how many links you want for your pendulum. More links add complexity to both the user and AI!
+                        </div>
+                    </div>
+                    <!-- Air Friction Section -->
+                    <div class="form-group mb-3">
+                        <label for="airFrictionSelect" class="form-label">Select Air Friction Level:</label>
+                        <select class="form-select" id="airFrictionSelect" aria-label="Air Friction">
+                            <option value="0" selected>Breezy (Low Friction)</option>
+                            <option value="0">Gusty (Medium Friction)</option>
+                            <option value="1">Stormy (High Friction)</option>
+                        </select>
+                        <div id="airFrictionHelp" class="form-text">
+                            The air resistance affects the pendulum's movement. A breezy day might be easier to handle!
+                        </div>
+                    </div>
+
+                    <!-- Pendulum Length Section -->
+                    <div class="form-group mb-3">
+                        <label for="pendulumLengthSelect" class="form-label">Select Pendulum Length:</label>
+                        <select class="form-select" id="pendulumLengthSelect" aria-label="Pendulum Length">
+                            <option value="100" selected>Short (100px)</option>
+                            <option value="150">Medium (150px)</option>
+                            <option value="200">Long (200px)</option>
+                        </select>
+                        <div id="pendulumLengthHelp" class="form-text">
+                            Choose how long you want each pendulum link to be. Long pendulums are tricky but fun!
+                        </div>
+                    </div>
+    
+
+                    <!-- Pendulum Width Section -->
+                    <div class="form-group mb-3">
+                        <label for="pendulumWidthSelect" class="form-label">Select Pendulum Width:</label>
+                        <select class="form-select" id="pendulumWidthSelect" aria-label="Pendulum Width">
+                            <option value="10" selected>Thin (10px)</option>
+                            <option value="25">Medium (20px)</option>
+                            <option value="30">Thick (30px)</option>
+                        </select>
+                        <div id="pendulumWidthHelp" class="form-text">
+                            Adjust the width of each pendulum link. Thicker links add more inertia!
+                        </div>
+                    </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" id="continueButton">Continue</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+
+
+                // Initialize the double pendulum example after the page loads
+                window.onload = () => {
+                    let websitePlayerScore = 0;
+                    let websitePlayerName = "Guest";
+                    let websitePlayerLevel = 1;
+                    let websitePendulumWidth = 25;
+                    let websitePendulumLength = 100;
+                    let websiteDifficultyLevel = "easy";
+                    let websitePendulumNumber = 2;
+                    let websiteAirFriction = 0;
+
+                    function getCookieValues() {
+                        // const name = `${cookieName}=`;
+                        // const decodedCookies = decodeURIComponent(document.cookie);
+                        // const cookiesArray = decodedCookies.split(';');
+                        // for (let cookie of cookiesArray) {
+                        //     cookie = cookie.trim();
+                        //     if (cookie.startsWith(name)) {
+                        //         return cookie.substring(name.length);
+                        //     }
+                        // }
+                        // return null; // Return null if the cookie is not found
+                        const decodedCookies = decodeURIComponent(document.cookie);
+                        const cookiesArray = decodedCookies.split(';');
+
+                        if (cookiesArray[0] === '') {
+                            //return alert('No cookies found!');
+                            // Check for the "instructionsShown" cookie
+                            showInstructionsModal();
+                        }
+                        for (const cookie of cookiesArray) {
+                            const [name, value] = cookie.trim().split('=');
+                            if (name === 'websitePlayerScore') {
+                                //alert(`alue  is ${value}`);
+                                // return value; // This will actually return from the function
+                                websitePlayerScore = value;
+                            }
+                            if (name === 'websitePlayerName') {
+                                //alert(`alue  is ${value}`);
+                                // return value; // This will actually return from the function
+                                websitePlayerName = value;
+                            }
+                            if (name === 'websitePlayerLevel') {
+                                //alert(`alue  is ${value}`);
+                                // return value; // This will actually return from the function
+                                websitePlayerLevel = value;
+                            }
+                            if (name === 'websitePendulumWidth') {
+                                //alert(`alue  is ${value}`);
+                                // return value; // This will actually return from the function
+                                websitePendulumWidth = value;
+                            }
+                            if (name === 'websitePendulumLength') {
+                                //alert(`alue  is ${value}`);
+                                // return value; // This will actually return from the function
+                                websitePendulumLength = value;
+                            }
+                            if (name === 'websiteDifficultyLevel') {
+                                //alert(`alue  is ${value}`);
+                                // return value; // This will actually return from the function
+                                websiteDifficultyLevel = value;
+                            }
+                            if (name === 'websitePendulumNumber') {
+                                //alert(`alue  is ${value}`);
+                                // return value; // This will actually return from the function
+                                websitePendulumNumber = value;
+                            }
+                            if (name === 'websiteAirFriction') {
+                                //alert(`alue  is ${value}`);
+                                // return value; // This will actually return from the function
+                                websiteAirFriction = value;
+                            }
+                        }
+                        //  alert(cookieDisplay);
+
+                        // const decodedCookies = decodeURIComponent(document.cookie);
+                        // const cookiesArray = decodedCookies.split(';');
+                        // let cookieDisplay = 'Player Score Data:\n------------------\n';
+
+                        // // Find the websitePlayerScore cookie
+                        // const playerScoreCookie = cookiesArray.find(cookie => 
+                        //     cookie.trim().startsWith(cookieName)
+                        // );
+
+                        // if (!playerScoreCookie) {
+                        //     return alert('No player score data found!');
+                        // }
+
+                        // try {
+                        //     // Try to parse JSON value
+                        //     const parsedValue = JSON.parse(value);
+                        //     if (typeof parsedValue === 'object') {
+                        //         for (const [key, val] of Object.entries(parsedValue)) {
+                        //             cookieDisplay += `${key}: ${val}\n`;
+                        //         }
+                        //     } else {
+                        //         cookieDisplay += `Score: ${value}\n`;
+                        //     }
+                        // } catch {
+                        //     // If not JSON, show raw value
+                        //     cookieDisplay += `Score: ${value}\n`;
+                        // }
+
+                        // alert(cookieDisplay);
+
+                    }
+
+
+
+
+
+
+
+                    getCookieValues();
+                    document.getElementById('pendulumNumber').textContent = websitePendulumNumber;
+                    document.getElementById('playerName').textContent = websitePlayerName;
+                    document.getElementById('pendulumLength').textContent = websitePendulumLength;
+                    document.getElementById('pendulumWidth').textContent = websitePendulumWidth;
+                    document.getElementById('playerScore').textContent = websitePlayerScore;
+                    document.getElementById('playerLevel').textContent = websitePlayerLevel;
+                    document.getElementById('playerDifficultyLevel').textContent = websiteDifficultyLevel;
+                    document.getElementById('airFriction').textContent = websiteAirFriction;
+
+                    const pendulumNumber = document.getElementById('pendulumNumber').textContent;
+                    const playerName = document.getElementById('playerName').textContent;
+                    const pendulumLength = document.getElementById('pendulumLength').textContent;
+                    const pendulumWidth = document.getElementById('pendulumWidth').textContent;
+                    const playerScore = document.getElementById('playerScore').textContent;
+                    const playerLevel = document.getElementById('playerLevel').textContent;
+                    const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').textContent;
+                    const playerAirFriction = document.getElementById('airFriction').textContent;
+
+                    //alert(`playerDifficultyLevel is ${playerDifficultyLevel}`);
+                    //alert(`playerName is ${playerName}`);
+
+                    const lengthValue = parseInt(pendulumLength, 10);
+                    const widthValue = parseInt(pendulumWidth, 10);
+                    const scoreValue = parseInt(playerScore, 10);
+                    const levelValue = parseInt(playerLevel, 10);
+                    const pendulumNumberValue = parseInt(pendulumNumber, 10);
+                    const airFrictionValue = parseInt(playerAirFriction);
+
+
+                    //     alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
+                    //    alert(`websitePlayerName is Tim ${websitePlayerName}`);
+                    //    alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
+                    // alert("websitePlayerScore is ", websitePlayerScore);
+                    // let websitePlayerName = getCookieValue('websitePlayerName');  
+                    // let websitePlayerLevel = getCookieValue('websitePlayerLevel');  
+
+                    // Call the Simulation.doublePendulum function to run the simulation
+                    // const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas');
+                    // Select the element
+                    const canvasDiv = document.getElementById("double_pendulum_canvas");
+
+                    // Check if the canvas element exists
+                    if (!canvasDiv) {
+                        console.error("Canvas element with ID 'double_pendulum_canvas' not found.");
+                        return;
+                    }
+
+                    createArmZones(pendulumNumberValue);
+
+                    // Get its size and position
+                    const rect = canvasDiv.getBoundingClientRect();
+
+                    // Access the width and height
+                    const width = rect.width;
+                    const height = rect.height;
+
+                    // console.log(`Width: ${width}px, Height: ${height}px`);
+
+                    // Calculate the center of the canvas
+                    const centerX = width / 2;
+                    const centerY = height / 2;
+                    //  console.log(Simulation.doublePendulum);
+                    const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY, scoreValue, levelValue, widthValue, lengthValue, playerDifficultyLevel, playerName, pendulumNumberValue, airFrictionValue);
+
+
+
+                    //const link1Input = document.getElementById('link1Length');
+                    //const link2Input = document.getElementById('link2Length');
+
+                    // if (!link1Input || !link2Input) {
+                    //    console.error("Slider elements with IDs 'link1Length' or 'link2Length' not found.");
+                    //   return;
+                    // }
+
+                    // Add event listeners to update pendulum link lengths dynamically
+                    //  link1Input.addEventListener('input', () => {
+                    //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
+                    //  });
+
+                    //    link2Input.addEventListener('input', () => {
+                    //    updateLinkLengths(link1Input.value, link2Input.value, pendulumExample, pendulumExample.constraint, pendulumExample.render);
+                    //   });
+
+                    // After creating the modal, add this event listener
+                    const modal = new bootstrap.Modal(document.getElementById('resultModal'));
+                    const modalElement = document.getElementById('resultModal');
+
+                    // Handle the X button click
+                    modalElement.querySelector('.btn-close').addEventListener('click', () => {
+                        location.reload();
+                    });
+
+                    // Handle clicking outside the modal (optional)
+                    modalElement.addEventListener('hidden.bs.modal', () => {
+                        location.reload();
+                    });
+                };
+            </script>
+    </section>
+    <hr />
+
+
+    <div id="yPositionOutput" style="display: none"></div>
+    <br />
+    <div id="keyPressOut" style="display: none"></div>
+    <br />
+    <div id="lowerArmZoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px; display: none;">
+        <span>Lower Arm Zone: </span>
+        <span id="lowerArmZoneValue">N/A</span>
+    </div>
+    <br />
+    <div id="upperArmZoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px; display: none;">
+        <span>Upper Arm Zone: </span>
+        <span id="upperArmZoneValue">N/A</span>
+    </div>
+    <div id="armZonesContainer" style="display: none"></div>
+
+    <br />
+    <!--    <div id="zoneOutput" style="text-align: center; font-size: 18px; margin-top: 10px;">
+        Current Zone: N/A
+    </div>-->
+    <br />
+    <div id="currentLink" name="currentLink" style="display: none"></div>
+    <!-- <div id="alignmentDisplay" name="alignmentDisplay" style="display: none"></div> -->
+    
+    <div id="notAlignedDisplay" name="notAlignedDisplay" style="display: none"></div>
+    <div id="circleData" style="margin-top: 20px; font-size: 16px;" style="display: none">
+        <div id="lowerArmCircleCount" style="display: none">Lower Arm Circles: 0</div>
+        <!-- <div id="upperArmCircleCount" style="display: none">Upper Arm Circles: 0</div> -->
+    </div>
+
+
+
+    <!--    <div id="controls">
+            <label>Link 1 Length: <input type="range" id="link1Length" min="50" max="300" value="150"></label>
+            <label>Link 2 Length: <input type="range" id="link2Length" min="50" max="300" value="150"></label>
+            <label>Mass of Link 1: <input type="range" id="mass1" min="1" max="10" value="5"></label>
+            <label>Mass of Link 2: <input type="range" id="mass2" min="1" max="10" value="5"></label>
+            <label>Damping: <input type="range" id="damping" min="0" max="1" step="0.01" value="0.05"></label>
+            <label>Gravity: <input type="range" id="gravity" min="1" max="20" value="9.8"></label>
+        </div> -->
+    <!-- Game Info -->
+    <div id="gameInfo" style="display: none">
+        <h2>Game Info</h2>
+        <p id="levelDisplay" style="display: none">Level: 1</p>
+        <!-- <p id="randomZone1Display">Random Zone (Upper Arm): </p>-
+       <p id="randomZone2Display">Random Zone (Lower Arm): </p>
+    <p id="randomZone3Display" class="display-element">Random Zone 3 (Upper Arm): </p>
+    <p id="randomZone4Display" class="display-element">Random Zone 4 (Lower Arm): </p> -->
+
+        <p id="scoreDisplay" style="display: none">Score: 0</p>
+    </div>
+
+    <h3 class="mb-4" style="display: none">AI Toggle Switch with Click Event</h3>
+
+
+
+    <!-- Hidden Input to Store AI State -->
+    <input type="hidden" id="aiStateInput" value="OFF">
+
+    <!-- Display AI State -->
+    <div style="display: none">
+        <p class="mt-3"><strong>AI State:</strong> <span id="aiState">OFF</span></p>
+    </div>
+    <h1 style="display: none">DQN Model Test</h1>
+    <input type="text" id="stateInput" placeholder="Enter state (e.g. [1,2,3,4,5,6])"
+        style="width: 300px; display:none;">
+    <button onclick="sendState()" style="display: none">Send State</button>
+    <div id="messages" style="display: none"></div>
+    <!-- Hidden input to store messages -->
+    <input type="hidden" id="savedMessagesHidden" value="[]">
+    <input type="hidden" id="hdnPendulumState" value="">
+    <input type="hidden" id="doubleTapValue" value="false">
+    <input type="hidden" id="isInstructionModelOpen" value="false">
+    <input type="hidden" id="touchStateValue" value="false">
+    <input type="hidden" id="touchStateStat" value="false">
+
+
+
+    <!--  <hr /> -->
+    <!--   <div id="playerName">Guest</div>
+    <div id="pendulumNumber">2</div>
+    <div id="pendulumLength">0</div>
+    <div id="pendulumWidth">0</div>
+    <div id="airFriction">0</div>
+    <div id="playerScore">0</div>
+    <div id="playerLevel">0</div>
+    <div id="playerDifficultyLevel">0</div>
+    <p id="goalZones">Goal Zones Go Here</p>
+        <p id="randomZone1Display">Random Zone (Upper Arm): </p>
+        <p id="randomZone2Display">Random Zone (Lower Arm): </p>
+        <p id="randomZone3Display" class="display-element">Random Zone 3 (Upper Arm): </p>
+        <p id="randomZone4Display" class="display-element">Random Zone 4 (Lower Arm): </p> -->
+
+
+
+
+    <!-- Portfolio Section-->
+    <section class="page-section portfolio" id="portfolio">
+        <div class="container">
+            <!-- Portfolio Section Heading-->
+            <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Leaderboard</h2>
+            <!-- Icon Divider-->
+            <div class="divider-custom">
+                <div class="divider-custom-line"></div>
+                <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                <div class="divider-custom-line"></div>
+            </div>
+            <!-- Portfolio Grid Items-->
+            <div class="row justify-content-center">
+                <!-- Portfolio Item 1-->
+                <div class="col-md-6 col-lg-4 mb-5">
+                    <div id="scoresContainer"></div>
+
+
+
+           
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact Section-->
+    
+    <!-- Footer-->
+    <footer class="footer text-center">
+        <div class="container">
+            <div class="row">
+                <!-- Footer Location-->
+                <div class="col-lg-4 mb-5 mb-lg-0">
+                   <!-- <h4 class="text-uppercase mb-4">Location</h4>-->
+                  <!-- <p class="lead mb-0">
+                        2215 John Daniel Drive
+                        <br />
+                        Clark, MO 65243
+                    </p>-->
+                </div>
+                <!-- Footer Social Icons-->
+                <div class="col-lg-4 mb-5 mb-lg-0">
+                    <h4 class="text-uppercase mb-4">Around the Web</h4>
+                    <a class="btn btn-outline-light btn-social mx-1" href="#!" style="display: none"><i
+                        class="fab fa-fw fa-facebook-f"></i></a>
+                    <a class="btn btn-outline-light btn-social mx-1" href="#!" style="display: none"><i
+                            class="fab fa-fw fa-twitter"></i></a>
+                    <a class="btn btn-outline-light btn-social mx-1" href="https://github.com/trueblood/MyAcrobot"><i
+                            class="fab fa-fw fa-github"></i></a>
+                <a class="btn btn-outline-light btn-social mx-1" href="#!" style="display: none"><i
+                        class="fab fa-fw fa-linkedin-in"></i></a>
+
+                </div>
+                <!-- Footer About Text-->
+                <div class="col-lg-4">
+                 <!--   <p class="lead mb-0">
+                        Freelance is a free to use, MIT licensed Bootstrap theme created by
+                        <a href="http://startbootstrap.com">Start Bootstrap</a>
+                        .
+                    </p>-->
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Copyright Section-->
+    <div class="copyright py-4 text-center text-white">
+        <div class="container"><small>Copyright &copy; weebette.ai 2025</small></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+    <script type="text/javascript">
+        // Get references to elements
+        const toggleSwitch = document.getElementById('toggleSwitch');
+        const aiStateInput = document.getElementById('aiStateInput');
+        const aiState = document.getElementById('aiState');
+
+        // Add click event listener
+        toggleSwitch.addEventListener('click', function () {
+            if (toggleSwitch.checked) {
+                // alert('AI has been turned ON');
+                aiStateInput.value = 'ON';
+                aiState.textContent = 'ON';
+            } else {
+                //   alert('AI has been turned OFF');
+                aiStateInput.value = 'OFF';
+                aiState.textContent = 'OFF';
+            }
+
+            //   console.log('AI State:', aiStateInput.value); // Optional: Log the state to the console
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleSwitch = document.getElementById('toggleSwitch');
+            toggleSwitch.checked = true;
+            if (toggleSwitch.checked) {
+                // alert('AI has been turned ON');
+                aiStateInput.value = 'ON';
+                aiState.textContent = 'ON';
+            }
+
+            let lastTapTime = 0; // Timestamp of the last tap
+            let lastTapPosition = { x: 0, y: 0 }; // Position of the last tap
+            const DOUBLE_TAP_THRESHOLD = 300; // Time in milliseconds
+            const DOUBLE_TAP_RADIUS = 50; // Distance in pixels
+            fetchScores();
+
+
+            // Helper function to calculate distance between two points
+            function getDistance(x1, y1, x2, y2) {
+                return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+            }
+
+            // Function to handle double-tap detection
+            function handleDoubleTap(event) {
+                const currentTime = new Date().getTime();
+                const touch = event.touches ? event.touches[0] : event; // Get the touch or mouse event
+                const currentTapPosition = { x: touch.clientX, y: touch.clientY };
+                const hiddenElement = document.getElementById('doubleTapValue');
+                const isInstructionModelOpen = document.getElementById('isInstructionModelOpen').value === 'true';
+
+                const timeSinceLastTap = currentTime - lastTapTime;
+                const distanceSinceLastTap = getDistance(
+                    currentTapPosition.x,
+                    currentTapPosition.y,
+                    lastTapPosition.x,
+                    lastTapPosition.y
+                );
+
+                if (
+                    timeSinceLastTap < DOUBLE_TAP_THRESHOLD &&
+                    distanceSinceLastTap < DOUBLE_TAP_RADIUS && !isInstructionModelOpen
+                ) {
+                    // Check if the tap occurred on the navbar
+                    const navBar = document.querySelector('.navbar');
+                    const targetElement = event.target;
+
+                    // If the clicked element is not in the navbar, process the double tap
+                    if (!navBar.contains(targetElement)) {
+                        // Double-tap detected
+                        hiddenElement.value = "true";
+                        // Optional: Reset the value after some time
+                        setTimeout(() => {
+                            hiddenElement.value = "false";
+                        }, 1000); // Reset after 1 second
+                    }
+                }
+
+
+                //     if (
+                //         timeSinceLastTap < DOUBLE_TAP_THRESHOLD &&
+                //        distanceSinceLastTap < DOUBLE_TAP_RADIUS
+                //    ) {
+                // Double-tap detected
+                //       hiddenElement.value = "true";
+                // Optional: Reset the value after some time
+                //      setTimeout(() => {
+                //         hiddenElement.value = "false";
+                //     }, 1000); // Reset after 1 second
+                //   console.log('Double-tap detected!');
+                //  alert('Double-tap detected!'); // Replace with your custom action
+                // }
+
+                // Update last tap details
+                lastTapTime = currentTime;
+                lastTapPosition = currentTapPosition;
+            }
+
+            // Event listener for touch events (mobile)
+            document.addEventListener('touchstart', handleDoubleTap);
+
+            // Event listener for mouse clicks (desktop)
+            document.addEventListener('mousedown', handleDoubleTap);
+            // Alternative using vanilla JavaScript
+            //document.getElementById('myModal').addEventListener('shown.bs.modal', function () {
+            //    const playerName = document.getElementById('playerName').textContent;
+            //    if (playerName) {
+            //        alert(`player name for popup is ${playerName}`);
+            //        document.getElementById('nameInput').value = playerName;
+            //    }
+            //});
+
+
+
+
+            // Add modal to document
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+
+            //document.getElementById('playerName').textContent = websitePlayerName;
+            //document.getElementById('pendulumLength').textContent = websitePendulumLength;
+            //document.getElementById('pendulumWidth').textContent = websitePendulumWidth;
+            //document.getElementById('playerScore').textContent = websitePlayerScore;
+            //document.getElementById('playerLevel').textContent = websitePlayerLevel;
+            //document.getElementById('playerDifficultyLevel').textContent = websiteDifficultyLevel;
+
+            //const playerName = document.getElementById('playerName').textContent;
+            //const pendulumLength = document.getElementById('pendulumLength').textContent;
+            //const pendulumWidth = document.getElementById('pendulumWidth').textContent;
+            //const playerScore = document.getElementById('playerScore').textContent;
+            //const playerLevel = document.getElementById('playerLevel').textContent;
+            //const playerDifficultyLevel = document.getElementById('playerDifficultyLevel').textContent;
+
+            // Get elements
+            //   const nameInput = document.getElementById('nameInput');
+            //const playerName = document.getElementById('playerName').textContent;
+            // if (playerName) {
+            //     alert(`player name for popup is  ${playerName}`);
+            //  document.getElementById('nameInput').value = playerName;
+            // }
+            const generateButton = document.getElementById('generateRandomName');
+            const continueButton = document.getElementById('continueButton');
+            const difficultySelect = document.getElementById('difficultySelect'); // Difficulty dropdown
+            const numberOfLinksSelect = document.getElementById('pendulumLinksSelect'); // Difficulty dropdown
+            const currentScore = document.getElementById('scoreDisplay'); // Difficulty dropdown
+            const airFrictionSelect = document.getElementById('airFrictionSelect'); // Difficulty dropdown
+            const pendulumLengthSelect = document.getElementById('pendulumLengthSelect'); // Difficulty dropdown
+            const pendulumWidthSelect = document.getElementById('pendulumWidthSelect'); // Difficulty dropdown
+
+
+            // Array of sample names for random generation
+            const sampleNames = [
+                "Alex Smith", "Jordan Lee", "Taylor Wong",
+                "Sam Johnson", "Casey Brown", "Morgan Davis"
+            ];
+
+            // Generate random name function
+            function generateRandomName() {
+                // Use chance.js to create a random name
+                //const randomName = chance.name(); // Generates a random full name
+                //const randomName = chance.animal() + chance.integer({ min: 1, max: 99 }); // Combines a random word and number
+                const randomName = `${chance.animal().replace(/\s+/g, '')}${chance.integer({ min: 1, max: 99 })}`; // Using template literal
+
+                // Update the input field with the random name
+
+                const nameInput = document.querySelector("#nameInput");
+                nameInput.value = randomName;
+
+                //  const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
+                //  nameInput.value = randomName;
+                // Add animation effect
+                //   nameInput.classList.add('highlight-animation');
+                //    setTimeout(() => nameInput.classList.remove('highlight-animation'), 500);
+            }
+
+            // Add click handler for random name generation
+            generateButton.addEventListener('click', generateRandomName);
+
+            // Handle continue button click
+            continueButton.addEventListener('click', function () {
+                const name = nameInput.value.trim();
+                const selectedDifficulty = difficultySelect.value; // Get the selected difficulty value
+                const numberOfLinks = numberOfLinksSelect.value;
+                const curScore = currentScore.value;
+                const airFriction = airFrictionSelect.value;
+                const pendLength = pendulumLengthSelect.value;
+                const pendWidth = pendulumWidthSelect.value;
+                // alert("selectedDifficulty is ", selectedDifficulty);
+                const countDownTimer = document.getElementById('countDownTimer');
+                const countDown = document.getElementById('displayCountDown');
+                const goalZone = document.getElementById('goalZone')
+
+                if (name) {
+                    goalZone.style.display = 'block';
+                    countDown.innerText = '2';
+                    // Show the `countDownTimer` when the countdown starts
+                    countDownTimer.style.display = 'none';
+
+                    // Store the name
+                    // localStorage.setItem('playerName', name);
+                    // Clear existing cookies first
+                    document.cookie = `websitePendulumNumber=; path=/; max-age=0`;
+                    document.cookie = `websitePendulumWidth=; path=/; max-age=0`;
+                    document.cookie = `websitePendulumLength=; path=/; max-age=0`;
+                    document.cookie = `websitePlayerName=; path=/; max-age=0`; // Clear the player name cookie
+                    document.cookie = `websitePlayerScore=; path=/; max-age=0`; // Clear the player score cookie
+                    document.cookie = `websitePlayerLevel=; path=/; max-age=0`; // Clear the player level cookie
+                    document.cookie = `websiteDifficultyLevel=; path=/; max-age=0`; // Clear difficulty level cookie
+                    document.cookie = `websiteAirFriction=; path=/; max-age=0`; // Clear difficulty level cookie
+
+                    // Store name and score in cookies
+                    document.cookie = `websitePendulumNumber=${numberOfLinks}; path=/; max-age=31536000`; // Save for 1 year
+                    document.cookie = `websitePendulumLength=${pendLength}; path=/; max-age=31536000`; // Save for 1 year
+                    document.cookie = `websitePendulumWidth=${pendWidth}; path=/; max-age=31536000`; // Save for 1 year
+                    document.cookie = `websitePlayerName=${encodeURIComponent(name)}; path=/; max-age=31536000`; // Save for 1 year
+                    document.cookie = `websitePlayerScore=${curScore}; path=/; max-age=31536000`; // Save for 1 year
+                    document.cookie = `websitePlayerLevel=${level}; path=/; max-age=31536000`; // Save for 1 year
+                    document.cookie = `websiteDifficultyLevel=${selectedDifficulty}; path=/; max-age=31536000`; // Save difficulty level
+                    document.cookie = `websiteAirFriction=${airFriction}; path=/; max-age=31536000`; // Save difficulty level
+                   // alert(`name and curScore before save is ${name} ${curScore}`);
+                    //  console.log("Player name and score saved to cookies.");
+                    // Continue with the simulation
+                    // location.reload();
+                    // Send the data to the server using AJAX
+                    fetch('https://myacrobot.weebette.ai/api/save-score', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            curScore: curScore
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Success:', data);
+                            location.reload();
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                            location.reload();
+                        });
+                } else {
+                    // Show validation error
+                    nameInput.classList.add('is-invalid');
+                    document.getElementById('nameHelp').innerHTML = `
+                <span class="text-danger">Please enter a name to continue</span>`;
+                }
+            });
+
+            // Add input validation
+            nameInput.addEventListener('input', function () {
+                if (this.value.trim()) {
+                    this.classList.remove('is-invalid');
+                    document.getElementById('nameHelp').innerHTML =
+                        'Please enter your name or generate a random one';
+                }
+            });
+
+
+            // Your code here
+            //  console.log('Document is ready!');
+
+            //            document.getElementById('savedMessagesHidden').addEventListener('change', function () {
+            //                console.log('Hidden input value changed from here:', this.value);
+            //            });
+
+            // Get the element
+            const pendulumStateInput = document.getElementById('hdnPendulumState');
+
+            if (pendulumStateInput) {
+                // Add change event listener
+                pendulumStateInput.addEventListener('change', function () {
+                    //  console.log('Pendulum state changed:', this.value);
+                    try {
+                        const parsedState = JSON.parse(this.value);
+                        //    console.log('Parsed pendulum state:', parsedState);
+
+                        // Set the state input value
+                        const stateInput = document.getElementById('stateInput');
+                        const aiStateInput = document.getElementById('aiStateInput');
+                        if (aiStateInput.value == 'ON') {
+                            if (stateInput) {
+                                stateInput.value = this.value;
+                                // Call sendState function
+                                sendState();
+                            } else {
+                                console.error('stateInput element not found');
+                            }
+                        }
+
+
+
+                    } catch (error) {
+                        console.error('Error parsing pendulum state:', error);
+                    }
                 });
 
+                // Add MutationObserver for catching programmatic changes
+                const observer = new MutationObserver(function (mutations) {
+                    mutations.forEach(function (mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                            //   console.log('Pendulum state updated tim:', pendulumStateInput.value);
+                            const aiStateInput = document.getElementById('aiStateInput');
+                            if (aiStateInput.value == 'ON') {
+                                const stateInput = document.getElementById('stateInput');
+                                if (stateInput) {
+                                    stateInput.value = pendulumStateInput.value;
+                                    sendState();
+                                }
+                            }
+
+
+                            // try {
+                            //     const parsedState = JSON.parse(pendulumStateInput.value);
+                            //     console.log('Parsed updated state:', parsedState);
+                            // } catch (error) {
+                            //     console.error('Error parsing updated state:', error);
+                            // }
+                        }
+                    });
+                });
+
+                observer.observe(pendulumStateInput, {
+                    attributes: true
+                });
+
+                // Log initial value
+                //  console.log('Initial pendulum state:', pendulumStateInput.value);
+            } else {
+                console.error('Pendulum state input element not found');
+            }
+
+            // Add this to your script
+            // window.addEventListener('resize', () => {
+            //getCookieValues();  
+
+
+            //alert(`websitePlayerScore is Tim ${websitePlayerScore}`);
+            // alert(`websitePlayerName is Tim ${websitePlayerName}`);
+            // alert(`websitePlayerLevel is Tim ${websitePlayerLevel}`);
+            // Get the canvas div
+            //  const canvasDiv = document.getElementById("double_pendulum_canvas");
+
+            // Get updated dimensions
+            //  const rect = canvasDiv.getBoundingClientRect();
+            //   const width = rect.width;
+            //   const height = rect.height;
+
+            // Calculate new center points
+            //   const centerX = width / 2;
+            //  const centerY = height / 2;
+
+            //    console.log(`New dimensions - Width: ${width}px, Height: ${height}px`);
+            //    console.log(`New center - X: ${centerX}, Y: ${centerY}`);
+
+            // Clear existing pendulum
+            // First, remove the existing canvas if it exists
+            //    const existingCanvas = canvasDiv.querySelector('canvas');
+            //     if (existingCanvas) {
+            //        existingCanvas.remove();
+            //     }
+
+            // Reinitialize the pendulum with new dimensions
+            //      const pendulumExample = Simulation.doublePendulum('double_pendulum_canvas', centerX, centerY);
+
+            //  });
 
 
 
-            });
-        </script>
 
-    </body>
+
+        });
+    </script>
+
+</body>
+
 </html>

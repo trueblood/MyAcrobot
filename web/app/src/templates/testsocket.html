@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>DQN Model Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script type="text/javascript">
+        var socket = io();
+        var savedMessages = []; // Array to store all messages
+
+        socket.on('connect', function () {
+            console.log('Connected to server');
+        });
+
+        socket.on('message_from_server', function (msg) {
+            console.log('Received:', msg);
+            // Save message to array
+            savedMessages = [];
+            savedMessages.push(msg);
+            // Update hidden input with stringified array
+            document.getElementById('savedMessagesHidden').value = JSON.stringify(savedMessages);
+            document.getElementById('messages').innerHTML += '<br>' + JSON.stringify(msg);
+        });
+
+        function sendState() {
+            var state = document.getElementById('stateInput').value;
+            var messageData = { state: state };
+            socket.emit('message_from_client', { state: state });
+            savedMessages = [];
+            // Save sent message
+            savedMessages.push(messageData);
+            document.getElementById('savedMessagesHidden').value = JSON.stringify(savedMessages);
+        }
+    </script>
+</head>
+
+<body>
+    <h1>DQN Model Test</h1>
+    <input type="text" id="stateInput" placeholder="Enter state (e.g. [1,2,3,4,5,6])" style="width: 300px;">
+    <button onclick="sendState()">Send State</button>
+    <div id="messages"></div>
+    <!-- Hidden input to store messages -->
+    <input type="hidden" id="savedMessagesHidden" value="[]">
+</body>
+
+</html>

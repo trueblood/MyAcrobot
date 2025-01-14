@@ -1,8 +1,327 @@
+// https://chatgpt.com/c/6766dfef-3500-8000-9c2a-2bdd33925e1c
 const trails = {
     lowerArm: [],
     upperArm: [],
 };
+
 let currentControl = 'lowerArm'; // Track which link is currently controlled
+
+// You can also track alignment events
+let alignmentCount = 0;
+let lastAlignmentTime = 0;
+
+let level = 1; // Initialize the level
+let randomZone1 = ''; // Random zone for the upper arm
+let randomZone2 = ''; // Random zone for the lower arm
+let randomZone3 = ''; // Random zone for the upper arm
+let randomZone4 = ''; // Random zone for the lower arm
+let score = 0; // Initialize the score
+let length = 100;
+let width = 25;
+let numberOfLinks = 2;
+let playerDifficultyLevel = 'easy';
+let playerName = "Guest";
+let airFriction = 0;
+let playerAlignmentCount = 0;
+const links = [];
+
+
+// Function to pick a random zone
+function pickRandomZone() {
+    const zones = ['Top-Left Quadrant', 'Top-Right Quadrant', 'Bottom-Left Quadrant', 'Bottom-Right Quadrant'];
+    return zones[Math.floor(Math.random() * zones.length)];
+}
+
+// Function to pick a zone adjacent to the given zone
+function pickAdjacentZone(currentZone) {
+    const adjacentZones = {
+        'Top-Left Quadrant': ['Top-Right Quadrant', 'Bottom-Left Quadrant'],
+        'Top-Right Quadrant': ['Top-Left Quadrant', 'Bottom-Right Quadrant'],
+        'Bottom-Left Quadrant': ['Top-Left Quadrant', 'Bottom-Right Quadrant'],
+        'Bottom-Right Quadrant': ['Top-Right Quadrant', 'Bottom-Left Quadrant'],
+    };
+    const possibleZones = adjacentZones[currentZone];
+    return possibleZones[Math.floor(Math.random() * possibleZones.length)];
+}
+
+// Function to determine random zones based on the level
+// function determineZonesForLevel() {
+//     if (level === 1) {
+//         // Level 1: Both zones are the same
+//         const zone = pickRandomZone();
+//         randomZone1 = zone;
+//         randomZone2 = zone;
+//     } else if (level === 2) {
+//         // Level 2: Zones are adjacent
+//         randomZone1 = pickRandomZone();
+//         randomZone2 = pickAdjacentZone(randomZone1);
+//     } else if (level >= 3) {
+//         // Level 3: Zones are random
+//         randomZone1 = pickRandomZone();
+//         randomZone2 = pickRandomZone();
+//     }
+
+//     updateRandomZone1(randomZone1);
+//     updateRandomZone2(randomZone2);
+// }
+
+function determineZonesForLevel(difficulty) {
+    // Reset zones
+    randomZone1 = '';
+    randomZone2 = '';
+    randomZone3 = '';
+    randomZone4 = '';
+
+    if (difficulty === 'easy') {
+        // Easy: 1 zone required
+        const zone = pickRandomZone();
+        randomZone1 = zone;
+        //randomZone2 = zone;
+    } else if (difficulty === 'medium') {
+        // Medium: 2 zones required
+        randomZone1 = pickRandomZone();
+        randomZone2 = pickAdjacentZone(randomZone1);
+    } else if (difficulty === 'hard') {
+        // Hard: 3 zones required
+        randomZone1 = pickRandomZone();
+        randomZone2 = pickRandomZone();
+        while (randomZone2 === randomZone1) {
+            randomZone2 = pickRandomZone(); // Ensure zones are different
+        }
+        randomZone3 = pickRandomZone();
+        while (randomZone3 === randomZone1 || randomZone3 === randomZone2) {
+            randomZone3 = pickRandomZone(); // Ensure zones are unique
+        }
+    } else if (difficulty === 'expert') {
+        // Expert: 4 zones required
+        const usedZones = [];
+        while (usedZones.length < 4) {
+            const zone = pickRandomZone();
+            if (!usedZones.includes(zone)) {
+                usedZones.push(zone);
+            }
+        }
+        randomZone1 = usedZones[0];
+        randomZone2 = usedZones[1];
+        randomZone3 = usedZones[2];
+        randomZone4 = usedZones[3];
+    }
+
+    // Update the UI with the determined zones
+    updateRandomZone1(randomZone1);
+    updateRandomZone2(randomZone2);
+    updateRandomZone3(randomZone3);
+    updateRandomZone4(randomZone4);
+
+    //  console.log(`Difficulty: ${difficulty}`);
+    //    console.log(`Zones: ${randomZone1}, ${randomZone2}, ${randomZone3}, ${randomZone4}`);
+}
+
+// Functions to update HTML elements
+function updateRandomZone1(value) {
+    randomZone1 = value;
+    const randomZone1Display = document.getElementById('randomZone1Display');
+    if (randomZone1Display) {
+        randomZone1Display.textContent = `${value}`;
+    }
+}
+
+function updateRandomZone2(value) {
+    randomZone2 = value;
+    const randomZone2Display = document.getElementById('randomZone2Display');
+    if (randomZone2Display) {
+        randomZone2Display.textContent = `${value}`;
+    }
+}
+
+function updateRandomZone3(value) {
+    randomZone3 = value;
+    const randomZone3Display = document.getElementById('randomZone3Display');
+    if (randomZone3Display) {
+        randomZone3Display.textContent = `${value}`;
+    }
+}
+
+function updateRandomZone4(value) {
+    randomZone4 = value;
+    const randomZone4Display = document.getElementById('randomZone4Display');
+    if (randomZone4Display) {
+        randomZone4Display.textContent = `${value}`;
+    }
+}
+
+function updateScore(value) {
+    score = value;
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    if (scoreDisplay) {
+        scoreDisplay.textContent = `${value}`;
+    }
+}
+
+function updateLevel(value) {
+    level = value;
+    const levelDisplay = document.getElementById('levelDisplay');
+    if (levelDisplay) {
+        levelDisplay.textContent = `Level: ${value}`;
+    }
+}
+
+function removeChain(engine, chainComposite) {
+    // Remove all constraints in the chain composite
+    chainComposite.constraints.forEach(constraint => {
+        Matter.World.remove(engine.world, constraint);
+    });
+
+    // Clear the constraints array
+    chainComposite.constraints = [];
+}
+
+function trackAlignment(upperArm, lowerArm) {
+    const currentTime = Date.now();
+    const alignmentInfo = checkPendulumsAlignment(upperArm, lowerArm);
+
+    if (alignmentInfo.isAligned) {
+        // Only count as new alignment if more than 500ms has passed
+        if (currentTime - lastAlignmentTime > 500) {
+            alignmentCount++;
+            lastAlignmentTime = currentTime;
+
+            // Store alignment data
+            const alignmentData = {
+                timestamp: currentTime,
+                count: alignmentCount,
+                upperArmAngle: alignmentInfo.upperDegrees,
+                lowerArmAngle: alignmentInfo.lowerDegrees,
+                upperArmPosition: { x: upperArm.position.x, y: upperArm.position.y },
+                lowerArmPosition: { x: lowerArm.position.x, y: lowerArm.position.y }
+            };
+
+            //  console.log('Alignment detected:', alignmentData);
+
+            // Update UI with alignment count
+            const countDisplay = document.getElementById('alignmentCountDisplay');
+            countDisplay.textContent = `Align Cnt: ${alignmentCount}`;
+        }
+    }
+}
+
+// Add a function to handle pausing the simulation for a specific duration
+function pauseSimulation(duration) {
+    return new Promise((resolve) => setTimeout(resolve, duration));
+}
+
+function checkPendulumsAlignment(upperArm, lowerArm) {
+    // Get the angles of both arms in radians
+    const upperAngle = upperArm.angle % (2 * Math.PI);
+    const lowerAngle = lowerArm.angle % (2 * Math.PI);
+
+    // Convert to degrees for easier understanding
+    const upperDegrees = (upperAngle * 180 / Math.PI);
+    const lowerDegrees = (lowerAngle * 180 / Math.PI);
+
+    // Define tolerance for "straightness" (in degrees)
+    const tolerance = 35; // adjust this value as needed
+
+    // Check if angles are aligned (either both vertical or both horizontal)
+    const angleDifference = Math.abs(upperDegrees - lowerDegrees);
+
+    // They are aligned if their angle difference is near 0° or 180°
+    const isAligned = (
+        angleDifference <= tolerance ||
+        Math.abs(angleDifference - 180) <= tolerance
+    );
+
+    return {
+        isAligned: isAligned,
+        upperDegrees: upperDegrees,
+        lowerDegrees: lowerDegrees,
+        angleDifference: angleDifference
+    };
+}
+
+function getBestActionFromModel(parsedValue) {
+    // Safely navigate to best_action
+    if (parsedValue && parsedValue.length > 0 && parsedValue[0]?.data?.best_action !== undefined) {
+        return parsedValue[0].data.best_action;
+    }
+    // console.error("Invalid input structure: Unable to retrieve best_action.");
+    return null; // Return null if best_action is not found
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    //  console.log("in event listener");
+    const hiddenInput = document.getElementById('savedMessagesHidden');
+    // const hiddenInput = document.getElementById('hdnPendulumState');
+    // console.log('Raw hidden input value:', hiddenInput.value);
+
+    if (hiddenInput) {
+        // Listen for changes using multiple approaches to ensure we catch all updates
+        hiddenInput.addEventListener('change', function () {
+            //      console.log('Value changed from event listner tim:', this.value);
+            try {
+                const parsedValue = JSON.parse(this.value);
+                //      console.log('Parsed value:', parsedValue);
+            } catch (error) {
+                console.error('Error parsing value:', error);
+            }
+        });
+
+        // Using MutationObserver to catch programmatic changes
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                    //    console.log('Value updated here:', hiddenInput.value);
+
+
+                    try {
+                        const parsedValue = JSON.parse(hiddenInput.value);
+                        // console.log('Parsed updated value:', parsedValue);
+                    } catch (error) {
+                        console.error('Error parsing updated value:', error);
+                    }
+                }
+            });
+        });
+
+        observer.observe(hiddenInput, {
+            attributes: true
+        });
+    } else {
+        console.error('Hidden input element not found');
+    }
+});
+
+function getObservationFromPendulum(lowerArm, upperArm) {
+    // Extract angles and angular velocities
+    const theta1 = lowerArm.angle; // Lower arm angle
+    const theta2 = upperArm.angle; // Upper arm angle
+    const angularVelocityTheta1 = lowerArm.angularVelocity;
+    const angularVelocityTheta2 = upperArm.angularVelocity;
+
+    // Create the observation array
+    const observation = [
+        Math.cos(theta1), Math.sin(theta1), // Cosine and sine of θ1
+        Math.cos(theta2), Math.sin(theta2), // Cosine and sine of θ2
+        angularVelocityTheta1, angularVelocityTheta2 // Angular velocities
+    ];
+
+    return observation;
+}
+
+function logPendulumState(lowerArm, upperArm) {
+    console.log("Next group");
+    console.log("Lower Arm:");
+    console.log(`- Position: x=${lowerArm.position.x.toFixed(2)}, y=${lowerArm.position.y.toFixed(2)}`);
+    console.log(`- Velocity: x=${lowerArm.velocity.x.toFixed(2)}, y=${lowerArm.velocity.y.toFixed(2)}`);
+    console.log(`- Angle: ${lowerArm.angle.toFixed(2)} radians`);
+    console.log(`- Angular Velocity: ${lowerArm.angularVelocity.toFixed(2)}`);
+
+    console.log("Upper Arm:");
+    console.log(`- Position: x=${upperArm.position.x.toFixed(2)}, y=${upperArm.position.y.toFixed(2)}`);
+    console.log(`- Velocity: x=${upperArm.velocity.x.toFixed(2)}, y=${upperArm.velocity.y.toFixed(2)}`);
+    console.log(`- Angle: ${upperArm.angle.toFixed(2)} radians`);
+    console.log(`- Angular Velocity: ${upperArm.angularVelocity.toFixed(2)}`);
+}
 
 // Function to calculate the y-coordinate of the pendulum's endpoint
 function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
@@ -17,53 +336,340 @@ function calculateYEndpoint(lowerArm, upperArm, linkLength1, linkLength2) {
 }
 
 // Function to add touch controls
-function addTouchControl(pendulum, canvas) {
+// function addTouchControl(pendulum, canvas, engine, chainComposite) {
+//     const lowerArm = pendulum.bodies[1];
+//     const upperArm = pendulum.bodies[0];
+//     let isSwitching = false; // Prevent rapid toggling
+//     let lastTapTime = 0; // For detecting double-tap
+
+//     // Add touchstart and touchmove event listeners to the canvas
+//     canvas.addEventListener('touchstart', handleTouch);
+//     canvas.addEventListener('touchmove', handleTouch);
+//     canvas.addEventListener('touchend', handleTouchEnd);
+
+//     function handleTouch(event) {
+//         event.preventDefault(); // Prevent default touch behavior (e.g., scrolling)
+
+//         // Detect multi-touch
+//         const touches = event.touches;
+//         const touchCount = touches.length;
+//         const currentTime = new Date().getTime();
+//         const timeDifference = currentTime - lastTapTime;
+
+//         if (touchCount === 2 && !isSwitching) {
+//             // Two-finger touch switches control between links
+//             isSwitching = true;
+//             switchControl();
+//         } else if (touchCount === 1 && timeDifference < 300) {
+//             // Double-tap releases the pendulum links
+//             removeChain(engine, chainComposite);
+//         }
+
+//         // Update lastTapTime for double-tap detection
+//         lastTapTime = currentTime;
+
+//         // For single touch, apply forces
+//         if (touchCount === 1) {
+//             const touch = touches[0];
+//             const canvasRect = canvas.getBoundingClientRect();
+//             const touchX = touch.clientX - canvasRect.left;
+//             const centerX = canvasRect.width / 2;
+
+//             const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
+
+//             // Apply force based on touch position
+//             if (touchX < centerX) {
+//                 const message = 'Touch detected: Left side - Applying left force';
+//                 updateOutputMessage(message); // Update index page
+//                 Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
+//             } else {
+//                 const message = 'Touch detected: Right side - Applying right force';
+//                 updateOutputMessage(message); // Update index page
+//                 Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
+//             }
+//         }
+//     }
+
+//     function handleTouchEnd(event) {
+//         event.preventDefault();
+//         if (event.touches.length === 0) {
+//             isSwitching = false; // Reset switching state if all fingers are lifted
+//         }
+//     }
+
+//     function switchControl() {
+//         if (currentControl === 'lowerArm') {
+//             currentControl = 'upperArm';
+//             // Update rendering
+//             upperArm.render.fillStyle = '#ff6666'; // Highlight upper arm
+//             upperArm.render.strokeStyle = '#1a1a1a';
+//             lowerArm.render.fillStyle = 'transparent';
+//             lowerArm.render.strokeStyle = '#1a1a1a';
+//             updateOutputMessageForCurrentlySelectedLink('Currently controlling: Upper Arm');
+//         } else {
+//             currentControl = 'lowerArm';
+//             // Update rendering
+//             lowerArm.render.fillStyle = '#ff6666'; // Highlight lower arm
+//             lowerArm.render.strokeStyle = '#1a1a1a';
+//             upperArm.render.fillStyle = 'transparent';
+//             upperArm.render.strokeStyle = '#1a1a1a';
+//             updateOutputMessageForCurrentlySelectedLink('Currently controlling: Lower Arm');
+//         }
+//     }
+// }
+
+// Function to add touch controls
+function addTouchControl(pendulum, canvas, engine, chainComposite) {
     const lowerArm = pendulum.bodies[1];
     const upperArm = pendulum.bodies[0];
     let isSwitching = false; // Prevent rapid toggling
+    let lastTapTime = 0; // To track time of the last tap
+    let isDoubleTapped = false; // To track double-tap status
 
     // Add touchstart and touchmove event listeners to the canvas
-    canvas.addEventListener('touchstart', handleTouch);
-    canvas.addEventListener('touchmove', handleTouch);
-    canvas.addEventListener('touchend', handleTouchEnd);
+    canvas.addEventListener('touchstart', handleTouch, { passive: false });
+    canvas.addEventListener('touchmove', handleTouch, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    // Watch the hidden input for changes
+    const hiddenInput = document.getElementById('doubleTapValue');
+    if (hiddenInput) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                    isDoubleTapped = hiddenInput.value === 'true'; // Check if double-tap is true
+                    if (isDoubleTapped) {
+                        handleDoubleTap(); // Call the double-tap logic
+                    }
+                }
+            });
+        });
+
+        observer.observe(hiddenInput, {
+            attributes: true,
+            attributeFilter: ['value'],
+        });
+    } else {
+        console.error('Hidden input element not found');
+    }
+
+    // Add the touch state observer
+    const touchStateInput = document.getElementById('touchStateValue');
+    if (touchStateInput) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                    if (touchStateInput.value === 'true') {
+
+
+                        // Handle touch state true
+                        //  console.log('Touch detected');
+                        //  alert("touch detected");
+                        //  //
+                        //  document.getElementById('savedMessagesHidden').value
+                        //  so get taht value, then we need to pass that back to sql lite server we currently has a websocket conneciton should we setup an ajax call for tihs?
+                        //  savedMessagesHidden
+                        //  // Get the hidden input element
+                        //  const touchStatusInput = document.getElementById('touchStateStatus');
+                        //  touchStatusInput.value = 'true';
+
+
+                        // Get the hidden input element value
+                        const savedMessagesHidden = document.getElementById('savedMessagesHidden').value;
+
+                        // Send the data to the server using AJAX
+                        fetch('https://myacrobot.weebette.ai/api/save-messages', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                messages: savedMessagesHidden
+                            })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log('Success:', data);
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                            });
+
+                    }
+                }
+            });
+        });
+
+        observer.observe(touchStateInput, {
+            attributes: true,
+            attributeFilter: ['value'],
+        });
+    }
 
     function handleTouch(event) {
         event.preventDefault(); // Prevent default touch behavior (e.g., scrolling)
-
-        // Detect multi-touch
         const touches = event.touches;
         const touchCount = touches.length;
-     
-        if (touchCount === 2 && !isSwitching) {
-            isSwitching = true; // Set switching state
-            switchControl();
-            setTimeout(() => (isSwitching = false), 500); // Prevent immediate toggling
-            return;
-        }
-        
-        // For single touch, apply forces
-        if (touchCount === 1) {
-            const touch = touches[0];
-            const canvasRect = canvas.getBoundingClientRect();
-            const touchX = touch.clientX - canvasRect.left;
-            const centerX = canvasRect.width / 2;
 
-            const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
-
-            // Apply force based on touch position
-            if (touchX < centerX) {
-                const message = 'Touch detected: Left side - Applying left force';
-                console.log(message);
-                updateOutputMessage(message); // Update index page
-                Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
-            } else {
-                const message = 'Touch detected: Right side - Applying right force';
-                console.log(message);
-                updateOutputMessage(message); // Update index page
-                Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
-            }
+        // Get the hidden input element
+        const touchStateInput = document.getElementById('touchStateValue');
+        if (touchStateInput) {
+            // Set the value to true when touch occurs
+            touchStateInput.value = 'true';
+            // Optional: Reset the value after a short delay
+            setTimeout(() => {
+                touchStateInput.value = 'false';
+            }, 100); // Adjust timeout as needed
         }
+
+
+        // const currentTime = new Date().getTime();
+        //  const timeSinceLastTap = currentTime - lastTapTime;
+
+        // if (timeSinceLastTap < 300 && event.touches.length === 1) { // Detect double-tap
+        //     isDoubleTapped = true; // Set the double-tap flag to true
+        //     setTimeout(() => {
+        //         isDoubleTapped = false; // Reset the flag after a short duration
+        //     }, 500); // Keep the double-tap flag active for 500ms
+        // }
+
+        //  lastTapTime = currentTime; // Update last tap time
     }
+    // Detect multi-touch
+
+
+    function handleDoubleTap() {
+        //  alert("double tapped");
+
+        const countDownTimer = document.getElementById('countDownTimer');
+        const countDown = document.getElementById('displayCountDown');
+        const goalZone = document.getElementById('goalZone')
+
+        if (countDown) {
+            // Hide the `countDownTimer` initially
+            goalZone.style.display = 'none';
+
+            // Show the `countDownTimer` when the countdown starts
+            countDownTimer.style.display = 'block';
+            let countdownValue = 1; // Set the countdown start value (e.g., 3 seconds)
+
+            // Update the countdown element to show the current value
+            countDown.textContent = countdownValue;
+
+            const countdownInterval = setInterval(() => {
+                countdownValue--; // Decrease the countdown value
+                countDown.textContent = countdownValue; // Update the display with the current value
+
+                if (countdownValue <= 0) {
+                    clearInterval(countdownInterval); // Stop the timer when it reaches 0
+                    countDown.textContent = '0'; // Ensure it displays 0 explicitly
+                }
+            }, 1000); // 1-second interval
+        }
+
+
+        const randomZones = [];
+        // Get the zone display elements
+        const randomZone1Display = document.getElementById('randomZone1Display');
+        const randomZone2Display = document.getElementById('randomZone2Display');
+        const randomZone3Display = document.getElementById('randomZone3Display');
+        const randomZone4Display = document.getElementById('randomZone4Display');
+
+        // Add the values to the array if they exist and have text content
+        if (randomZone1Display && randomZone1Display.textContent.trim()) {
+            randomZones.push(randomZone1Display.textContent.trim());
+        }
+        if (randomZone2Display && randomZone2Display.textContent.trim()) {
+            randomZones.push(randomZone2Display.textContent.trim());
+        }
+        if (randomZone3Display && randomZone3Display.textContent.trim()) {
+            randomZones.push(randomZone3Display.textContent.trim());
+        }
+        if (randomZone4Display && randomZone4Display.textContent.trim()) {
+            randomZones.push(randomZone4Display.textContent.trim());
+        }
+
+        // Show the array length in an alert box
+        //   alert(`Number of Random Zones: ${randomZones.length}\nValues: ${randomZones.join(', ')}`);
+
+
+        // Call removeChain if required (keeping your original functionality)
+        removeChain(engine, chainComposite);
+
+        // Add a 1.5-second delay using setTimeout
+        setTimeout(() => {
+
+
+
+            // Populate targetZones with the zones we need to match
+            links.forEach((link, index) => {
+                const zoneValueElement = document.getElementById(`armZone${index}Output`); // Corrected element ID
+                if (zoneValueElement) {     //armZone1Output
+
+                    const zoneValue = zoneValueElement.textContent.trim();
+
+                    // Find and remove matching zone from randomZones
+                    const matchingIndex = randomZones.indexOf(zoneValue);
+                    if (matchingIndex !== -1) {
+                        randomZones.splice(matchingIndex, 1); // Remove the matching zone
+                        //  alert(`Match found and removed: ${zoneValue}`);
+                    }
+                }
+            })
+
+            if (randomZones == 0) {
+                score += 1;
+                showResultModal(true, 'Success! Pendulum(s) landed in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+
+            } else {
+                let mismatchDetails = 'Mismatch!\nExpected Zones:\n';
+                randomZones.forEach((zone, index) => {
+                    mismatchDetails += `Zone ${index + 1}: ${zone}\n`;
+                });
+
+
+                // var mismatchMessage = `Mismatch!
+                //  Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
+                // Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`;
+                // //         alert(`);
+                showResultModal(false, mismatchDetails, playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+
+            }
+
+            // Progression logic: Increase level after every 5 successful scores
+            if (score > 0 && score % 5 === 0) {
+                updateLevel(level + 1);
+            }
+        }, 2000); // 1.5-second delay
+
+        // Determine zones based on the current level
+        determineZonesForLevel();
+
+    }
+
+    // // For single touch, apply forces
+    // if (touchCount === 1) {
+    //     const touch = touches[0];
+    //     const canvasRect = canvas.getBoundingClientRect();
+    //     const touchX = touch.clientX - canvasRect.left;
+    //     const centerX = canvasRect.width / 2;
+
+    //     const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
+
+    //     // Apply force based on touch position
+    //     if (touchX < centerX) {
+    //         const message = 'Touch detected: Left side - Applying left force';
+    //         //   console.log(message);
+    //         updateOutputMessage(message); // Update index page
+    //         Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
+    //     } else {
+    //         const message = 'Touch detected: Right side - Applying right force';
+    //         //  console.log(message);
+    //         updateOutputMessage(message); // Update index page
+    //         Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
+    //     }
+    // }
+
 
     function handleTouchEnd(event) {
         event.preventDefault();
@@ -75,7 +681,7 @@ function addTouchControl(pendulum, canvas) {
     function switchControl() {
         if (currentControl === 'lowerArm') {
             currentControl = 'upperArm';
-            console.log('Switched control to upper arm');
+            //    console.log('Switched control to upper arm');
             // Update rendering
             upperArm.render.fillStyle = '#ff6666'; // Highlight upper arm
             upperArm.render.strokeStyle = '#1a1a1a';
@@ -84,7 +690,7 @@ function addTouchControl(pendulum, canvas) {
             updateOutputMessageForCurrentlySelectedLink('Currently controlling: Upper Arm');
         } else {
             currentControl = 'lowerArm';
-            console.log('Switched control to lower arm');
+            //   console.log('Switched control to lower arm');
             // Update rendering
             lowerArm.render.fillStyle = '#ff6666'; // Highlight lower arm
             lowerArm.render.strokeStyle = '#1a1a1a';
@@ -100,7 +706,7 @@ function updateOutputMessage(message) {
     const keyPressOutElement = document.getElementById('keyPressOut');
     if (keyPressOutElement) {
         keyPressOutElement.textContent = `Event Message: ${message}`;
-    } 
+    }
 }
 
 // Function to update output on the index page
@@ -108,32 +714,91 @@ function updateOutputMessageForCurrentlySelectedLink(message) {
     const keyPressOutElement = document.getElementById('currentLink');
     if (keyPressOutElement) {
         keyPressOutElement.textContent = `Event Message: ${message}`;
-    } 
+    }
 }
 
-// Function to add keyboard control
-function addKeyboardControl(pendulum) {
+// Function for adding moving the pendulum by the ai
+function addAIMovement(pendulum) {
     const lowerArm = pendulum.bodies[1];
     const upperArm = pendulum.bodies[0];
 
+
+
+    // Function to move the pendulum based on the AI's prediction
+    // function movePendulum(prediction) {
+    //     const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
+
+    //     // Apply force based on the prediction
+    //     if (prediction === 0) {
+    //         const message = 'AI Prediction: Left - Applying left force';
+    //         console.log(message);
+    //         updateOutputMessage(message); // Update index page
+    //         Matter.Body.applyForce(currentArm, currentArm.position, { x: -0.05, y: 0 });
+    //     } else if (prediction === 1) {
+    //         const message = 'AI Prediction: Right - Applying right force';
+    //         console.log(message);
+    //         updateOutputMessage(message); // Update index page
+    //         Matter.Body.applyForce(currentArm, currentArm.position, { x: 0.05, y: 0 });
+    //     }
+    // }
+
+    // // Listen for messages from the AI
+    // window.addEventListener('message', (event) => {
+    //     if (event.data.type === 'aiPrediction') {
+    //         movePendulum(event.data.prediction);
+    //     }
+    // });
+}
+
+// Function to apply torque based on best action
+function applyBestActionTorque(pendulum, bestAction) {
+    const lowerArm = pendulum.bodies[1];
+    const torqueMagnitude = 0.05; // Torque magnitude (N m)
+
+    if (bestAction === 0) { // Apply -1 torque
+        //  console.log("Best Action: Apply -1 torque");
+        Matter.Body.applyForce(lowerArm, lowerArm.position, { x: -torqueMagnitude, y: 0 });
+    } else if (bestAction === 1) { // Apply 0 torque
+        //    console.log("Best Action: Apply 0 torque");
+        // No force applied
+    } else if (bestAction === 2) { // Apply 1 torque
+        //     console.log("Best Action: Apply 1 torque");
+        Matter.Body.applyForce(lowerArm, lowerArm.position, { x: torqueMagnitude, y: 0 });
+    }
+}
+
+
+// Function to add keyboard control
+function addKeyboardControl(pendulum, engine, chainComposite) {
+    const lowerArm = pendulum.bodies[1];
+    const upperArm = pendulum.bodies[0];
+    const pauseDuration = 100; // 100ms pause duration
+    let isPaused = false;
+    let isKeyPressed = false;
+
     document.addEventListener('keydown', (event) => {
-        console.log(`Key pressed: ${event.key}`);
+        //    isPaused = true;
+        //    isKeyPressed = true;
+        // Start the while loop that sets pendulum state to null
+        // Start the asynchronous loop in a separate function
+        // handleKeyPress();
+        //  console.log(`Key pressed: ${event.key}`);
         const key = event.key;
         const currentArm = currentControl === 'lowerArm' ? lowerArm : upperArm;
 
         if (key === 'ArrowLeft') {
             const message = 'Arrow key pressed: Left - Applying left force';
-            console.log(message);
+            //     console.log(message);
             updateOutputMessage(message); // Update index page
             Matter.Body.applyForce(lowerArm, lowerArm.position, { x: -0.05, y: 0 });
         } else if (key === 'ArrowRight') {
             const message = 'Arrow key pressed: Right - Applying right force';
-            console.log(message);
+            //   console.log(message);
             updateOutputMessage(message); // Update index page
             Matter.Body.applyForce(lowerArm, lowerArm.position, { x: 0.05, y: 0 });
         } else if (key === 'a') {
             currentControl = 'lowerArm'; // Switch to lower arm
-            console.log('Switched control to lower arm');
+            //  console.log('Switched control to lower arm');
             // Fill the selected arm with lighter red
             lowerArm.render.fillStyle = '#ff6666'; // Lighter red
             lowerArm.render.strokeStyle = '#1a1a1a';
@@ -149,7 +814,7 @@ function addKeyboardControl(pendulum) {
             // }
         } else if (key === 's') {
             currentControl = 'upperArm'; // Switch to upper arm
-            console.log('Switched control to upper arm');
+            //   console.log('Switched control to upper arm');
             // Fill the selected arm with lighter red
             upperArm.render.fillStyle = '#ff6666'; // Lighter red
             upperArm.render.strokeStyle = '#1a1a1a';
@@ -162,9 +827,131 @@ function addKeyboardControl(pendulum) {
             // if (currentLink) {
             //     currentLink.innerText = `Currently controlling: Upper Arm`;
             // }
-        }
-    });       
+        } else if (key === 'c') {
+            const countDownTimer = document.getElementById('countDownTimer');
+            const countDown = document.getElementById('displayCountDown');
+            const goalZone = document.getElementById('goalZone')
 
+            if (countDown) {
+                // Hide the `countDownTimer` initially
+                goalZone.style.display = 'none';
+
+                // Show the `countDownTimer` when the countdown starts
+                countDownTimer.style.display = 'block';
+                let countdownValue = 2; // Set the countdown start value (e.g., 3 seconds)
+
+                // Update the countdown element to show the current value
+                countDown.textContent = countdownValue;
+
+                const countdownInterval = setInterval(() => {
+                    countdownValue--; // Decrease the countdown value
+                    countDown.textContent = countdownValue; // Update the display with the current value
+
+                    if (countdownValue <= 0) {
+                        clearInterval(countdownInterval); // Stop the timer when it reaches 0
+                        countDown.textContent = '0'; // Ensure it displays 0 explicitly
+                    }
+                }, 1000); // 1-second interval
+            }
+
+
+            const randomZones = [];
+            // Get the zone display elements
+            const randomZone1Display = document.getElementById('randomZone1Display');
+            const randomZone2Display = document.getElementById('randomZone2Display');
+            const randomZone3Display = document.getElementById('randomZone3Display');
+            const randomZone4Display = document.getElementById('randomZone4Display');
+
+            // Add the values to the array if they exist and have text content
+            if (randomZone1Display && randomZone1Display.textContent.trim()) {
+                randomZones.push(randomZone1Display.textContent.trim());
+            }
+            if (randomZone2Display && randomZone2Display.textContent.trim()) {
+                randomZones.push(randomZone2Display.textContent.trim());
+            }
+            if (randomZone3Display && randomZone3Display.textContent.trim()) {
+                randomZones.push(randomZone3Display.textContent.trim());
+            }
+            if (randomZone4Display && randomZone4Display.textContent.trim()) {
+                randomZones.push(randomZone4Display.textContent.trim());
+            }
+
+            // Show the array length in an alert box
+            //   alert(`Number of Random Zones: ${randomZones.length}\nValues: ${randomZones.join(', ')}`);
+
+
+            // Call removeChain if required (keeping your original functionality)
+            removeChain(engine, chainComposite);
+
+            // Add a 1.5-second delay using setTimeout
+            setTimeout(() => {
+
+
+
+                // Populate targetZones with the zones we need to match
+                links.forEach((link, index) => {
+                    const zoneValueElement = document.getElementById(`armZone${index}Output`); // Corrected element ID
+                    if (zoneValueElement) {     //armZone1Output
+
+                        const zoneValue = zoneValueElement.textContent.trim();
+
+                        // Find and remove matching zone from randomZones
+                        const matchingIndex = randomZones.indexOf(zoneValue);
+                        if (matchingIndex !== -1) {
+                            randomZones.splice(matchingIndex, 1); // Remove the matching zone
+                            //  alert(`Match found and removed: ${zoneValue}`);
+                        }
+                    }
+                })
+
+                if (randomZones == 0) {
+                    score += 1;
+                    showResultModal(true, 'Success! Pendulum(s) landed in their correct zones. Score +1', playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+
+                } else {
+                    let mismatchDetails = 'Mismatch!\nExpected Zones:\n';
+                    randomZones.forEach((zone, index) => {
+                        mismatchDetails += `Zone ${index + 1}: ${zone}\n`;
+                    });
+
+
+                    // var mismatchMessage = `Mismatch!
+                    //  Upper Arm Zone: ${upperArmZone.innerText}, Expected: ${randomZone1}
+                    // Lower Arm Zone: ${lowerArmZone.innerText}, Expected: ${randomZone2}`;
+                    // //         alert(`);
+                    showResultModal(false, mismatchDetails, playerName, playerDifficultyLevel, numberOfLinks, score, length, width, airFriction);
+
+                }
+
+                // Progression logic: Increase level after every 5 successful scores
+                if (score > 0 && score % 5 === 0) {
+                    updateLevel(level + 1);
+                }
+            }, 1000); // 1.5-second delay
+
+            // Determine zones based on the current level
+            determineZonesForLevel();
+        }
+    });
+
+    // document.addEventListener('keyup', (event) => {
+    //    isKeyPressed = false;
+    //    isPaused = false;
+    //  const pendulumStateInput = document.getElementById('stateInput');
+    //  pendulumStateInput.disabled = false;  // Disable the element
+    //  pendulumStateInput.readOnly = false;  // Make it read-only as an extra measure
+    // });
+
+    // Separate async function for handling the loop
+    //  async function handleKeyPress() {
+    //     while (isKeyPressed) {
+    //         const pendulumStateInput = document.getElementById('stateInput');
+    //   pendulumStateInput.value = 'stop';
+    //  pendulumStateInput.disabled = true;  // Disable the element
+    //  pendulumStateInput.readOnly = true;  // Make it read-only as an extra measure
+    //   await new Promise(resolve => setTimeout(resolve, pauseDuration)); // 100ms delay between updates
+    //     }
+    // }
 }
 
 // Draw Zone Indicators on the Grid
@@ -192,19 +979,25 @@ function drawZoneLabels(context, canvasWidth, canvasHeight) {
 
     // Q1: Top-Right (Blue)
     context.fillStyle = 'blue';
-    context.fillText('Q1 (0° to 90°)', canvasWidth * 0.75 - 50, canvasHeight * 0.25 - 10);
+    // context.fillText('Top-Right Quadrant (0° to 90°)', canvasWidth * 0.75 - 50, canvasHeight * 0.25 - 10);
+    context.fillText('Top-Right Quad', canvasWidth * 0.75 - 50, canvasHeight * 0.25 - 10);
+
 
     // Q2: Top-Left (Orange)
     context.fillStyle = 'orange';
-    context.fillText('Q2 (90° to 180°)', canvasWidth * 0.25 - 50, canvasHeight * 0.25 - 10);
+    // context.fillText('Top-Left Quadrant (90° to 180°)', canvasWidth * 0.25 - 50, canvasHeight * 0.25 - 10);
+    context.fillText('Top-Left Quad', canvasWidth * 0.25 - 50, canvasHeight * 0.25 - 10);
 
     // Q3: Bottom-Left (Green)
     context.fillStyle = 'green';
-    context.fillText('Q3 (180° to 270°)', canvasWidth * 0.25 - 50, canvasHeight * 0.75 - 10);
+    // context.fillText('Bottom-Left Quadrant (180° to 270°)', canvasWidth * 0.25 - 50, canvasHeight * 0.75 - 10);
+    context.fillText('Bottom-Left Quad', canvasWidth * 0.25 - 50, canvasHeight * 0.75 - 10);
+
 
     // Q4: Bottom-Right (Red)
     context.fillStyle = 'red';
-    context.fillText('Q4 (270° to 360°)', canvasWidth * 0.75 - 50, canvasHeight * 0.75 - 10);
+    //context.fillText('Bottom-Right (270° to 360°)', canvasWidth * 0.75 - 50, canvasHeight * 0.75 - 10);
+    context.fillText('Bottom-Right Quad', canvasWidth * 0.75 - 50, canvasHeight * 0.75 - 10);
 }
 
 function getZone(position, canvasWidth, canvasHeight) {
@@ -212,13 +1005,13 @@ function getZone(position, canvasWidth, canvasHeight) {
     const centerY = canvasHeight / 2; // Y-axis center
 
     if (position.x < centerX && position.y < centerY) {
-        return 'Top-Left Zone';
+        return 'Top-Left Quadrant';
     } else if (position.x >= centerX && position.y < centerY) {
-        return 'Top-Right Zone';
+        return 'Top-Right Quadrant';
     } else if (position.x < centerX && position.y >= centerY) {
-        return 'Bottom-Left Zone';
+        return 'Bottom-Left Quadrant';
     } else if (position.x >= centerX && position.y >= centerY) {
-        return 'Bottom-Right Zone';
+        return 'Bottom-Right Quadrant';
     }
 }
 
@@ -277,11 +1070,35 @@ function detectCircleFromTrail(trail, tolerance = 5, minDistance = 50) {
 
 var Simulation = Simulation || {};
 
-Simulation.doublePendulum = (containerId, centerX, centerY) => {
+Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerScore = 0, websitePlayerLevel = 1, websitePendulumWidth = 25, websitePendulumLength = 100, websitePlayerDifficultyLevel = 'easy', websitePlayerName = 'Guest', pendulumNumberValue = 2, airFrictionValue = 0) => {
     const { Engine, Events, Render, Runner, Body, Composite, Composites, Constraint, MouseConstraint, Mouse, Bodies, Vector } = Matter;
 
-    console.log("centerX = " + centerX);
-    console.log("centerY = " + centerY);
+    // Initialize the game
+    determineZonesForLevel(websitePlayerDifficultyLevel);
+    // alert(`websitePlayerScore is ${websitePlayerScore}`)
+    updateScore(websitePlayerScore === null ? 0 : websitePlayerScore);
+    updateLevel(websitePlayerLevel === null ? 1 : websitePlayerLevel);
+    length = websitePendulumLength;
+    width = websitePendulumWidth;
+    playerName = websitePlayerName;
+    playerDifficultyLevel = websitePlayerDifficultyLevel;
+    numberOfLinks = pendulumNumberValue;
+    airFriction = airFrictionValue;
+    // alert("airFriction is ", airFrictionSelect);
+    // alert(`Debug Values:
+    //     Player Score: ${websitePlayerScore === null ? 0 : websitePlayerScore}
+    //     Player Level: ${websitePlayerLevel === null ? 1 : websitePlayerLevel}
+    //     websitePlayerName: ${websitePlayerName} 
+    //     Difficulty Level: ${websitePlayerDifficultyLevel}
+    //     Number of Pendulum Links: ${pendulumNumberValue}
+    //     Pendulum Length: ${websitePendulumLength}
+    //     Pendulum Width: ${websitePendulumWidth}
+    //      Airfriction Value: ${airFrictionValue}`)
+    //     ;
+
+
+    //  console.log("centerX = " + centerX);
+    //  console.log("centerY = " + centerY);
 
     // Get the container element by ID
     const container = document.getElementById(containerId);
@@ -313,7 +1130,7 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
         // Calculate center of the canvas
         const centerX = width / 2;
         const centerY = height / 2;
-        
+
         context.strokeStyle = '#e0e0e0';
         context.lineWidth = 1;
 
@@ -425,21 +1242,29 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     // Add bodies
     const group = Body.nextGroup(true);
     // we change this to change the number of links
-    
+
     // const length = 100;    // decreased from 200 to 100
     // const width = 25;
 
     // const group = Body.nextGroup(true);
     // const length = 150; // Change from 200 to whatever length you want
     // const width = 25;   // This is the width of each link
-    
-    const length = 100;
-    const width = 25;
 
-    const pendulum = Composites.stack(300, 160, 2, 1, -20, 0, (x, y) => 
-        Bodies.rectangle(x, y, length, width, { 
+    //const length = 100;
+    //const width = 25;
+
+
+
+    //const length = 100;
+    //const width = 25;
+    // const numberOfLinks = 3;
+    // const pendulum = Composites.stack(300, 160, 2, 1, -20, 0, (x, y) =>
+
+    const pendulum = Composites.stack(300, 160, numberOfLinks, 1, -20, 0, (x, y) =>
+        Bodies.rectangle(x, y, length, width, {
             collisionFilter: { group },
-            frictionAir: 0,
+            frictionAir: airFriction,
+            //frictionAir: 0,
             chamfer: 5,
             render: {
                 fillStyle: 'transparent',
@@ -449,15 +1274,25 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     );
 
     engine.gravity.scale = 0.002;
-    
-    Composites.chain(pendulum, 0.45, 0, -0.45, 0, { 
-        stiffness: 0.9, 
+
+    // Store the chain composite when you create it
+    const chainComposite = Composites.chain(pendulum, 0.45, 0, -0.45, 0, {
+        stiffness: 0.9,
         length: 50,
         angularStiffness: 0.7,
         render: {
             strokeStyle: '#4a485b'
         }
     });
+
+    // Composites.chain(pendulum, 0.45, 0, -0.45, 0, {
+    //     stiffness: 0.9,
+    //     length: 50,
+    //     angularStiffness: 0.7,
+    //     render: {
+    //         strokeStyle: '#4a485b'
+    //     }
+    // });
 
     // console.log("centerX = " + centerX);
     // console.log("centerY = " + centerY);
@@ -466,13 +1301,14 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     // Calculate grid center coordinates
     // const gridCenterX = 1296 / 2;  // = 648
     // const gridCenterY = 904 / 2;   // = 452
-    
+
     const gridCenterX = centerX;  // = 648
     const gridCenterY = centerY;   // = 452
 
-    Composite.add(pendulum, Constraint.create({ 
+    Composite.add(pendulum, Constraint.create({
         bodyB: pendulum.bodies[0],
         pointB: { x: -length * 0.42, y: 0 },
+        // pointB: { x: 19, y: 0 },  // Fixed smaller value
         pointA: { x: gridCenterX, y: gridCenterY },
         stiffness: 0.9,
         length: 0,
@@ -482,12 +1318,21 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     }));
 
 
+    for (let i = 0; i < numberOfLinks; i++) {
+        links.push(pendulum.bodies[i]);
+    }
+
+    // Show all the links in alert boxes
+    // links.forEach((link, index) => {
+    //     alert(`Link ${index + 1}:\nPosition: (${link.position.x.toFixed(2)}, ${link.position.y.toFixed(2)})\nAngle: ${link.angle.toFixed(2)} radians`);
+    // });
+
     // so this where we add arm to control, lowerarm is the control now
     const lowerArm = pendulum.bodies[1];
     const upperArm = pendulum.bodies[0];
 
     // Rotate the lower arm 90 degrees (Math.PI/2) around its position
-    Body.rotate(lowerArm, Math.PI/2, {
+    Body.rotate(lowerArm, Math.PI / 2, {
         x: lowerArm.position.x,
         y: lowerArm.position.y
     });
@@ -502,7 +1347,7 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     // Body.setAngle(lowerArm, 0);
     // Body.setVelocity(lowerArm, { x: 0, y: 0 });
     // Body.setAngularVelocity(lowerArm, 0);
-    
+
     Composite.add(world, pendulum);
 
     const trail = [];
@@ -510,6 +1355,68 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     let upperArmCircleCount = 0; // Count of upper arm circles
 
     Events.on(render, 'afterRender', () => {
+        //    const observation = getObservationFromPendulum(lowerArm, upperArm);
+        //     document.getElementById('hdnPendulumState').value = JSON.stringify(observation);
+
+        // document.getElementById('hdnPendulumState').value = JSON.stringify({
+        //     state: 'example',
+        //     data: 123
+        // });
+        //  console.log("Current Observation:", observation);
+        // set the hidden value 
+
+        // Create or get the hidden input element
+        // let hiddenElement = document.getElementById('hiddenValue');
+        // hiddenElement.value = observation;
+        // console.log("hiddenElement value is ", hiddenElement.value);
+
+        // Send the observation data to the WebSocket server
+        // logPendulumState(lowerArm, upperArm);
+
+        // Check alignment
+        const alignmentInfo = checkPendulumsAlignment(upperArm, lowerArm);
+        // updateAlignmentDisplay(alignmentInfo);
+        // if (alignmentInfo.isAligned) {
+        //     //      console.log('Pendulums are aligned!');
+        //     //     console.log('Upper arm angle:', alignmentInfo.upperDegrees.toFixed(2));
+        //     //      console.log('Lower arm angle:', alignmentInfo.lowerDegrees.toFixed(2));
+
+        //     // Optional: Update UI to show alignment
+        //     const alignmentDisplay = document.getElementById('alignmentDisplay');
+        //     alignmentDisplay.innerHTML = `
+        //     <div style="color: green;">
+        //         Pendulums Aligned!
+        //         <br>
+        //         Upper: ${alignmentInfo.upperDegrees.toFixed(2)}°
+        //         <br>
+        //         Lower: ${alignmentInfo.lowerDegrees.toFixed(2)}°
+        //     </div>
+        // `;
+
+        if (alignmentInfo.isAligned) {
+            //      console.log('Pendulums are aligned!');
+            //     console.log('Upper arm angle:', alignmentInfo.upperDegrees.toFixed(2));
+            //      console.log('Lower arm angle:', alignmentInfo.lowerDegrees.toFixed(2));
+
+            // Optional: Update UI to show alignment
+            const alignmentDisplay = document.getElementById('alignmentDisplay');
+            alignmentDisplay.innerHTML = `
+            <div style="color: green;">
+                Pend Aligned!
+            </div>
+        `;
+
+        } else {
+            //   console.log('Pendulums are not aligned.');
+            // Optional: Update UI to show non-alignment
+            const alignmentDisplay = document.getElementById('alignmentDisplay');
+            alignmentDisplay.innerHTML = `
+            <div style="color: red;">
+                <span style="text-decoration: line-through; color: black;">Pend Aligned!</span>
+            </div>
+        `;
+        }
+
         // Draw the grid
         drawGrid(render.context, render.options.width, render.options.height);
 
@@ -552,7 +1459,7 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
         // })));
         // Check for circles in the lower arm trail
         if (detectCircleFromTrail(trails.lowerArm)) {
-            console.log('Lower arm completed a circle!');
+            //  console.log('Lower arm completed a circle!');
             lowerArmCircleCount++;
             trails.lowerArm.length = 0; // Reset trail after detecting a circle
             // Update the lower arm circle count on the page
@@ -564,13 +1471,13 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
 
         // Check for circles in the upper arm trail
         if (detectCircleFromTrail(trails.upperArm)) {
-            console.log('Upper arm completed a circle!');
+            //   console.log('Upper arm completed a circle!');
             upperArmCircleCount++;
             trails.upperArm.length = 0; // Reset trail after detecting a circle
             // Update the upper arm circle count on the page
             const upperArmCircleElement = document.getElementById('upperArmCircleCount');
             if (upperArmCircleElement) {
-                upperArmCircleElement.textContent = `Upper Arm Circles: ${upperArmCircleCount}`;
+                upperArmCircleElement.textContent = `Rotation# ${upperArmCircleCount}`;
             }
         }
 
@@ -619,26 +1526,59 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
 
         // Output the y-value of the pendulum's endpoint
         //console.log("Current Y position of lower arm endpoint:", lowerArm.position.y);
-        
+
         // Calculate the y position of the pendulum's endpoint
         // const yEndpoint = calculateYEndpoint(lowerArm, pendulum.bodies[0], length, length);
         const yEndpoint = calculateYEndpoint(lowerArm, upperArm, length, length);
         // Update the Y position in the HTML element
         const yPositionElement = document.getElementById("yPositionOutput");
         if (yPositionElement) {
-            yPositionElement.textContent = 
+            yPositionElement.textContent =
                 "Current Y position of lower arm endpoint: " + yEndpoint.toFixed(2);
         }
         drawZoneLabels(render.context, render.options.width, render.options.height);
 
         const lowerArmPos = lowerArm.position; // Access the pendulum's lower arm position
+        const upperArmPos = upperArm.position;
         const zone = getZone(lowerArmPos, render.options.width, render.options.height); // Call getZone
+        const lowerArmZone = getZone(lowerArmPos, render.options.width, render.options.height); // Call getZone
+        const upperArmZone = getZone(upperArmPos, render.options.width, render.options.height); // Call getZone
+
+        // Loop through links and get zone for each
+        links.forEach((link, index) => {
+            const zone = getZone(link.position, render.options.width, render.options.height);
+
+            // Get the zone value element using the naming convention from createArmZones
+            const zoneValueElement = document.getElementById(`armZone${index}Output`);
+
+
+            // Update the zone value if the element exists
+            if (zoneValueElement) {
+                zoneValueElement.textContent = `${zone}`;
+            }
+            // console.log(`Link position: (${link.position.x}, ${link.position.y}), Zone: ${zone}`);
+        });
 
         // Update the zone display on the webpage
-        const zoneOutput = document.getElementById('zoneOutput');
-        if (zoneOutput) {
-            zoneOutput.textContent = `Current Zone: ${zone}`;
+        // const zoneOutput = document.getElementById('zoneOutput');
+        // if (zoneOutput) {
+        //     zoneOutput.textContent = `Current Zone: ${zone}`;
+        // }
+
+        // Update the zone display on the webpage
+        const lowerArmZoneOutput = document.getElementById('lowerArmZoneOutput');
+        if (lowerArmZoneOutput) {
+            lowerArmZoneOutput.textContent = `${lowerArmZone}`;
         }
+
+        // Update the zone display on the webpage
+        const upperArmZoneOutput = document.getElementById('upperArmZoneOutput');
+        if (upperArmZoneOutput) {
+            upperArmZoneOutput.textContent = `${upperArmZone}`;
+        }
+
+
+        trackAlignment(upperArm, lowerArm);
     });
 
     // add mouse control
@@ -665,9 +1605,64 @@ Simulation.doublePendulum = (containerId, centerX, centerY) => {
     });
 
     // Call the function to add keyboard control
-    addKeyboardControl(pendulum);
+    addKeyboardControl(pendulum, engine, chainComposite);
+    addTouchControl(pendulum, render.canvas, engine, chainComposite);
 
-    addTouchControl(pendulum, render.canvas);
+    // Stop the runner to implement manual stepping
+    Runner.stop(runner);
+
+    const stepInterval = 1000 / 60; // 60 FPS step duration
+    // const pauseDuration = 5000; // Pause for 5 seconds
+    const pauseDuration = 50; // Pause for 5 seconds
+
+    currentControl = 'upperArm'; // Switch to upper arm
+    //   console.log('Switched control to upper arm');
+    // Fill the selected arm with lighter red
+    upperArm.render.fillStyle = '#ff6666'; // Lighter red
+    upperArm.render.strokeStyle = '#1a1a1a';
+    // Reset the other arm
+    lowerArm.render.fillStyle = 'transparent';
+    lowerArm.render.strokeStyle = '#1a1a1a';
+    // Update the zone display on the webpage
+    updateOutputMessageForCurrentlySelectedLink('Currently controlling: Upper Arm');
+
+
+    // Wait 3 seconds to auto-toggle the AI switch
+    //setTimeout(autoToggleAI, 3000);
+
+    while (true) {
+        Engine.update(engine, stepInterval);
+        //logPendulumState(lowerArm, upperArm);
+        Render.world(render);
+        // const observation = getObservationFromPendulum(lowerArm, upperArm);
+        // console.log("Current Observation:", observation);
+
+        // Create or get the hidden input element
+        // let hiddenElement = document.getElementById('hdnCurrentState');
+        //  hiddenElement.value = observation;
+        // console.log("hiddenElement value is ", hiddenElement.value);
+
+        const observation = getObservationFromPendulum(lowerArm, upperArm);
+        document.getElementById('hdnPendulumState').value = JSON.stringify(observation);
+        // Step 3: Fetch best action from a model (e.g., AI prediction)
+        const hiddenInputValue = document.getElementById('savedMessagesHidden').value; // this comes back from the server
+        const parsedValue = JSON.parse(hiddenInputValue);
+        //  console.log("Parsed Value for function:", parsedValue);
+
+        const bestAction = getBestActionFromModel(parsedValue); // Replace with your AI logic
+        // console.log("Best Action:", bestAction);
+
+        // Step 4: Apply torque based on the best action
+        // Apply torque based on the best action
+        if (bestAction !== null) {
+            applyBestActionTorque({ bodies: [upperArm, lowerArm] }, bestAction);
+        }
+
+        // Step 5: Pause simulation
+        await pauseSimulation(pauseDuration);
+        //   await pauseSimulation(pauseDuration);
+    }
+
 
     return {
         engine,
