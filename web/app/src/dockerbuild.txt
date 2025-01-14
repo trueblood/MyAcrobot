@@ -109,3 +109,8 @@ CREATE TABLE Score (
     score INTEGER NOT NULL
 );
 .tables
+
+
+##ssh to my shit, ha! always use ssh keys! 
+ssh -i "my_new_secret_key.pem" ubuntu@ec2-54-92-200-21.compute-1.amazonaws.com
+
