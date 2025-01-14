@@ -114,3 +114,29 @@ CREATE TABLE Score (
 ##ssh to my shit, ha! always use ssh keys! 
 ssh -i "my_new_secret_key.pem" ubuntu@ec2-54-92-200-21.compute-1.amazonaws.com
 
+
+
+
+# for the new instance 
+scp -i "youtubedemo-key-pair.pem" -r /Users/squeebit/Documents/Projects/aws_docker_file/ssl-certs ubuntu@ec2-107-20-21-85.compute-1.amazonaws.com:/home/ubuntu/MyAcrobot/web/app/src
+docker build -t flask-websocket-app .
+docker run -d -p 443:443 -p 80:80 --name flask-websocket-app flask-websocket-app
+
+
+
+# when running on server i need to do this but not local
+docker ps
+docker exec -it 1ec361228f0a bash
+cd /app/db
+sqlite3 myacrobot.db
+CREATE TABLE Message (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    content TEXT NOT NULL
+);
+
+CREATE TABLE Score (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    score INTEGER NOT NULL
+);
+.tables
