@@ -1084,6 +1084,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
     playerDifficultyLevel = websitePlayerDifficultyLevel;
     numberOfLinks = pendulumNumberValue;
     airFriction = airFrictionValue;
+    // alert("airFriction is ", airFrictionSelect);
     // alert(`Debug Values:
     //     Player Score: ${websitePlayerScore === null ? 0 : websitePlayerScore}
     //     Player Level: ${websitePlayerLevel === null ? 1 : websitePlayerLevel}
@@ -1411,7 +1412,7 @@ Simulation.doublePendulum = async (containerId, centerX, centerY, websitePlayerS
             const alignmentDisplay = document.getElementById('alignmentDisplay');
             alignmentDisplay.innerHTML = `
             <div style="color: red;">
-                Not Aligned!
+                <span style="text-decoration: line-through; color: black;">Pend Aligned!</span>
             </div>
         `;
         }
